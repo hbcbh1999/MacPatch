@@ -1,8 +1,8 @@
 #!/bin/bash
 #
-# -------------------------------------------------------------
+# ----------------------------------------------------------------------------
 # Script: MPBuildServer.sh
-# Version: 2.0.4
+# Version: 3.0.0
 #
 # Description:
 # This is a very simple script to demonstrate how to automate
@@ -29,10 +29,14 @@
 # 2.0.3:	Added Mac PKG support
 # 2.0.4:	Added compile for Mac MPServerAdmin.app
 #			Removed create archive (aka zip)
+# 2.0.5     Disabled the MPServerAdmin app build, having issue 
+#			with the launch services.
+# 3.0.0     Rewritten for new Python Env
 #
-# -------------------------------------------------------------
+#
+# ----------------------------------------------------------------------------
 
-# -------------------------------------------------------------
+# ----------------------------------------------------------------------------
 # How to use:
 #
 # sudo MPBuildServer.sh, will compile MacPatch server software
@@ -44,30 +48,10 @@
 # Linux requires MPBuildServer.sh, then run the buildLinuxPKG.sh
 # locates in /Library/MacPatch/tmp/MacPatch/MacPatch PKG/Linux
 #
-# -------------------------------------------------------------
+# ----------------------------------------------------------------------------
 
-MPBASE="/Library/MacPatch"
-MPSERVERBASE="/Library/MacPatch/Server"
-GITROOT="/Library/MacPatch/tmp/MacPatch"
-BUILDROOT="/Library/MacPatch/tmp/build/Server"
-SRC_DIR="${MPSERVERBASE}/conf/src"
-J2EE_SW=`find "${GITROOT}/MacPatch Server" -name "apache-tomcat-"* -type f -exec basename {} \; | head -n 1`
 
-# PKG Variables
-MP_MAC_PKG=false
-MP_SERVER_PKG_VER="1.2.0.0"
-CODESIGNIDENTITY="*"
-CODESIGNIDENTITYPLIST="/Library/Preferences/mp.build.server.plist"
-if [ -f "$CODESIGNIDENTITYPLIST" ]; then
-	CODESIGNIDENTITYALT=`defaults read ${CODESIGNIDENTITYPLIST} name`
-fi
-
-XOSTYPE=`uname -s`
-USELINUX=false
-USERHEL=false
-USEUBUNTU=false
-USEMACOS=false
-OWNERGRP="79:70"
+# Make Sure User is root -----------------------------------------------------
 
 if [ "`whoami`" != "root" ] ; then   # If not root user,
    # Run this script again as root
@@ -77,6 +61,61 @@ if [ "`whoami`" != "root" ] ; then   # If not root user,
    echo
    exit 1;
 fi
+
+# Script Variables -----------------------------------------------------------
+
+platform='unknown'
+unamestr=`uname`
+if [[ "$unamestr" == 'Linux' ]]; then
+   platform='linux'
+elif [[ "$unamestr" == 'Darwin' ]]; then
+   platform='mac'
+fi
+
+USELINUX=false
+USERHEL=false
+USEUBUNTU=false
+USEMACOS=false
+USESSL=false
+MACPROMPTFORXCODE=true
+
+MPBASE="/opt/MacPatch"
+MPSERVERBASE="/opt/MacPatch/Server"
+BUILDROOT="${MPBASE}/.build/server"
+TMP_DIR="${MPBASE}/.build/tmp"
+SRC_DIR="${MPSERVERBASE}/conf/src/server"
+TOMCAT_SW="NA"
+OWNERGRP="79:70"
+
+# PKG Variables
+MP_MAC_PKG=false
+MP_SERVER_PKG_VER="1.3.0.0"
+CODESIGNIDENTITY="*"
+CODESIGNIDENTITYPLIST="/Library/Preferences/mp.build.server.plist"
+
+if [[ $platform == 'linux' ]]; then
+	USELINUX=true
+	OWNERGRP="www-data:www-data"
+	LNXDIST=`python -c "import platform;print(platform.linux_distribution()[0])"`
+	if [[ $LNXDIST == *"Red"*  || $LNXDIST == *"Cent"* ]]; then
+		USERHEL=true
+	else
+		USEUBUNTU=true
+	fi
+
+	if ( ! $USERHEL && ! $USEUBUNTU ); then
+		echo "Not running a supported version of Linux."
+		exit 1;
+	fi
+
+elif [[ "$unamestr" == 'Darwin' ]]; then
+	USEMACOS=true
+	if [ -f "$CODESIGNIDENTITYPLIST" ]; then
+		CODESIGNIDENTITYALT=`defaults read ${CODESIGNIDENTITYPLIST} name`
+	fi
+fi
+
+# Script Input Args ----------------------------------------------------------
 
 usage() { echo "Usage: $0 [-p Build Mac PKG]" 1>&2; exit 1; }
 
@@ -105,280 +144,234 @@ while getopts "ph" opt; do
 	esac
 done
 
-# -----------------------------------
-# OS Check
-# -----------------------------------
+# ----------------------------------------------------------------------------
+# Requirements
+# ----------------------------------------------------------------------------
+if $USEMACOS; then
+	if JHOME="$(/usr/libexec/java_home -v 2>/dev/null)"; then
+	    # Do this if you want to export JAVA_HOME
+	    echo "Java JDK is installed"
+	else
+	    echo "Did not find any version of the Java JDK installed."
+	    echo "Please install the Java JDK 1.8"
+	    exit 1
+	fi
+
+	if $MACPROMPTFORXCODE; then
+		clear
+		echo
+		echo "Server Build Requires Xcode Command line tools to be installed"
+		echo "and the license agreement accepted. If you have not done this,"
+		echo "parts of the install will fail."
+		echo 
+		echo "It is recommended that you run \"sudo xcrun --show-sdk-version\""
+		echo "prior to continuing with this script."
+		echo
+		read -p "Would you like to continue (Y/N)? [Y]: " XCODEOK
+		XCODEOK=${XCODEOK:-Y}
+		if [ "$XCODEOK" == "Y" ] || [ "$XCODEOK" == "y" ] ; then
+			echo
+		else
+			exit 1
+		fi
+	fi
+fi
+
+# ----------------------------------------------------------------------------
+# Make Sure Linux has Right User 
+# ----------------------------------------------------------------------------
 
 # Check and set os type
-if [ $XOSTYPE == "Linux" ]; then
-	USELINUX=true
-	OWNERGRP="www-data:www-data"
-	getent passwd www-data > /dev/null 2&>1
+if $USELINUX; then
+	echo
+	echo "Checking for required user (www-data)."
+	echo "-----------------------------------------------------------------------"
+
+	getent passwd www-data > /dev/null 2>&1
 	if [ $? -eq 0 ]; then
 		echo "www-data user exists"
 	else
     	echo "Create user www-data"
 		useradd -r -M -s /dev/null -U www-data
 	fi
-elif [ $XOSTYPE == "Darwin" ]; then
-	USEMACOS=true
-else
-  	echo "OS Type $XOSTYPE is not supported. Now exiting."
-  	exit 1; 
 fi
 
-# -----------------------------------
-# Java Check
-# -----------------------------------
-
-if type -p java; then
-    echo found java executable in PATH
-    _java=java
-elif [[ -n "$JAVA_HOME" ]] && [[ -x "$JAVA_HOME/bin/java" ]];  then
-    echo found java executable in JAVA_HOME     
-    _java="$JAVA_HOME/bin/java"
-else
-    echo "no java"
-    echo "please install the latest version of java 1.8.x jdk"
-    exit 1
-fi
-
-if [[ "$_java" ]]; then
-    version=$("$_java" -version 2>&1 | awk -F '"' '/version/ {print $2}')
-    echo version "$version"
-    if [[ "$version" > "1.8" ]]; then
-        echo "version is more than 1.8"
-    else         
-        echo "java version is less than 1.8"
-        echo "please install the latest version of java 1.8.x jdk"
-        exit 1
-    fi
-fi
-
-# -----------------------------------
+# ----------------------------------------------------------------------------
 # Main
-# -----------------------------------
-clear
+# ----------------------------------------------------------------------------
+#clear
+echo
 echo "Begin MacPatch Server build."
+echo "-----------------------------------------------------------------------"
 
-
+# Create Build Root
 if [ -d "$BUILDROOT" ]; then
 	rm -rf ${BUILDROOT}
 else
 	mkdir -p ${BUILDROOT}	
 fi	
 
-if [ ! -d "$GITROOT" ]; then
-	echo "$GITROOT is missing. Please clone MacPatch repo to /Library/MacPatch/tmp"
-	echo
-	echo "cd /Library/MacPatch/tmp; git clone https://github.com/SMSG-MAC-DEV/MacPatch.git"
-	exit
+# Create TMP Dir for builds
+if [ -d "$TMP_DIR" ]; then
+	rm -rf ${TMP_DIR}
+else
+	mkdir -p ${TMP_DIR}	
 fi	
 
 # ------------------
 # Create Skeleton Dir Structure
 # ------------------
-mkdir -p /Library/MacPatch
-mkdir -p /Library/MacPatch/Content
-mkdir -p /Library/MacPatch/Content/Web
-mkdir -p /Library/MacPatch/Content/Web/clients
-mkdir -p /Library/MacPatch/Content/Web/patches
-mkdir -p /Library/MacPatch/Content/Web/sav
-mkdir -p /Library/MacPatch/Content/Web/sw
-mkdir -p /Library/MacPatch/Content/Web/tools
-mkdir -p /Library/MacPatch/Server
-mkdir -p /Library/MacPatch/Server/lib
-mkdir -p /Library/MacPatch/Server/Logs
+echo
+echo "Create MacPatch server directory structure."
+echo "-----------------------------------------------------------------------"
+mkdir -p ${MPBASE}
+mkdir -p ${MPBASE}/Content
+mkdir -p ${MPBASE}/Content/Web
+mkdir -p ${MPBASE}/Content/Web/clients
+mkdir -p ${MPBASE}/Content/Web/patches
+mkdir -p ${MPBASE}/Content/Web/sav
+mkdir -p ${MPBASE}/Content/Web/sw
+mkdir -p ${MPBASE}/Content/Web/tools
+mkdir -p ${MPSERVERBASE}/InvData/files
+mkdir -p ${MPSERVERBASE}/lib
+mkdir -p ${MPSERVERBASE}/logs
 
 # ------------------
 # Copy compiled files
 # ------------------
-cp -R ${GITROOT}/MacPatch\ Server/Server ${MPBASE}
-cp ${MPSERVERBASE}/conf/Content/Web/tools/MPAgentUploader.app.zip /Library/MacPatch/Content/Web/tools/
+if $USEMACOS; then
+	echo
+	echo "Copy Mac OS gui tools."
+	echo "-----------------------------------------------------------------------"
+	#cp -R ${GITROOT}/MacPatch\ Server/Server ${MPBASE}
+	#cp ${MPSERVERBASE}/conf/Content/Web/tools/MPAgentUploader.app.zip /Library/MacPatch/Content/Web/tools/
+
+	HTTP_SW=`find "${SRC_DIR}" -name "nginx"* -type f -exec basename {} \; | head -n 1`
+	PCRE_SW=`find "${SRC_DIR}" -name "pcre-"* -type f -exec basename {} \; | head -n 1`
+	OSSL_SW=`find "${SRC_DIR}" -name "openssl-"* -type f -exec basename {} \; | head -n 1`
+
+	# PCRE
+	mkdir ${TMP_DIR}/pcre
+	tar xvfz ${SRC_DIR}/${PCRE_SW} --strip 1 -C ${TMP_DIR}/pcre
+
+	# NGINX
+	mkdir ${TMP_DIR}/nginx
+	tar xvfz ${SRC_DIR}/${HTTP_SW} --strip 1 -C ${TMP_DIR}/nginx
+
+	# OpenSSL
+	mkdir ${TMP_DIR}/openssl
+	tar xvfz ${SRC_DIR}/${OSSL_SW} --strip 1 -C ${TMP_DIR}/openssl
+fi
 
 # ------------------
 # Install required packages
 # ------------------
-
-if [ $XOSTYPE == "Linux" ]; then
-	if [ -f "/etc/redhat-release" ]; then
-		USERHEL=true
+if $USELINUX; then
+	echo
+	echo "Install required linux packages"
+	echo "-----------------------------------------------------------------------"
+	if $USERHEL; then
 		# Check if needed packges are installed or install
-		pkgs=("gcc-c++" "python-pip" "mysql-connector-python")
+		# "mysql-connector-python" 
+		pkgs=("gcc" "gcc-c++" "python-pip" "java-1.8.0-openjdk" "java-1.8.0-openjdk-devel" "zlib-devel" "pcre-devel" "openssl-devel" "python-devel")
 	
 		for i in "${pkgs[@]}"
 		do
-			p=`rpm -qa --qf '%{NAME}\n' | grep -e ${i}$`
+			p=`rpm -qa --qf '%{NAME}\n' | grep -e ${i}$ | head -1`
 			if [ -z $p ]; then
 				echo "Install $i"
 				yum install -y ${i}
 			fi
 		done
-
-	elif [[ -r /etc/os-release ]]; then
-	    . /etc/os-release
-	    if [[ $ID = ubuntu ]]; then
-	    	USEUBUNTU=true
-	    	# Install mysql python connector
-	    	DEBPKGDIR="${SRC_DIR}/linux/ubuntu"
-	    	MYDEBPYPKG="mysql-connector-python_2.0.4-1ubuntu14.10_all.deb"
-
-	    	for P in `ls $DEBPKGDIR/*.deb`
-	    	do
-	    		if [[ $P == *$VERSION_ID* ]]; then
-					MYDEBPYPKG=$P
-					dpkg -i $MYDEBPYPKG   			
-	    		fi
-	    	done
-
-	        pkgs=("build-essential" "python-pip")
-	        for i in "${pkgs[@]}"
-			do
-				p=`dpkg -l | grep '^ii' | grep ${i} | head -n 1 | awk '{print $2}' | grep ^${i}`
-				if [ -z $p ]; then
-					echo
-					echo "Install $i"
-					echo
-					apt-get build-dep ${i} -y
-				fi
-			done
-	    fi
-	else
-		echo "Not running a supported version of Linux."
-		exit 1;
 	fi
 fi
 
 # ------------------
-# Find JDK Java_Home
+# Upgrade Python Modules/Binaries
 # ------------------
-
-if [ $XOSTYPE == "Linux" ]; then
-	if $USERHEL; then
-		JHOME="/usr/lib/jvm/java-openjdk"
-		if [ ! -d "/usr/lib/jvm/java-openjdk" ]; then
-			read -p "Unable to find JAVA Home, please enter JAVA Home path: " JHOME
-			if [ ! -d "$JHOME" ]; then
-				echo "$JHOME not found. Please verify your JDK path and start again."
-				exit 1;
-			fi
-		fi
-	fi
-	if $USEUBUNTU; then
-		JHOME=$(readlink -f /usr/bin/javac | sed "s:/bin/javac::")
-		if [ ! -d $JHOME ]; then
-			read -p "Unable to find JAVA Home, please enter JAVA Home path: " JHOME
-			if [ ! -d "$JHOME" ]; then
-				echo "$JHOME not found. Please verify your JDK path and start again."
-				exit 1;
-			fi
-		fi
-	fi
-else
-	JHOME=`/usr/libexec/java_home`
-fi	
+echo
+echo "Upgrade/Install required python tools."
+echo "-----------------------------------------------------------------------"
+if $USELINUX; then
+	pip install --upgrade --trusted-host pypi.python.org pip
+	pip install --upgrade --trusted-host pypi.python.org setuptools
+	pip install --upgrade --trusted-host pypi.python.org virtualenv
+	pip install --upgrade --trusted-host pypi.python.org pycrypto
+fi
+if $USEMACOS; then
+	#pip install --no-cache-dir --upgrade pip --user python
+	#pip install --no-cache-dir --upgrade setuptools --user python
+	#pip install --no-cache-dir --upgrade virtualenv --user python
+	#pip install --no-cache-dir --upgrade pycrypto --user python
+	pip install --no-cache-dir --upgrade pip
+	pip install --no-cache-dir --upgrade setuptools
+	pip install --no-cache-dir --upgrade virtualenv
+	pip install --no-cache-dir --upgrade pycrypto
+fi
+sleep 1
 
 # ------------------
 # Setup Tomcat
 # ------------------
+echo
+echo "Uncompress and setup Tomcat."
+echo "-----------------------------------------------------------------------"
 
+TOMCAT_SW=`find "${SRC_DIR}" -name "apache-tomcat-"* -type f -exec basename {} \; | head -n 1`	
 mkdir -p "${MPSERVERBASE}/apache-tomcat"
-tar xvfz ${SRC_DIR}/${J2EE_SW} --strip 1 -C ${MPSERVERBASE}/apache-tomcat
+tar xfz ${SRC_DIR}/${TOMCAT_SW} --strip 1 -C ${MPSERVERBASE}/apache-tomcat
 chmod +x ${MPSERVERBASE}/apache-tomcat/bin/*
 rm -rf ${MPSERVERBASE}/apache-tomcat/webapps/docs
 rm -rf ${MPSERVERBASE}/apache-tomcat/webapps/examples
 rm -rf ${MPSERVERBASE}/apache-tomcat/webapps/ROOT
 
-clear
-
 # ------------------
-# Build OpenSSL
+# Build NGINX
 # ------------------
-MP_OSSL_DIR=${MPSERVERBASE}/lib/openssl
-
-SSL_SW=`find "${SRC_DIR}" -name "openssl"* -type f -exec basename {} \; | head -n 1`
-mkdir -p ${BUILDROOT}/openssl
-tar xvfz ${SRC_DIR}/${SSL_SW} --strip 1 -C ${BUILDROOT}/openssl
-
-if [ -d "${MP_OSSL_DIR}" ]; then
-	rm -rf "${MP_OSSL_DIR}"
-fi
-
-echo "[STEP]: Build and Compile OpenSSL..."
-cd ${BUILDROOT}/openssl
-if [ $XOSTYPE == "Linux" ]; then
-	make clean && make dclean
-	export CFLAGS=-fPIC
-	./config -shared --prefix=${MP_OSSL_DIR} \
-	--openssldir=${MP_OSSL_DIR}
-else
-	./Configure darwin64-x86_64-cc -shared --prefix=${MP_OSSL_DIR} \
-	--openssldir=${MP_OSSL_DIR}
-fi
-
-make
-make install
-
-# ------------------
-# Build APR
-# ------------------
-MP_APR_DIR=${MPSERVERBASE}/lib/apr
-APR_SW=`find "${SRC_DIR}" -name "apr-"* -type f -exec basename {} \; | head -n 1`
+echo
+echo "Build and configure NGINX"
+echo "-----------------------------------------------------------------------"
+NGINX_SW=`find "${SRC_DIR}" -name "nginx-"* -type f -exec basename {} \; | head -n 1`
 
 # APR
-mkdir -p ${BUILDROOT}/apr
-tar xvfz ${SRC_DIR}/${APR_SW} --strip 1 -C ${BUILDROOT}/apr
-cd ${BUILDROOT}/apr
+mkdir -p ${BUILDROOT}/nginx
+tar xfz ${SRC_DIR}/${NGINX_SW} --strip 1 -C ${BUILDROOT}/nginx
+cd ${BUILDROOT}/nginx
 
-if [ $XOSTYPE == "Linux" ]; then
-	./configure --prefix=${MP_APR_DIR}
+if $USELINUX; then
+	./configure --prefix=${MPSERVERBASE}/nginx \
+	--with-http_ssl_module \
+	--with-pcre \
+	--user=www-data \
+	--group=www-data > ${MPSERVERBASE}/logs/nginx-build.log 2>&1
 else
-	CFLAGS='-arch x86_64' ./configure --prefix=${MP_APR_DIR}
+	export KERNEL_BITS=64
+	./configure --prefix=${MPSERVERBASE}/nginx \
+	--without-http_autoindex_module \
+	--without-http_ssi_module \
+	--with-http_ssl_module \
+	--with-openssl=${TMP_DIR}/openssl \
+	--with-pcre=${TMP_DIR}/pcre  > ${MPSERVERBASE}/logs/nginx-build.log 2>&1
 fi
 
-make
-make install
+make  >> ${MPSERVERBASE}/logs/nginx-build.log 2>&1
+make install >> ${MPSERVERBASE}/logs/nginx-build.log 2>&1
 
-# ------------------
-# Build Tomcat Native Library
-# ------------------
-cd ${MPSERVERBASE}/apache-tomcat/bin
-tar -xvzf tomcat-native.tar.gz
-TCATNATIVE=`find ${MPSERVERBASE}/apache-tomcat/bin -type d -name "tomcat-native*"`
-if [ -z "$TCATNATIVE" ]; then
-	echo "Unable to get tomcat native dir in ${MPSERVERBASE}/apache-tomcat/bin"
-	exit 1;
+mv ${MPSERVERBASE}/nginx/conf/nginx.conf ${MPSERVERBASE}/nginx/conf/nginx.conf.orig
+if $USEMACOS; then
+	cp ${MPSERVERBASE}/conf/nginx/nginx.conf.mac ${MPSERVERBASE}/nginx/conf/nginx.conf
+else
+	cp ${MPSERVERBASE}/conf/nginx/nginx.conf ${MPSERVERBASE}/nginx/conf/nginx.conf
 fi
-if [ -d "${TCATNATIVE}/jni/native" ]; then
-	cd ${TCATNATIVE}/jni/native
-else
-	echo "${TCATNATIVE}/jni/native not found"
-	exit 1;
-fi	
+cp -r ${MPSERVERBASE}/conf/nginx/sites ${MPSERVERBASE}/nginx/conf/sites
 
-# Compile Tomcat Native Lib
-if [ $XOSTYPE == "Linux" ]; then
-	./configure --with-apr=${MP_APR_DIR} --with-ssl=${MP_OSSL_DIR} \
-	--with-java-home=${JHOME}
-else
-	CFLAGS='-arch x86_64' ./configure --with-apr=${MP_APR_DIR} \
-	--with-ssl=${MP_OSSL_DIR} \
-	--with-java-home=${JHOME}
-fi
-
-make
-mkdir -p ${MPSERVERBASE}/lib/java
-
-if [ $XOSTYPE == "Linux" ]; then
-	cp .libs/libtcnative-*.so ${MPSERVERBASE}/lib/java
-	cd ${MPSERVERBASE}/lib/java
-	ln -sfhv libtcnative-1.so libtcnative-1.jnilib
-else
-	cp .libs/libtcnative-*.dylib ${MPSERVERBASE}/lib/java
-	cd ${MPSERVERBASE}/lib/java
-	ln -sfhv libtcnative-1.dylib libtcnative-1.jnilib
-fi	
-
+perl -pi -e "s#\[SRVBASE\]#$MPSERVERBASE#g" $MPSERVERBASE/nginx/conf/nginx.conf
+FILES=$MPSERVERBASE/nginx/conf/sites/*.conf
+for f in $FILES
+do
+	echo "$f"
+	perl -pi -e "s#\[SRVBASE\]#$MPSERVERBASE#g" $f
+done
 
 # ------------------
 # Link & Set Permissions
@@ -386,33 +379,18 @@ fi
 ln -s ${MPSERVERBASE}/conf/Content/Doc ${MPBASE}/Content/Doc
 chown -R $OWNERGRP ${MPSERVERBASE}
 
-mkdir -p ${MPSERVERBASE}/apache-tomcat/InvData/Files
-mkdir -p ${MPSERVERBASE}/apache-tomcat/InvData/Errors
-mkdir -p ${MPSERVERBASE}/apache-tomcat/InvData/Processed
-
-# Web Services - App
-mkdir -p "${MPSERVERBASE}/conf/app/war/wsl"
-mkdir -p "${MPSERVERBASE}/conf/app/.wsl"
-unzip "${MPSERVERBASE}/conf/src/openbd/openbd.war" -d "${MPSERVERBASE}/conf/app/.wsl"
-rm -rf "${MPSERVERBASE}/conf/app/.wsl/index.cfm"
-rm -rf "${MPSERVERBASE}/conf/app/.wsl/manual"
-cp -r "${MPSERVERBASE}"/conf/app/wsl/* "${MPSERVERBASE}"/conf/app/.wsl
-cp -r "${MPSERVERBASE}"/conf/app/mods/wsl/* "${MPSERVERBASE}"/conf/app/.wsl
-
-cp -r "${MPSERVERBASE}/conf/lib/systemcommand.jar" "${MPSERVERBASE}/conf/app/.wsl/WEB-INF/lib/systemcommand.jar"
-chmod -R 0775 "${MPSERVERBASE}/conf/app/.wsl"
-chown -R $OWNERGRP "${MPSERVERBASE}/conf/app/.wsl"
-jar cf "${MPSERVERBASE}/conf/app/war/wsl/mpws.war" -C "${MPSERVERBASE}/conf/app/.wsl" .
-
 # Admin Site - App
 mkdir -p "${MPSERVERBASE}/conf/app/war/site"
 mkdir -p "${MPSERVERBASE}/conf/app/.site"
-unzip "${MPSERVERBASE}/conf/src/openbd/openbd.war" -d "${MPSERVERBASE}/conf/app/.site"
+if $USEMACOS; then
+	unzip -q "${MPSERVERBASE}/conf/src/server/openbd/openbd.war" -d "${MPSERVERBASE}/conf/app/.site"
+elif $USELINUX; then
+	unzip -q "${MPSERVERBASE}/conf/src/server/openbd/openbd.war" -d "${MPSERVERBASE}/conf/app/.site"
+fi
 rm -rf "${MPSERVERBASE}/conf/app/.site/index.cfm"
 rm -rf "${MPSERVERBASE}/conf/app/.site/manual"
 cp -r "${MPSERVERBASE}"/conf/app/site/* "${MPSERVERBASE}"/conf/app/.site
 cp -r "${MPSERVERBASE}"/conf/app/mods/site/* "${MPSERVERBASE}"/conf/app/.site
-cp -r "${MPSERVERBASE}/conf/lib/systemcommand.jar" "${MPSERVERBASE}/conf/app/.site/WEB-INF/lib/systemcommand.jar"
 chmod -R 0775 "${MPSERVERBASE}/conf/app/.site"
 chown -R $OWNERGRP "${MPSERVERBASE}/conf/app/.site"
 jar cf "${MPSERVERBASE}/conf/app/war/site/console.war" -C "${MPSERVERBASE}/conf/app/.site" .
@@ -420,19 +398,33 @@ jar cf "${MPSERVERBASE}/conf/app/war/site/console.war" -C "${MPSERVERBASE}/conf/
 # Tomcat Config
 MPCONF="${MPSERVERBASE}/conf/tomcat/server"
 MPTOMCAT="${MPSERVERBASE}/apache-tomcat"
-cp "${MPSERVERBASE}/conf/app/war/wsl/mpws.war" "${MPTOMCAT}/webapps"
 cp "${MPSERVERBASE}/conf/app/war/site/console.war" "${MPTOMCAT}/webapps"
-cp "${MPCONF}/bin/setenv.sh" "${MPTOMCAT}/bin/setenv.sh"
-cp "${MPCONF}/bin/launchdTomcat.sh" "${MPTOMCAT}/bin/launchdTomcat.sh"
+if $USEMACOS; then
+	cp "${MPCONF}/bin/setenv.sh.sml" "${MPTOMCAT}/bin/setenv.sh"
+	cp "${MPCONF}/bin/launchdTomcat.sh" "${MPTOMCAT}/bin/launchdTomcat.sh"
+	cp -r "${MPCONF}/conf/server_mac.xml" "${MPTOMCAT}/conf/server.xml"
+elif $USELINUX; then
+	msize=`awk '{ printf "%.2f", $2/1024/1024 ; exit}' /proc/meminfo`
+	if (( $(echo "$msize <= 4" | bc -l) )); then
+		cp "${MPCONF}/bin/setenv.sh.sml" "${MPTOMCAT}/bin/setenv.sh"
+	elif (( $(echo "$msize < 8" | bc -l) )); then
+		cp "${MPCONF}/bin/setenv.sh.med" "${MPTOMCAT}/bin/setenv.sh"
+	elif (( $(echo "$msize > 8" | bc -l) )); then
+		echo "Config was undetermined, using small server tomcat config."
+		"${MPCONF}/bin/setenv.sh.lrg" "${MPTOMCAT}/bin/setenv.sh"
+	else
+		cp "${MPCONF}/bin/setenv.sh.sml" "${MPTOMCAT}/bin/setenv.sh"
+	fi
+	cp -r "${MPCONF}/conf/server_lnx.xml" "${MPTOMCAT}/conf/server.xml"
+fi
 cp -r "${MPCONF}/conf/Catalina" "${MPTOMCAT}/conf/"
-cp -r "${MPCONF}/conf/server.xml" "${MPTOMCAT}/conf/server.xml"
 cp -r "${MPCONF}/conf/web.xml" "${MPTOMCAT}/conf/web.xml"
 chmod -R 0775 "${MPTOMCAT}"
 chown -R $OWNERGRP "${MPTOMCAT}"
 
 # Set Permissions
 if $USEMACOS; then
-	chown -R $OWNERGRP ${MPSERVERBASE}/Logs
+	chown -R $OWNERGRP ${MPSERVERBASE}/logs
 	chmod 0775 ${MPSERVERBASE}
 	chown root:wheel ${MPSERVERBASE}/conf/LaunchDaemons/*.plist
 	chmod 0644 ${MPSERVERBASE}/conf/LaunchDaemons/*.plist
@@ -441,36 +433,35 @@ fi
 # ------------------------------------
 # Install Python Packages
 # ------------------------------------
+echo
+echo "Install global pyhton modules"
+echo "-----------------------------------------------------------------------"
 if [ -f "/usr/bin/easy_install" ]; then
-	${MPSERVERBASE}/conf/scripts/InstallPyMods.sh
-fi
 
-# ------------------------------------
-# Build MP Server Admin for Mac OS X
-# ------------------------------------
-if $USEMACOS; then
-	if [ -d "${GITROOT}/MacPatch/MacPatch.xcodeproj" ]; then
-		clear
-		echo "MPServerAdmin requires code signing."
-		echo "Hint: (Mac Developer: ...)"
-		read -p "Please enter your code sigining identity: " xcodeCODESIGNIDENTITY
-
-		xcodebuild clean build -configuration Release -project ${GITROOT}/MacPatch\ Admin\ Tools/MPServerAdmin/MPServerAdmin.xcodeproj -target "gov.llnl.mp.admin.helper" SYMROOT=${BUILDROOT} CODE_SIGN_IDENTITY="${xcodeCODESIGNIDENTITY}"
-		xcodebuild clean build -configuration Release -project ${GITROOT}/MacPatch\ Admin\ Tools/MPServerAdmin/MPServerAdmin.xcodeproj -target "MPServerAdmin" SYMROOT=${BUILDROOT} CODE_SIGN_IDENTITY="${xcodeCODESIGNIDENTITY}"
-		ditto -c -k --keepParent ${BUILDROOT}/Release/MPServerAdmin.app ${BUILDROOT}/Release/MPServerAdmin.app.zip
-		cp ${BUILDROOT}/Release/MPServerAdmin.app.zip ${MPSERVERBASE}/conf/bin/MPServerAdmin.app.zip 
-	fi
+	pyMods="${MPSERVERBASE}/conf/src/server/python/*.tar.gz"
+	for p in $pyMods
+	do
+		if [[ ${p} == *"python-crontab"* ]]; then
+			if $USEMACOS; then
+				continue
+			fi
+		fi
+		echo "Install py mod ${p}" 
+	    easy_install ${p}
+	done
 fi
 
 # ------------------------------------------------------------
 # Generate self signed certificates
 # ------------------------------------------------------------
-clear
+#clear
 echo
 echo "Creating self signed SSL certificate"
-echo
-if [ ! -d "/Library/MacPatch/Server/conf/apacheCerts" ]; then
-	mkdir -p /Library/MacPatch/Server/conf/apacheCerts
+echo "-----------------------------------------------------------------------"
+
+certsDir="${MPSERVERBASE}/etc/apacheCerts"
+if [ ! -d "${certsDir}" ]; then
+	mkdir -p "${certsDir}"
 fi
 
 USER="MacPatch"
@@ -481,7 +472,7 @@ COUNTRY="NO"
 STATE="State"
 LOCATION="Country"
 
-cd /Library/MacPatch/Server/conf/apacheCerts
+cd ${certsDir}
 OPTS=(/C="$COUNTRY"/ST="$STATE"/L="$LOCATION"/O="$ORG"/OU="$USER"/CN="$DOMAIN"/emailAddress="$EMAIL")
 COMMAND=(openssl req -new -sha256 -x509 -nodes -days 999 -subj "${OPTS[@]}" -newkey rsa:2048 -keyout server.key -out server.crt)
 
@@ -498,60 +489,46 @@ else
 fi
 
 # ------------------------------------------------------------
-# Firewall TCP port redirect 8443 to 443, 8080 to 80
+# Create Virtualenv
 # ------------------------------------------------------------
-if $USELINUX; then
-	if $USERHEL; then
-		echo "Setup Redhat port forwarding..."
-	fi
-	if $USEUBUNTU; then
-		echo "Setup Ubuntu port forwarding..."
-	fi
-fi
+echo
+echo "Create Virtualenv for Web services app"
+echo "-----------------------------------------------------------------------"
+
+cd "${MPSERVERBASE}/WSService"
+virtualenv env
 
 # ------------------
 # Clean up structure place holders
 # ------------------
-find ${MPSERVERBASE} -name ".mpRM" -print | xargs -I{} rm -rf {}
+echo
+echo "Clean up Server dirtectory"
+echo "-----------------------------------------------------------------------"
+find ${MPBASE} -name ".mpRM" -print | xargs -I{} rm -rf {}
+rm -rf ${BUILDROOT}
 
 # ------------------
 # Set Permissions
 # ------------------
-echo "Setting Permissions..."
-/Library/MacPatch/Server/conf/scripts/Permissions.sh
-
-# ------------------
-# Currently a Java 8 requirement
-# Detect and warn 
-# ------------------
-
-if $USELINUX; then
-	JAVA_VER_RAW=`java -version 2>&1`
-	VERSION=`expr "$JAVA_VER_RAW" : '.*"\(1.[0-9\.]*\)["_]'`
-	let VERMINOR=`echo "$VERSION" | awk -F. '{print $2}'`
-
-	if [ $VERMINOR -le 7 ]; then
-		echo
-		echo "The version of Java installed is $VERSION"
-		echo "MacPatch has a minimum Java requirement of Java 1.8."
-		echo "Please upgrade or switch your default version of Java."
-		echo
-	fi	
+if $USEMACOS; then
+	echo "Setting Permissions..."
+	#/Library/MacPatch/Server/conf/scripts/Permissions.sh
 fi
 
 # ------------------------------------------------------------
 # Create Mac OS X, MacPatch Server PKG
 # ------------------------------------------------------------
 if $MP_MAC_PKG; then
-	clear
+	#clear
+	echo
 	echo "Begin creating MacPatch Server PKG for Mac OS X..."
+	echo "-----------------------------------------------------------------------"
 	echo
 	echo
 	# ------------------
 	# Clean up, pre package
 	# ------------------
 	rm -rf "${MPSERVERBASE}/conf/app/.site"
-	rm -rf "${MPSERVERBASE}/conf/app/.wsl"
 	find "${MPSERVERBASE}/conf/src" -name apache-tomcat-* -print | xargs -I{} rm {}
 	find "${MPSERVERBASE}/conf/src" -name apr* -print | xargs -I{} rm {}
 	rm -rf "${MPSERVERBASE}/conf/src/openbd"
@@ -599,14 +576,14 @@ if $MP_MAC_PKG; then
 	${BUILDROOT}/PKG/_MPServer.pkg
 
 	# Possibly Sign the newly created PKG
-	clear
+	#clear
 	echo
 	read -p "Would you like to sign the installer PKG (Y/N)? [N]: " SIGNPKG
 	SIGNPKG=${SIGNPKG:-N}
 	echo
 
 	if [ "$SIGNPKG" == "Y" ] || [ "$SIGNPKG" == "y" ] ; then
-		clear
+		#clear
 
 		read -p "Please enter you sigining identity [$CODESIGNIDENTITYALT]: " CODESIGNIDENTITY
 		CODESIGNIDENTITY=${CODESIGNIDENTITY:-$CODESIGNIDENTITYALT}
@@ -640,3 +617,5 @@ if $MP_MAC_PKG; then
 	# Open the build package dir
 	open ${BUILDROOT}/PKG
 fi
+
+exit 0;

@@ -1,0 +1,226 @@
+{% block styles %}
+    <!-- Bootstrap Core CSS -->
+    <link href="{{ url_for('static', filename='bower_components/bootstrap/dist/css/bootstrap.min.css') }}" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="{{ url_for('static', filename='dist/css/sb-admin-2.css') }}" rel="stylesheet">
+    <!-- Custom Fonts -->
+    <link href="{{ url_for('static', filename='bower_components/font-awesome/css/font-awesome.min.css') }}" rel="stylesheet" type="text/css">
+
+    <link href="{{ url_for('static', filename='smartwizard/css/bp_main.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='smartwizard/css/smart_wizard.css') }}" rel="stylesheet">
+{%  endblock %}
+
+{% block bodyPanel %}
+<form method='post' action='/patches/applePatchWizard/update' id="applePatchForm">
+    <input type="hidden" name="akey" value="{{data.akey}}">
+    <input type="hidden" name="supatchname" value="{{data.supatchname}}">
+<table align="center" border="0" cellpadding="0" cellspacing="0">
+<tr><td>
+<div id="wizard" class="swMain">
+    <ul>
+        <li>
+            <a href="#step-1">
+                <span class="stepDesc">
+                    Step 1<br />
+                    <small>Apple Patch Information</small>
+                </span>
+            </a>
+        </li>
+        <li>
+            <a href="#step-2">
+                <span class="stepDesc">
+                    Step 2<br />
+                    <small>Apple Patch Criteria</small>
+                </span>
+            </a>
+        </li>
+    </ul>
+    <div id="step-1">
+        <h4>Patch Information</h4>
+        <hr/>
+        <div id="row">
+            <div id="left"> Patch Title</div>
+            <div id="center" style="color:black;">
+                {{data.patchname}}
+            </div>
+        </div>
+        <div id="row">
+            <div id="left"> Patch Version</div>
+            <div id="center" style="color:black;">
+                {{data.version}}
+            </div>
+        </div>
+        <div id="row">
+            <div id="left"> Patch Name</div>
+            <div id="center" style="color:black;">
+                {{data.supatchname}}
+            </div>
+        </div>
+        <div id="row">
+            <div id="left"> Patch Key</div>
+            <div id="center" style="color:black;">
+                {{data.akey}}
+            </div>
+        </div>
+        <div id="row">
+            <div id="left"> Needs Restart</div>
+            <div id="center" style="color:black;">
+                {{data.restartaction}}
+            </div>
+        </div>
+        <div id="row">
+            <div id="left"> Patch Description</div>
+            <div id="center" style="color:black">
+                <div style="border: 1px solid black;width:90%;height:180px;overflow-y:scroll;padding:4px;">
+                    {{data.description64 | safe}}
+                </div>
+            </div>
+        </div>
+        <div id="row">
+            <div id="left"> Patch Severity</div>
+            <div id="center" style="color:black;">
+                <select name="patch_severity" size="1" required="yes">
+                    <option>{{dataAdds.severity}}</option>
+                    <option>High</option>
+                    <option>Medium</option>
+                    <option>Low</option>
+                    <option>Unknown</option>
+                </select>
+            </div>
+        </div>
+        <div id="row">
+            <div id="left"> Patch Install Weight</div>
+            <div id="center" style="color:black;">
+                <input name="patchInstallWeight" id="patchInstallWeight" type="range" min="0" max="100" step="1"
+                       title="" value="{{dataAdds.patch_install_weight}}"
+                       onchange="document.getElementById('patchInstallWeight-out').innerHTML = this.value"/><span
+                    id="patchInstallWeight-out">{{dataAdds.patch_install_weight}}</span>
+            </div>
+        </div>
+        <div id="row">
+            <div id="left"> Patch Reboot Override</div>
+            <div id="center" style="color:black;">
+                <select name="patch_reboot" size="1" required="yes">
+                    {% if dataAdds.patch_reboot == 1 %}
+                    <option value="1" selected>True</option>
+                    <option value="0">False</option>
+                    {% endif %}
+                    {% if dataAdds.patch_reboot == 0 %}
+                    <option value="1">True</option>
+                    <option value="0" selected>False</option>
+                    {% endif %}
+                </select>
+            </div>
+        </div>
+    </div>
+    <div id="step-2">
+        <h4>Patch Criteria</h4>
+        <hr/>
+        <h5><a href="#" onClick="addFormCriteriaField('reqCri','reqid','divTxtReq'); return false;"><img
+                src="/static/images/process_add_16.png"/>&nbsp;Add Criteria</a></h5>
+        <input type="hidden" id="reqid" value="0">
+        <div id="divTxtReq">
+            {% for cri in dataCrit %}
+            <p id="rowreqCri{{cri.type_order}}" style="margin-top:4px;">
+                &nbsp;
+                <select name="reqCri_type_{{cri.type_order}}" id="reqCri{{cri.type_order}}" size="1"
+                        style="vertical-align:top;">
+                    {% if dataCrit.type == 'Script' %}
+                    <option Selected>Script</option>
+                    {% else %}
+                    <option>Script</option>
+                    {% endif %}
+                </select>
+                <select name="reqCri_type_action_{{cri.type_order}}" id="reqCri{{cri.type_action}}" size="1"
+                        style="vertical-align:top;">
+                    {% if cri.type_action == 0 %}
+                    <option Selected value="0">Pre-Install</option>
+                    <option value="1">Post-Install</option>
+                    {% endif %}
+                    {% if cri.type_action == 1 %}
+                    <option value="0">Pre-Install</option>
+                    <option Selected value="1">Post-Install</option>
+                    {% endif %}
+                </select>
+                &nbsp;
+                <textarea name='reqCri_type_data_{{cri.type_order}}' id='reqCri_{{cri.type_order}}' cols="90" rows="6">{{cri.type_data}}</textarea>
+                &nbsp;
+                <input type='text' name='reqCri_Order_{{cri.type_order}}' value='{{cri.type_order}}' size='3'
+                       style='vertical-align:top;'>
+                <span style='vertical-align:top;'>(Order)</span>&nbsp;
+                <a href='#' onClick='removeFormField("#rowreqCri{{cri.type_order}}"); return false;'>
+                    <img src='/static/images/cancel.png' style='vertical-align:top;margin-top:2px;' height='14'
+                         width='14'>
+                </a>
+            </p>
+            {% endfor %}
+        </div>
+    </div>
+
+    </div>
+</div>
+</td></tr>
+</table>
+</form>
+{%  endblock %}
+
+
+{% block javascript %}
+    <!-- jQuery -->
+    <script src="{{ url_for('static', filename='bower_components/jquery/dist/jquery.min.js') }}"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="{{ url_for('static', filename='bower_components/bootstrap/dist/js/bootstrap.min.js') }}"></script>
+
+    <script src="{{ url_for('static', filename='smartwizard/js/jquery.smartWizard-2.0.min.js') }}"></script>
+    <script type="text/javascript">
+        // Init the Wizard
+        $('#wizard').smartWizard({
+            keyNavigation: false,
+            onFinish:onFinishCallback
+        });
+        // Click the Finish Button at the end of the Wizard
+        function onFinishCallback()
+        {
+            $.ajax({
+                type:'POST',
+                url: '/patches/applePatchWizard/update',
+                data: $('#applePatchForm').serialize(),
+                cache: false,
+                success: function(){
+                    alert("successful post");
+                }
+            });
+            $('#modalWizard').modal('hide');
+        }
+    </script>
+    <script type="text/javascript">
+        function addFormCriteriaField(frmFieldName, pid, divid)
+        {
+            {% if dataCritLen == 0 %}
+            var id = document.getElementById(pid).value;
+            {% else %}
+            var id = {{dataCritLen}}
+            {% endif %}
+            id = (id - 1) + 2;
+            document.getElementById(pid).value = id;
+            var rmRef = "<a href='#' onClick='removeFormField(\"#row" + frmFieldName + id +"\"); return false;'><img src='/static/images/cancel.png' style='vertical-align:top;margin-top:2px;' height='14' width='14'></a>";
+            var sel =   "<select name='" + frmFieldName + "_type_" + id + "' id='"+frmFieldName + id +"' size='1' style='vertical-align:top\;'>";
+            sel = sel + "<option>Script</option></select>";
+            sel = sel + "<select name='"+ frmFieldName + "_type_action_" + id + "' id='"+frmFieldName + id +"' size='1' style='vertical-align:top\;'>";
+            sel = sel + "<option value='0'>Pre-Install</option><option value='1'>Post-Install</option></select>";
+
+            var criHtm = "<p id='row" + frmFieldName + id +"' style='margin-top:4px;'>";
+            criHtm = criHtm + "&nbsp;" + sel + "&nbsp;";
+            criHtm = criHtm + "<textarea cols=\"90\" rows=\"6\" name='" + frmFieldName + "_type_data_" + id + "' id='"+frmFieldName + id +"' cols=\"60\" />&nbsp;";
+            criHtm = criHtm + "<input type='text' name='"+frmFieldName+"_Order_"+id+"' value='"+id+"' size='4' style='vertical-align:top\;'>";
+            criHtm = criHtm + "<span style='vertical-align:top\;'>(Order)</span>&nbsp;"+rmRef+"</p>";
+
+            $("#"+divid).append(criHtm);
+        }
+
+        function removeFormField(id) {
+            $(id).remove();
+        }
+    </script>
+{% endblock %}

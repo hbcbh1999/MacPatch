@@ -1,0 +1,110 @@
+import os
+import logging, logging.handlers
+import json
+from flask import Flask
+from mpapi.config import DevelopmentConfig, ProductionConfig
+from mpapi.extensions import db, migrate
+
+if os.getenv("FLASK_ENV") == 'prod':
+    DefaultConfig = ProductionConfig
+else:
+    DefaultConfig = DevelopmentConfig
+
+def create_app(config_object=DefaultConfig):
+
+    app = Flask(__name__)
+
+	# Add teardown_request to the app, here we ensure the db session is removed after the
+	# request has been completed in any way.
+	# db.session.remove will call rollback explicitly if needed
+    @app.teardown_request
+    def shutdown_session(exception):
+		if not exception:
+			db.session.commit()
+
+		db.session.remove()
+
+    app.config.from_object(config_object)
+    app.config.from_pyfile('../config.cfg', silent=True)
+
+    # Configure SQLALCHEMY_DATABASE_URI for MySQL
+    _uri = "mysql+mysqlconnector://%s:%s@%s:%s/%s" % (app.config['DB_USER'],app.config['DB_PASS'],app.config['DB_HOST'],app.config['DB_PORT'],app.config['DB_NAME'])
+    app.config['SQLALCHEMY_DATABASE_URI'] = _uri
+
+    # Configure logging
+    # handler = logging.FileHandler(app.config['LOGGING_LOCATION'])
+    # handler = logging.handlers.RotatingFileHandler(app.config['LOGGING_LOCATION'], maxBytes=20, backupCount=30)
+    handler = logging.handlers.TimedRotatingFileHandler(app.config['LOGGING_LOCATION'], when='midnight', interval=1, backupCount=30)
+    handler.setLevel(app.config['LOGGING_LEVEL'])
+    formatter = logging.Formatter(app.config['LOGGING_FORMAT'])
+    handler.setFormatter(formatter)
+    app.logger.addHandler(handler)
+
+    read_siteconfig_server_data(app)
+    register_extensions(app)
+    register_blueprints(app)
+    return app
+
+def read_siteconfig_server_data(app):
+
+	data = {}
+	if os.path.exists(app.config['SITECONFIG_FILE'].strip()):
+		try:
+			with open(app.config['SITECONFIG_FILE'].strip()) as data_file:
+				data = json.load(data_file)
+
+		except OSError:
+			print('Well darn.')
+			return
+
+	else:
+		print("Error, could not open file " + app.config['SITECONFIG_FILE'].strip())
+		return
+
+	if "settings" in data:
+		app.config['MP_SETTINGS'] = data['settings']
+		return
+
+def register_extensions(app):
+    db.init_app(app)
+    migrate.init_app(app, db)
+
+def register_blueprints(app):
+	from .agent import agent as bp_agent
+	app.register_blueprint(bp_agent, url_prefix=app.config['URL_PREFIX'])
+
+	from .antivirus import antivirus as bp_antivirus
+	app.register_blueprint(bp_antivirus, url_prefix=app.config['URL_PREFIX'])
+
+	from .auth import auth as bp_auth
+	app.register_blueprint(bp_auth, url_prefix=app.config['URL_PREFIX'])
+
+	from .autopkg import autopkg as bp_autopkg
+	app.register_blueprint(bp_autopkg, url_prefix=app.config['URL_PREFIX'])
+
+	from .checkin import checkin as bp_checkin
+	app.register_blueprint(bp_checkin, url_prefix=app.config['URL_PREFIX'])
+
+	from .inventory import inventory as bp_inventory
+	app.register_blueprint(bp_inventory, url_prefix=app.config['URL_PREFIX'])
+
+	from .mac_profiles import mac_profiles as bp_mac_profiles
+	app.register_blueprint(bp_mac_profiles, url_prefix=app.config['URL_PREFIX'])
+
+	from .patches import patches as bp_patches
+	app.register_blueprint(bp_patches, url_prefix=app.config['URL_PREFIX'])
+
+	from .register import register as bp_register
+	app.register_blueprint(bp_register, url_prefix=app.config['URL_PREFIX'])
+
+	from .servers import servers as bp_servers
+	app.register_blueprint(bp_servers, url_prefix=app.config['URL_PREFIX'])
+
+	from .software import software as bp_software
+	app.register_blueprint(bp_software, url_prefix=app.config['URL_PREFIX'])
+
+	from .srv_utils import srv as bp_srv_utils
+	app.register_blueprint(bp_srv_utils, url_prefix=app.config['URL_PREFIX'])
+
+	from .status import status as bp_status
+	app.register_blueprint(bp_status, url_prefix=app.config['URL_PREFIX'])

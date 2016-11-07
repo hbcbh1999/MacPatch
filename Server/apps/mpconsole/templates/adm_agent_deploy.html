@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+
+{% block styles %}
+    {{ super() }}
+    <link href="{{ url_for('static', filename='css/bootstrap-table.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='bootstrap-table/extensions/editable/bootstrap-editable.css') }}" rel="stylesheet">
+    <style type="text/css">
+        .table {
+          table-layout:fixed;
+        }
+
+        .table td {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+    </style>
+{%  endblock %}
+
+{% block pageHeader %}
+Client Agent - Deployment
+{%  endblock %}
+
+{% block bodyPanel %}
+    <!-- Tab panes -->
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs">
+        <li {% if selectedTab == 1 %}class="active"{% endif %}><a href="#agents" data-toggle="tab">Client Agents</a></li>
+        <li {% if selectedTab == 2 %}class="active"{% endif %}><a href="#filters" data-toggle="tab">Deploy Filter</a></li>
+    </ul>
+    <div class="tab-content">
+        <div class="tab-pane fade {% if selectedTab == 1 %}in active{% endif %}" id="agents">
+            {% if gResults['Admin'] == True %}
+                <table id="tableAgents" class="table table-condensed" data-row-style="rowStyle" data-toolbar="#toolbar">
+                <div id="toolbar">
+                    <button id="delAgentButton" type="button" class="btn btn-default"><i class="glyphicon glyphicon-trash"></i></button>
+                </div>
+                </table>
+            {% else %}
+                <table id="tableAgents" class="table table-condensed" data-row-style="rowStyle"></table>
+            {% endif %}
+        </div>
+        <div class="tab-pane fade {% if selectedTab == 2 %}in active{% endif %}" id="filters">
+            {% if gResults['Admin'] == True %}
+                <table id="tableFilters" class="table table-condensed" data-row-style="rowStyle" data-toolbar="#toolbarFilters">
+                <div id="toolbarFilters">
+                    <button id="addFilterButton" type="button" class="btn btn-default"><i class="glyphicon glyphicon-plus"></i></button>
+                    <button id="delFilterButton" type="button" class="btn btn-default"><i class="glyphicon glyphicon-trash"></i></button>
+                </div>
+                </table>
+            {% else %}
+                <table id="tableFilters" class="table table-condensed" data-row-style="rowStyle"></table>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+
+{% block javascript %}
+    {{ super() }}
+    <script src="{{ url_for('static', filename='js/bootstrap-table.js') }}"></script>
+    <script src="{{ url_for('static', filename='bootstrap-table/extensions/resizable/bootstrap-table-resizable.js') }}"></script>
+    <script src="{{ url_for('static', filename='bootstrap-table/colResizable-1.5.source.js') }}"></script>
+    <script src="{{ url_for('static', filename='bootstrap-table/extensions/editable/bootstrap-table-editable.js') }}"></script>
+    <script src="{{ url_for('static', filename='bootstrap-table/extensions/editable/bootstrap-editable.js') }}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.15.1/moment.min.js"></script>
+
+    <script>
+    $( document ).ready(function()
+    {
+        $('#tableAgents').bootstrapTable(
+        {
+            striped: true,
+            pagination: true,
+            sidePagination: 'client',
+            pageList: ['10', '25', '50', '100', 'All'],
+            search: true,
+            showRefresh: true,
+            resizable: true,
+            sortable: true,
+            showColumns: true,
+            idField: 'rid',
+            uniqueId: 'puuid',
+
+            columns: [
+                {% for col in gResults['Agents']['columns'] %}
+                {
+                    field: '{{col.name}}',
+                    title: '{{col.info}}',
+                    {% if col.name == 'rid' or col.name == 'puuid' or col.name == 'cdate' or col.name == 'ostype' or col.name == 'state' %}
+                    visible: false,
+                    {% endif %}
+                    sortable: true
+                },
+                {% endfor %}
+            ],
+            data: [
+                {% for c in gResults['Agents']['data'] %}
+                {
+                    {% for col in gResults['Agents']['columns'] %}
+                    {{col.name}}: '{{c[col.name]}}',
+                    {% endfor %}
+                },
+                {% endfor %}
+            ]
+        });
+
+        $('#tableFilters').bootstrapTable({
+
+            striped: true,
+            pagination: true,
+            sidePagination: 'client',
+            pageList: ['10', '25', '50', '100', 'All'],
+            search: true,
+            showRefresh: true,
+            resizable: true,
+            sortable: true,
+            showColumns: true,
+            idField: 'rid',
+            uniqueId: 'rid',
+
+            columns: [
+                {% for col in gResults['Filters']['columns'] %}
+                {
+                    field: '{{col.name}}',
+                    title: '{{col.info}}',
+                    {% if col.name == 'rid' or col.name == 'cuuid' or col.name == 'cdate' or col.name == 'ostype' %}
+                    visible: false,
+                    {% endif %}
+                    sortable: true
+                },
+                {% endfor %}
+            ],
+            data: [
+                {% for c in gResults['Filters']['data'] %}
+                {
+                    {% for col in gResults['Filters']['columns'] %}
+                    {{col.name}}: '{{c[col.name]}}',
+                    {% endfor %}
+                },
+                {% endfor %}
+            ]
+        });
+
+
+    });
+
+    function operateFormatterUsers(value, row, index) {
+        {% if gResults['Admin'] == True %}
+        return [
+            '<div><a class="remove" href="javascript:void(0)" title="Remove User from Group">',
+            '<i class="fa fa-trash-o fa-lg" aria-hidden="true"></i>',
+            '</a>&nbsp;&nbsp;&nbsp;</div>'
+        ].join('');
+        {% else %}
+        return [
+            ''
+        ].join('');
+        {% endif %}
+    }
+
+    window.operateEventsUsers = {
+        'click .remove': function (e, value, row, index)
+        {
+            /*
+            var _url = "";
+            $.ajax({
+                url: _url,
+                cache: false,
+                error: function (request, status, error)
+                {
+                    jsonValue = jQuery.parseJSON( request.responseText );
+                    alert(jsonValue.errormsg);
+                },
+                success: function () {
+                    $('#tableUsers').bootstrapTable('removeByUniqueId', row['user_id']);
+                }
+            });
+            */
+        }
+    };
+
+    var $_delAgentButton = $('#delAgentButton'), $_addFilterButton = $('#addFilterButton'), $_delFilterButton = $('#delFilterButton');
+    $(function () {
+        $_delAgentButton.click(function ()
+        {
+            alert("Not implemented yet");
+            /*
+            $.get( "").done(function(data) {
+                $('#modalTitle').html('Add Admin User To Group');
+                $('#modalBody').html(data);
+                $('#modalBody').css({'height':'200px'});
+                $('#modalSaveButton').remove();
+                $('#modalCancelButton').remove();
+                $('#modalDialog').modal('show');
+            });
+            */
+        });
+
+        $_addFilterButton.click(function ()
+        {
+            alert("Not implemented yet");
+            /*
+            var data = {};
+            $('#settingsForm').serializeArray().map(function(x){data[x.name] = x.value;});
+
+            var _url = "";
+            $.ajax({
+                url: _url,
+                type: 'POST',
+                cache: false,
+                data: data,
+                error: function (request, status, error)
+                {
+                    jsonValue = jQuery.parseJSON( request.responseText );
+                    alert(jsonValue.errormsg);
+                },
+                success: function () {
+                    alert("Settings saved successfully.");
+                }
+            });
+            */
+        });
+
+        $_delFilterButton.click(function ()
+        {
+            alert("Not implemented yet");
+            /*
+            var rows = $('#table').bootstrapTable('getAllSelections');
+            var rowsArr = [];
+            for (x in rows) {
+                var _cuuid = rows[x]['cuuid'];
+                rowsArr.push(_cuuid);
+            }
+
+            var _url = "";
+            $.ajax({
+                url: _url,
+                type: 'POST',
+                cache: false,
+                data: {'clients':rowsArr.toString()},
+                error: function (request, status, error)
+                {
+                    jsonValue = jQuery.parseJSON( request.responseText );
+                    alert(jsonValue.errormsg);
+                },
+                success: function () {
+                    for (x in rowsArr) {
+                        $('#table').bootstrapTable('removeByUniqueId', rowsArr[x]);
+                    }
+                    alert("Client(s) removed successfully.");
+                }
+            });
+            */
+        });
+    });
+    </script>
+{% endblock %}

@@ -1,0 +1,91 @@
+INSTALL Sunflower Property Web Service
+
+
+######################################################
+Download Software & Repo
+######################################################
+
+LINUX:
+For CentOS 7 and RHEL 7
+
+1) Add The EPEL 
+(As of writing this doc)
+
+	# rpm -iUvh http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-7.noarch.rpm
+	# yum update
+
+2) Install Required Software
+
+	# yum install -y openssl-devel
+	# yum install -y python-virtualenv python-devel python-pip
+	# yum install -y nginx
+
+3) Install Any updates to python tools
+	
+	# pip install —-upgrade pip
+	# pip install —-upgrade setuptools
+	# pip install —-upgrade virtualenv
+
+	# cd  /opt
+	# git clone https://heizer1@mystash.llnl.gov/scm/~heizer1/MacPatch.git
+
+	# cd /opt/macpatch/WSService
+	# virtualenv env
+
+######################################################
+Add LLNL CA Cert
+######################################################
+
+-----BEGIN CERTIFICATE-----
+MIIEGTCCA4KgAwIBAgIJAJU8ST3qOQXtMA0GCSqGSIb3DQEBBQUAMIG6MQswCQYD
+VQQGEwJVUzETMBEGA1UECBMKQ2FsaWZvcm5pYTESMBAGA1UEBxMJTGl2ZXJtb3Jl
+MS8wLQYDVQQKEyZMYXdyZW5jZSBMaXZlcm1vcmUgTmF0aW9uYWwgTGFib3JhdG9y
+eTEfMB0GA1UECxMWQ3liZXIgU2VjdXJpdHkgUHJvZ3JhbTEUMBIGA1UEAxMLY2Eu
+bGxubC5nb3YxGjAYBgkqhkiG9w0BCQEWC2NhQGxsbmwuZ292MB4XDTEwMDQyMTIy
+MjIyMloXDTIwMDQxODIyMjIyMlowgboxCzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpD
+YWxpZm9ybmlhMRIwEAYDVQQHEwlMaXZlcm1vcmUxLzAtBgNVBAoTJkxhd3JlbmNl
+IExpdmVybW9yZSBOYXRpb25hbCBMYWJvcmF0b3J5MR8wHQYDVQQLExZDeWJlciBT
+ZWN1cml0eSBQcm9ncmFtMRQwEgYDVQQDEwtjYS5sbG5sLmdvdjEaMBgGCSqGSIb3
+DQEJARYLY2FAbGxubC5nb3YwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAOeo
+aHecyDsZ05LOmSigFL/2WQE3uSDVO/vx2RSI80k/npxRd54m/AmN3/XBoC5/QdwU
+cKrFTkZ0a/pZYM91bcda6jRWojeXKZNsRq5G5/T1hGa/yWDnLUfW34Lg4TiXcf07
+6QwSmPNP/uRfR5PWRYTotIV0hLl7dUvT+KCykwODAgMBAAGjggEjMIIBHzAdBgNV
+HQ4EFgQUceXOa0QeI/jErKhOhgcuetELnZkwge8GA1UdIwSB5zCB5IAUceXOa0Qe
+I/jErKhOhgcuetELnZmhgcCkgb0wgboxCzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpD
+YWxpZm9ybmlhMRIwEAYDVQQHEwlMaXZlcm1vcmUxLzAtBgNVBAoTJkxhd3JlbmNl
+IExpdmVybW9yZSBOYXRpb25hbCBMYWJvcmF0b3J5MR8wHQYDVQQLExZDeWJlciBT
+ZWN1cml0eSBQcm9ncmFtMRQwEgYDVQQDEwtjYS5sbG5sLmdvdjEaMBgGCSqGSIb3
+DQEJARYLY2FAbGxubC5nb3aCCQCVPEk96jkF7TAMBgNVHRMEBTADAQH/MA0GCSqG
+SIb3DQEBBQUAA4GBAFZN0lmdJ+1eT5aZ1nF92lf5ghECyUf21FjL4JG7EnhVD/mN
+x8ZJont1by5j3L3Yjnk76TlJKN9cwGnxU1RhjqbLlm48uYiA/WUkFz7zbYwRHM0B
+O9u1qu7Igq8QVmvk778e5rGzfykclPbvNu67n/Sha4RIJLyZUsHcJym+tZSH
+-----END CERTIFICATE-----
+
+vi /opt/cspca.crt
+export PIP_CERT=“/opt/cspca.crt”
+
+######################################################
+Install Required Packages
+######################################################
+
+	# cd /opt/MacPatch/WSService
+	# source env/bin/activate
+	# python install.py
+
+######################################################
+Verify & Set Database Info
+######################################################
+
+Edit mpapi/__init__.py
+Make Changes to SQLALCHEMY_DATABASE_URI
+
+
+######################################################
+Setup Nginx
+######################################################
+
+LINUX:
+yum install -y nginx
+
+rm /etc
+cp /opt/MacPatch/conf/nginx/sites-enabled/flask_mpapi
