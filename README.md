@@ -1,4 +1,10 @@
-#![MPLogo](Docs/Images/MPLogo_64x64.png "MPLogo") MacPatch
+#![MPLogo](Docs/Images/MPLogo_64x64.png "MPLogo") MacPatch 3
+
+## Status
+
+**WARNING MacPatch 3.x is currently in development. Script and code may not fuction properly.**
+
+
 
 ## Overview
 MacPatch simplifies the act of patching and installing software on Mac OS X based systems. The client relies on using the built-in software update application for patching the Mac OS X system updates and it's own scan and patch engine for custom patches. 
