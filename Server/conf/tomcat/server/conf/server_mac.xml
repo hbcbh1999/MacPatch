@@ -59,8 +59,8 @@
     <!--
     <Connector port="8443" SSLEnabled="true"
           protocol="org.apache.coyote.http11.Http11AprProtocol"
-          SSLCertificateFile="/Library/MacPatch/Server/conf/apacheCerts/server.crt"
-          SSLCertificateKeyFile="/Library/MacPatch/Server/conf/apacheCerts/server.key"
+          SSLCertificateFile="/opt/MacPatch/Server/conf/apacheCerts/server.crt"
+          SSLCertificateKeyFile="/opt/MacPatch/Server/conf/apacheCerts/server.key"
           maxThreads="150" scheme="https" secure="true"
           clientAuth="false" sslProtocol="TLS" />
     -->
@@ -82,7 +82,7 @@
 
       <Host name="localhost"  appBase="webapps" unpackWARs="true" autoDeploy="true" startStopThreads="0">
         <Context path="" docBase="console" debug="0" reloadable="false"></Context>
-        <Context path="/mp-content" docBase="/Library/MacPatch/Content/Web" debug="0" privileged="true"></Context>
+        <Context path="/mp-content" docBase="/opt/MacPatch/Content/Web" debug="0" privileged="true"></Context>
 
         <!-- Access log processes all example.
              Documentation at: /docs/config/valve.html

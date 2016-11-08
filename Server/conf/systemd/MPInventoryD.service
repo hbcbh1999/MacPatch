@@ -5,8 +5,8 @@ After=syslog.target network.target
 [Service]
 Type=forking
 
-ExecStart=/opt/MacPatch/conf/scripts/systemd/MPInventoryD.sh start
-ExecStop=/opt/MacPatch/conf/scripts/systemd/MPInventoryD.sh stop
+ExecStart=/opt/MacPatch/Server/conf/scripts/systemd/MPInventoryD.sh start
+ExecStop=/opt/MacPatch/Server/conf/scripts/systemd/MPInventoryD.sh stop
 
 RemainAfterExit=yes
 

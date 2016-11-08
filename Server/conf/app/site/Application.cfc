@@ -25,9 +25,9 @@
 		<cfargument name="uri" required="true"/>
 		<cfset StructDelete( application, "settings" )>
 
-		<cfset var jFile = "/Library/MacPatch/Server/conf/etc/siteconfig.json">
+		<cfset var jFile = "/opt/MacPatch/Server/conf/etc/siteconfig.json">
 		<cfif NOT fileExists(jFile)>
-			<cfset var jFile = "/opt/MacPatch/etc/siteconfig.json">
+			<cfset var jFile = "/opt/MacPatch/Server/etc/siteconfig.json">
 		</cfif>
   		
   		<cfif fileExists(jFile)>

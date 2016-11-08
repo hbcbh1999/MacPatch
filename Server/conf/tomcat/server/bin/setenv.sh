@@ -10,8 +10,8 @@ export CATALINA_OPTS="$CATALINA_OPTS -XX:MaxNewSize=256m"
 export CATALINA_OPTS="$CATALINA_OPTS -XX:+UseParallelGC"
 
 export CATALINA_OPTS="$CATALINA_OPTS -Djava.library.path=/opt/MacPatch/lib/java"
-export CATALINA_OPTS="$CATALINA_OPTS -Djavax.net.ssl.trustStore=/opt/MacPatch/etc/jsseCerts/jssecacerts"
-export JAVA_OPTS="$JAVA_OPTS -Djavax.net.ssl.trustStore=/opt/MacPatch/etc/jsseCerts/jssecacerts"	
+export CATALINA_OPTS="$CATALINA_OPTS -Djavax.net.ssl.trustStore=/opt/MacPatch/Server/etc/jsseCerts/jssecacerts"
+export JAVA_OPTS="$JAVA_OPTS -Djavax.net.ssl.trustStore=/opt/MacPatch/Server/etc/jsseCerts/jssecacerts"	
  
 echo "Using CATALINA_OPTS:"
 for arg in $CATALINA_OPTS

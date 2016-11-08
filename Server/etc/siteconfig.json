@@ -9,15 +9,15 @@
         },
         "paths": 
         {
-            "base":"/Library/MacPatch",
-            "content":"/Library/MacPatch/Content/Web"
+            "base":"/opt/MacPatch/Server",
+            "content":"/opt/MacPatch/Content/Web"
         },
         "server": {
             "isMaster" : false,
             "autoGenServerKeys": true,
-            "pubKey": "/Library/MacPatch/Server/conf/etc/certs/server_pub.pem",
-            "priKey": "/Library/MacPatch/Server/conf/etc/certs/server_pri.pem",
-            "inventory_dir": "/Library/MacPatch/Server/Data/Inventory",
+            "pubKey": "/opt/MacPatch/Server/conf/etc/certs/server_pub.pem",
+            "priKey": "/opt/MacPatch/Server/conf/etc/certs/server_pri.pem",
+            "inventory_dir": "/opt/MacPatch/Server/Data/Inventory",
             "apiKey": "123456"
         },
         "users": 

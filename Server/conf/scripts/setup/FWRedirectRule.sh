@@ -56,8 +56,8 @@ if [ $XOSTYPE != "Darwin" ]; then
     exit 1;
 fi
 
-MP_BASE="/Library/MacPatch"
-MP_SRV_BASE="/Library/MacPatch/Server"
+MP_BASE="/opt/MacPatch"
+MP_SRV_BASE="/opt/MacPatch/Server"
 MP_SRV_CONF="${MP_SRV_BASE}/conf"
 REPLACE=false
 PFHASH_DEFAULT="f70d68d8dd964656b0f6aaabcebc9212"

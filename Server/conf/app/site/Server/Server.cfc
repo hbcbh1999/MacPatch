@@ -13,9 +13,9 @@
 <cfcomponent output="false">
     <cffunction name="onServerStart">
 
-  		<cfset var jFile = "/Library/MacPatch/Server/conf/etc/siteconfig.json">
+  		<cfset var jFile = "/opt/MacPatch/Server/conf/etc/siteconfig.json">
         <cfif NOT fileExists(jFile)>
-            <cfset var jFile = "/opt/MacPatch/etc/siteconfig.json">
+            <cfset var jFile = "/opt/MacPatch/Server/etc/siteconfig.json">
         </cfif>
 
   		<cfif fileExists(jFile)>
@@ -31,7 +31,7 @@
         <cfset srvconf.settings = _AppSettings>
 
         <!--- DB Schema --->
-        <cfset var dFile = "/Library/MacPatch/Server/conf/etc/db/db_schema.json">
+        <cfset var dFile = "/opt/MacPatch/Server/conf/etc/db/db_schema.json">
         <cfset _dbSchema = structNew() />
         <cfif fileExists(dFile)>
             <cfset dbData = DeserializeJSON(file=dFile)>
