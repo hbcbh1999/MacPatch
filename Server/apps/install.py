@@ -38,7 +38,6 @@ _all_ = [
     "python-editor==1.0.1",
     "pytz==2016.6.1",
     "six==1.10.0",
-    "SQLAlchemy==1.0.14",
     "uWSGI==2.0.14",
     "Werkzeug==0.11.11",
     "WTForms==2.1",
