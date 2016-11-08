@@ -89,7 +89,7 @@ OWNERGRP="79:70"
 
 # PKG Variables
 MP_MAC_PKG=false
-MP_SERVER_PKG_VER="1.3.0.0"
+MP_SERVER_PKG_VER="1.4.0.0"
 CODESIGNIDENTITY="*"
 CODESIGNIDENTITYPLIST="/Library/Preferences/mp.build.server.plist"
 
@@ -299,10 +299,6 @@ if $USELINUX; then
 	pip install --upgrade --trusted-host pypi.python.org pycrypto
 fi
 if $USEMACOS; then
-	#pip install --no-cache-dir --upgrade pip --user python
-	#pip install --no-cache-dir --upgrade setuptools --user python
-	#pip install --no-cache-dir --upgrade virtualenv --user python
-	#pip install --no-cache-dir --upgrade pycrypto --user python
 	pip install --no-cache-dir --upgrade pip
 	pip install --no-cache-dir --upgrade setuptools
 	pip install --no-cache-dir --upgrade virtualenv
@@ -382,43 +378,42 @@ chown -R $OWNERGRP ${MPSERVERBASE}
 # Admin Site - App
 mkdir -p "${MPSERVERBASE}/conf/app/war/site"
 mkdir -p "${MPSERVERBASE}/conf/app/.site"
-if $USEMACOS; then
-	unzip -q "${MPSERVERBASE}/conf/src/server/openbd/openbd.war" -d "${MPSERVERBASE}/conf/app/.site"
-elif $USELINUX; then
-	unzip -q "${MPSERVERBASE}/conf/src/server/openbd/openbd.war" -d "${MPSERVERBASE}/conf/app/.site"
-fi
+unzip -q "${MPSERVERBASE}/conf/src/server/openbd/openbd.war" -d "${MPSERVERBASE}/conf/app/.site"
+
 rm -rf "${MPSERVERBASE}/conf/app/.site/index.cfm"
 rm -rf "${MPSERVERBASE}/conf/app/.site/manual"
 cp -r "${MPSERVERBASE}"/conf/app/site/* "${MPSERVERBASE}"/conf/app/.site
 cp -r "${MPSERVERBASE}"/conf/app/mods/site/* "${MPSERVERBASE}"/conf/app/.site
+
 chmod -R 0775 "${MPSERVERBASE}/conf/app/.site"
 chown -R $OWNERGRP "${MPSERVERBASE}/conf/app/.site"
+
 jar cf "${MPSERVERBASE}/conf/app/war/site/console.war" -C "${MPSERVERBASE}/conf/app/.site" .
 
 # Tomcat Config
-MPCONF="${MPSERVERBASE}/conf/tomcat/server"
+MPTCCONF="${MPSERVERBASE}/conf/tomcat/server"
 MPTOMCAT="${MPSERVERBASE}/apache-tomcat"
 cp "${MPSERVERBASE}/conf/app/war/site/console.war" "${MPTOMCAT}/webapps"
 if $USEMACOS; then
-	cp "${MPCONF}/bin/setenv.sh.sml" "${MPTOMCAT}/bin/setenv.sh"
-	cp "${MPCONF}/bin/launchdTomcat.sh" "${MPTOMCAT}/bin/launchdTomcat.sh"
-	cp -r "${MPCONF}/conf/server_mac.xml" "${MPTOMCAT}/conf/server.xml"
+	cp "${MPTCCONF}/bin/setenv.sh.sml" "${MPTOMCAT}/bin/setenv.sh"
+	cp "${MPTCCONF}/bin/launchdTomcat.sh" "${MPTOMCAT}/bin/launchdTomcat.sh"
+	cp -r "${MPTCCONF}/conf/server_mac.xml" "${MPTOMCAT}/conf/server.xml"
 elif $USELINUX; then
 	msize=`awk '{ printf "%.2f", $2/1024/1024 ; exit}' /proc/meminfo`
 	if (( $(echo "$msize <= 4" | bc -l) )); then
-		cp "${MPCONF}/bin/setenv.sh.sml" "${MPTOMCAT}/bin/setenv.sh"
+		cp "${MPTCCONF}/bin/setenv.sh.sml" "${MPTOMCAT}/bin/setenv.sh"
 	elif (( $(echo "$msize < 8" | bc -l) )); then
-		cp "${MPCONF}/bin/setenv.sh.med" "${MPTOMCAT}/bin/setenv.sh"
+		cp "${MPTCCONF}/bin/setenv.sh.med" "${MPTOMCAT}/bin/setenv.sh"
 	elif (( $(echo "$msize > 8" | bc -l) )); then
 		echo "Config was undetermined, using small server tomcat config."
-		"${MPCONF}/bin/setenv.sh.lrg" "${MPTOMCAT}/bin/setenv.sh"
+		"${MPTCCONF}/bin/setenv.sh.lrg" "${MPTOMCAT}/bin/setenv.sh"
 	else
-		cp "${MPCONF}/bin/setenv.sh.sml" "${MPTOMCAT}/bin/setenv.sh"
+		cp "${MPTCCONF}/bin/setenv.sh.sml" "${MPTOMCAT}/bin/setenv.sh"
 	fi
-	cp -r "${MPCONF}/conf/server_lnx.xml" "${MPTOMCAT}/conf/server.xml"
+	cp -r "${MPTCCONF}/conf/server_lnx.xml" "${MPTOMCAT}/conf/server.xml"
 fi
-cp -r "${MPCONF}/conf/Catalina" "${MPTOMCAT}/conf/"
-cp -r "${MPCONF}/conf/web.xml" "${MPTOMCAT}/conf/web.xml"
+cp -r "${MPTCCONF}/conf/Catalina" "${MPTOMCAT}/conf/"
+cp -r "${MPTCCONF}/conf/web.xml" "${MPTOMCAT}/conf/web.xml"
 chmod -R 0775 "${MPTOMCAT}"
 chown -R $OWNERGRP "${MPTOMCAT}"
 

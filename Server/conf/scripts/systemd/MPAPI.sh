@@ -30,18 +30,18 @@
 
 RETVAL=$?
 MP_HOME="/opt/MacPatch/Server"
-WS_HOME="${MP_HOME}/WSService"
+WS_HOME="${MP_HOME}/apps"
 
 case "$1" in
  start)
-	echo $"Starting MacPatch Web Services"
+	echo $"Starting MacPatch REST Services"
 	cd $WS_HOME
     source $WS_HOME/env/bin/activate
-    $WS_HOME/manage.py gunicorn --daemon &
+    $WS_HOME/mpapi.py gunicorn --daemon &
 	;;
  stop)
-	echo $"Stopping MacPatch Web Services"
-	mpPID=`ps -ef | grep "manage.py gunicorn" | grep -v grep | head -1 | awk '{ print $2 }'`
+	echo $"Stopping MacPatch REST Services"
+	mpPID=`ps -ef | grep "mpapi.py gunicorn" | grep -v grep | head -1 | awk '{ print $2 }'`
 	kill -9 $mpPID
  	;;
  *)

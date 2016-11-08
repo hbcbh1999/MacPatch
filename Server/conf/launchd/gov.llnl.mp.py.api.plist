@@ -8,15 +8,15 @@
         <string>MacPatch REST API</string>
         <key>ProgramArguments</key>
         <array>
-                <string>/opt/MacPatch/Server/conf/scripts/systemd/WSService.sh</string>
+                <string>/opt/MacPatch/Server/conf/scripts/systemd/MPAPI.sh</string>
         </array>
         <key>RunAtLoad</key>
         <true/>
         <key>UserName</key>
         <string>_appserver</string>
         <key>StandardErrorPath</key>
-        <string>/opt/MacPatch/Server/logs/ws_stderr.log</string>
+        <string>/opt/MacPatch/Server/logs/mpapi_stderr.log</string>
         <key>StandardOutPath</key>
-        <string>/opt/MacPatch/Server/logs/ws_stdout.log</string>
+        <string>/opt/MacPatch/Server/logs/mpapi_stdout.log</string>
 </dict>
 </plist>

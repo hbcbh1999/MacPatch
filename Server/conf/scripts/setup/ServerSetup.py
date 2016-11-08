@@ -91,10 +91,11 @@ if sys.platform.startswith('linux'):
 		print('User www-data does not exist.')
 		exit(1)
 
-macServices=["gov.llnl.mp.tomcat.plist","gov.llnl.mp.invd.plist","gov.llnl.mp.ws.plist",
+macServices=["gov.llnl.mp.tomcat.plist","gov.llnl.mp.invd.plist","gov.llnl.mp.py.api.plist",
 "gov.llnl.mploader.plist","gov.llnl.mpavdl.plist","gov.llnl.mp.rsync.plist",
 "gov.llnl.mp.sync.plist","gov.llnl.mp.pfctl.plist","gov.llnl.mp.fw.plist","gov.llnl.mp.nginx.plist"]
-lnxServices=["MPTomcat","MPInventoryD","MPWService","MPNginx"]
+
+lnxServices=["MPTomcat","MPInventoryD","MPAPI","MPNginx"]
 lnxCronSrvs=["MPPatchLoader","MPAVLoader"]
 
 # ----------------------------------------------------------------------------
@@ -443,10 +444,11 @@ def setupServices():
 	if webService.lower() == 'y':
 
 		jData['settings']['services']['mpwsl'] = True
+		jData['settings']['services']['mpapi'] = True
 
 		if os_type == 'Darwin':
-			if 'gov.llnl.mp.ws.plist' not in srvsList:
-				srvsList.append('gov.llnl.mp.ws.plist')
+			if 'gov.llnl.mp.py.api.plist' not in srvsList:
+				srvsList.append('gov.llnl.mp.py.api.plist')
 			if 'gov.llnl.mp.invd.plist' not in srvsList:
 				srvsList.append('gov.llnl.mp.invd.plist')
 			if 'gov.llnl.mp.nginx.plist' not in srvsList:
@@ -456,10 +458,11 @@ def setupServices():
 			srvsList.append('MPInventoryD')
 			linkStartupScripts('MPNginx')
 			srvsList.append('MPNginx')
-			linkStartupScripts('MPWService')
-			srvsList.append('MPWService')
+			linkStartupScripts('MPAPI')
+			srvsList.append('MPAPI')
 	else:
 		jData['settings']['services']['mpwsl'] = False
+		jData['settings']['services']['mpapi'] = False
 
 	writeJSON(jData,MP_CONF_FILE)
 	
@@ -577,13 +580,13 @@ def linkStartupScripts(service):
 class MPDatabase:
 
 	config_file = MP_SRV_BASE+"/etc/siteconfig.json" 
-	ws_alt_conf = MP_SRV_BASE+"/WSService/config.cfg"
+	ws_alt_conf = MP_SRV_BASE+"/apps/config.cfg"
 
 	def __init__(self):
 		
 		if sys.platform.startswith('linux'):
 			MPDatabase.config_file = MP_SRV_BASE+"/etc/siteconfig.json" 
-			MPDatabase.ws_alt_conf = MP_SRV_BASE+"/WSService/config.cfg"
+			MPDatabase.ws_alt_conf = MP_SRV_BASE+"/apps/config.cfg"
 
 	def loadConfig(self):
 		config = {}
