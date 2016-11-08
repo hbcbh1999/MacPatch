@@ -490,7 +490,7 @@ echo
 echo "Create Virtualenv for Web services app"
 echo "-----------------------------------------------------------------------"
 
-cd "${MPSERVERBASE}/WSService"
+cd "${MPSERVERBASE}/apps"
 virtualenv env
 
 # ------------------
