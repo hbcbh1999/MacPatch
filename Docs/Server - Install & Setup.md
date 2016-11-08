@@ -44,7 +44,7 @@ root or sudo access will be needed to perform these tasks.
 	- sudo Setup.py --setup
 
 - ##### Setup Python virtual environment
-	- cd /opt/MacPatch/Server/WSService
+	- cd /opt/MacPatch/Server/apps
 	- source env/bin/activate
 	- sudo python install.py
 		- Note: If your behind a SSL content inspector add the custom ca using
@@ -52,7 +52,7 @@ root or sudo access will be needed to perform these tasks.
 	- deactivate
 	
 - ##### Configure MacPatch schema & populate default data
-	- cd /opt/MacPatch/Server/WSService
+	- cd /opt/MacPatch/Server/apps
 	- source env/bin/activate
 	- manage.py db upgrade head
 	- manage.py populateDB
