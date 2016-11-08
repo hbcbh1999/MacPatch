@@ -774,7 +774,11 @@ class MPAdmin:
 		if save_answer == "Y":
 			self.writeConfig(conf)
 		else:
+<<<<<<< HEAD
 			return self.configAdminUser()
+=======
+			return configAdminUser(self)
+>>>>>>> 724d0ad14de4920afa8ef656ca22edc32d1bd7a4
 
 # ----------------------------------------------------------------------------
 # MP Set Default Config Data
