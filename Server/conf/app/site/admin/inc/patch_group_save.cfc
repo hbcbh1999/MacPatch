@@ -218,7 +218,7 @@
         <cftry>
             <cfquery datasource="#this.ds#" name="qGetUpdatesApple">
             	Select mpg.name, mpgp.patch_id, cpfv.type, cpfv.reboot, cpfv.suname, cpfv.size,
-                cpfv.patch_install_weight, cpfv.patch_reboot_override, cpfv.postdate
+                cpfv.patch_install_weight, cpfv.patch_reboot_override,
 				CASE WHEN EXISTS
 				( SELECT 1
 					FROM mp_apple_patch_criteria v
@@ -245,7 +245,7 @@
         <cftry>
             <cfquery datasource="#this.ds#" name="qGetUpdatesThird">
             	Select mpg.name as name, mpgp.patch_id as id, cpfv.type as type, cpfv.reboot as reboot, cpfv.suname as suname, mpp.pkg_hash as hash, 
-                mpp.pkg_path as path, mpp.pkg_size as size,cpfv.patch_install_weight, cpfv.patch_reboot_override, cpfv.postdate
+                mpp.pkg_path as path, mpp.pkg_size as size,cpfv.patch_install_weight, cpfv.patch_reboot_override
                 From mp_patch_group mpg
                 Join mp_patch_group_patches mpgp
                 ON mpg.id = mpgp.patch_group_id
@@ -281,7 +281,6 @@
 				<cfset _aUpdate = {} />
 				<cfset _aUpdate[ "name" ] = "#Trim(suname)#" />
 				<cfset _aUpdate[ "patchid" ] = "#Trim(patch_id)#" />
-                <cfset _aUpdate[ "releaseDate" ] = "#Trim(postdate)#" />
 				<cfset _aUpdate[ "baseline" ] = "0" />
                 <cfset _aUpdate[ "patch_install_weight" ] = "#patch_install_weight#" />
                 <cfset _aUpdate[ "patch_reboot_override" ] = "#patch_reboot_override#" />
@@ -324,7 +323,6 @@
 			<!--- Main Dict for the Patch --->	
 			<cfset _cUpdate = {} />
 			<cfset _cUpdate[ "patch_id" ] = "#item#" />
-            <cfset _cUpdate[ "releaseDate" ] = "#Trim(postdate)#" />
             <cfset _cUpdate[ "patch_install_weight" ] = "#patchRes.patch_install_weight#" />
 			<cfset _cUpdate[ "patches" ] = "" />
 			<cfset _cUpdate_Patches = arrayNew(1)>
