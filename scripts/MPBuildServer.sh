@@ -293,7 +293,7 @@ echo
 echo "Upgrade/Install required python tools."
 echo "-----------------------------------------------------------------------"
 pip_mods=( "pip" "setuptools" "virtualenv" "pycrypto" )
-for p in $pip_mods
+for p in "${pip_mods[@]}"
 do
 	echo "Installing ${p}, python module." 
 	if $USELINUX; then
