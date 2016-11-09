@@ -12,7 +12,6 @@ This document will walk you through the install and setup of the MacPatch 3.x en
 	* [Setup Database] (#a3b)
 	* [Install Server Software] (#a3c)
 	* [Configure Server Software] (#a3d)
-	* [Setup Python virtual environment] (#a3e)
 	* [Load and Populate Database] (#a3f)
 * [Server Setup & Configuration](#a4)
 	* [First Login] (#a4a)
@@ -28,11 +27,10 @@ This document will walk you through the install and setup of the MacPatch 3.x en
 root or sudo access will be needed to perform these tasks.
 
 #### Requirements <a name='a1'></a>
-
-- OS: 
-	- **macOS**
-		- Mac OS X 10.10 or higher		
-	- **Linux**
+- Operating System:
+	- macOS
+		- Mac OS X 10.10 or higher
+	- Linux
 		- RHEL 7.x or CentOS 7.x
 		- Ubuntu Server 16.04
 - RAM: 4 Gig min
@@ -44,45 +42,47 @@ root or sudo access will be needed to perform these tasks.
 - If Installing on Mac OS X, Xcode and command line developer tools need to be installed and the license agreement needs to have been accepted.
 
 ### Download, Setup and Install <a name='a3'></a>
-- ##### Get Software <a name='a3a'></a>
-	- mkdir /opt (If Needed)
-	- cd /opt
-	- git clone https://github.com/SMSG-DEV/MacPatch
 
-- ##### Setup Database <a name='a3b'></a>
-	- cd /opt/MacPatch/Server/conf/scripts/setup
-	- MPDBSetup.sh (must be run on the MySQL server)
+##### Get Software <a name='a3a'></a>
+		mkdir /opt (If Needed)
+		cd /opt
+		git clone https://github.com/SMSG-DEV/MacPatch
 
-	**Note:** The MPDBSetup.sh ***can be/should be*** copied to another host if the database exists on a seperate server.
+##### Setup Database <a name='a3b'></a>
+		
+		cd /opt/MacPatch/Server/conf/scripts/setup
+		MPDBSetup.sh (must be run on the MySQL server)
+
+**Note:** The MPDBSetup.sh ***can be/should be*** copied to another host if the database exists on a seperate server.
 	
-- ##### Install Software <a name='a3c'></a>
+##### Install Software <a name='a3c'></a>
 	
 	**Server Software**
-	- cd /opt/MacPatch/scripts
-	- sudo MPBuildServer.sh
-
-- ##### Configure Server Software <a name='a3d'></a>
-	- cd /opt/MacPatch/Server/conf/scripts/setup
-	- sudo ServerSetup.py --setup
-
-- ##### Setup Python virtual environment <a name='a3e'></a>
-	- cd /opt/MacPatch/Server/apps
-	- source env/bin/activate
-	- sudo python install.py
-		- Note: If your behind a SSL content inspector add the custom ca using
-		- export PIP_CERT=/path/to/ca/cert.crt
-	- deactivate
 	
-- ##### Configure MacPatch schema & populate default data <a name='a3f'></a>
-	- cd /opt/MacPatch/Server/apps
-	- source env/bin/activate
-	- mpapi.py db upgrade head
-	- mpapi.py populateDB
-	- deactivate
+		cd /opt/MacPatch/scripts
+		sudo MPBuildServer.sh	
+		
+**Note:** If your behind a SSL content inspector add the custom ca using
+		
+		export PIP_CERT=/path/to/ca/cert.crt
 
-- ##### Start Services
-	- cd /opt/MacPatch/Server/conf/scripts/setup
-	- sudo ServerSetup.py --load All
+##### Configure Server Software <a name='a3d'></a>
+	
+		cd /opt/MacPatch/Server/conf/scripts/setup
+		sudo ServerSetup.py --setup
+	
+##### Configure MacPatch schema & populate default data <a name='a3f'></a>
+		
+		cd /opt/MacPatch/Server/apps
+		source env/bin/activate
+		mpapi.py db upgrade head
+		mpapi.py populateDB
+		deactivate
+
+##### Start Services
+		
+		cd /opt/MacPatch/Server/conf/scripts/setup
+		sudo ServerSetup.py --load All
 
 --
 
