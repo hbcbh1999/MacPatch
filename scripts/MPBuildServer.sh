@@ -186,7 +186,7 @@ fi
 # Check and set os type
 if $USELINUX; then
 	echo
-	echo "Checking for required user (www-data)."
+	echo "* Checking for required user (www-data)."
 	echo "-----------------------------------------------------------------------"
 
 	getent passwd www-data > /dev/null 2>&1
@@ -203,7 +203,7 @@ fi
 # ----------------------------------------------------------------------------
 #clear
 echo
-echo "Begin MacPatch Server build."
+echo "* Begin MacPatch Server build."
 echo "-----------------------------------------------------------------------"
 
 # Create Build Root
@@ -224,7 +224,7 @@ fi
 # Create Skeleton Dir Structure
 # ------------------
 echo
-echo "Create MacPatch server directory structure."
+echo "* Create MacPatch server directory structure."
 echo "-----------------------------------------------------------------------"
 mkdir -p ${MPBASE}
 mkdir -p ${MPBASE}/Content
@@ -243,7 +243,7 @@ mkdir -p ${MPSERVERBASE}/logs
 # ------------------
 if $USEMACOS; then
 	echo
-	echo "Copy Mac OS gui tools."
+	echo "* Copy Mac OS gui tools."
 	echo "-----------------------------------------------------------------------"
 	#cp -R ${GITROOT}/MacPatch\ Server/Server ${MPBASE}
 	#cp ${MPSERVERBASE}/conf/Content/Web/tools/MPAgentUploader.app.zip /Library/MacPatch/Content/Web/tools/
@@ -270,7 +270,7 @@ fi
 # ------------------
 if $USELINUX; then
 	echo
-	echo "Install required linux packages"
+	echo "* Install required linux packages"
 	echo "-----------------------------------------------------------------------"
 	if $USERHEL; then
 		# Check if needed packges are installed or install
@@ -292,7 +292,7 @@ fi
 # Upgrade Python Modules/Binaries
 # ------------------
 echo
-echo "Upgrade/Install required python tools."
+echo "* Upgrade/Install required python tools."
 echo "-----------------------------------------------------------------------"
 pip_mods=( "pip" "setuptools" "virtualenv" "pycrypto" "argparse" "biplist" "python-crontab" "python-dateutil" "requests" "six" "wheel" "mysql-connector-python-rf")
 for p in "${pip_mods[@]}"
@@ -320,7 +320,7 @@ sleep 1
 # Setup Tomcat
 # ------------------
 echo
-echo "Uncompress and setup Tomcat."
+echo "* Uncompress and setup Tomcat."
 echo "-----------------------------------------------------------------------"
 
 TOMCAT_SW=`find "${SRC_DIR}" -name "apache-tomcat-"* -type f -exec basename {} \; | head -n 1`	
@@ -335,8 +335,10 @@ rm -rf ${MPSERVERBASE}/apache-tomcat/webapps/ROOT
 # Build NGINX
 # ------------------
 echo
-echo "Build and configure NGINX"
+echo "* Build and configure NGINX"
 echo "-----------------------------------------------------------------------"
+echo "See mginx build status in ${MPSERVERBASE}/logs/nginx-build.log"
+echo
 NGINX_SW=`find "${SRC_DIR}" -name "nginx-"* -type f -exec basename {} \; | head -n 1`
 
 # APR
@@ -375,7 +377,7 @@ perl -pi -e "s#\[SRVBASE\]#$MPSERVERBASE#g" $MPSERVERBASE/nginx/conf/nginx.conf
 FILES=$MPSERVERBASE/nginx/conf/sites/*.conf
 for f in $FILES
 do
-	echo "$f"
+	#echo "$f"
 	perl -pi -e "s#\[SRVBASE\]#$MPSERVERBASE#g" $f
 done
 
@@ -386,6 +388,10 @@ ln -s ${MPSERVERBASE}/conf/Content/Doc ${MPBASE}/Content/Doc
 chown -R $OWNERGRP ${MPSERVERBASE}
 
 # Admin Site - App
+echo
+echo "* Configuring tomcat and console app"
+echo "-----------------------------------------------------------------------"
+
 mkdir -p "${MPSERVERBASE}/conf/app/war/site"
 mkdir -p "${MPSERVERBASE}/conf/app/.site"
 unzip -q "${MPSERVERBASE}/conf/src/server/openbd/openbd.war" -d "${MPSERVERBASE}/conf/app/.site"
@@ -433,27 +439,6 @@ if $USEMACOS; then
 	chmod 0775 ${MPSERVERBASE}
 	chown root:wheel ${MPSERVERBASE}/conf/LaunchDaemons/*.plist
 	chmod 0644 ${MPSERVERBASE}/conf/LaunchDaemons/*.plist
-fi 
-
-# ------------------------------------
-# Install Python Packages
-# ------------------------------------
-echo
-echo "Install global pyhton modules"
-echo "-----------------------------------------------------------------------"
-if [ -f "/usr/bin/easy_install" ]; then
-
-	pyMods="${MPSERVERBASE}/conf/src/server/python/*.tar.gz"
-	for p in $pyMods
-	do
-		if [[ ${p} == *"python-crontab"* ]]; then
-			if $USEMACOS; then
-				continue
-			fi
-		fi
-		echo "Install py mod ${p}" 
-	    #easy_install --quiet ${p}
-	done
 fi
 
 # ------------------------------------------------------------
@@ -461,7 +446,7 @@ fi
 # ------------------------------------------------------------
 #clear
 echo
-echo "Creating self signed SSL certificate"
+echo "* Creating self signed SSL certificate"
 echo "-----------------------------------------------------------------------"
 
 certsDir="${MPSERVERBASE}/etc/apacheCerts"
@@ -497,7 +482,7 @@ fi
 # Create Virtualenv
 # ------------------------------------------------------------
 echo
-echo "Create Virtualenv for Web services app"
+echo "* Create Virtualenv for Web services app"
 echo "-----------------------------------------------------------------------"
 
 cd "${MPSERVERBASE}/apps"
@@ -510,7 +495,7 @@ deactivate
 # Clean up structure place holders
 # ------------------
 echo
-echo "Clean up Server dirtectory"
+echo "* Clean up Server dirtectory"
 echo "-----------------------------------------------------------------------"
 find ${MPBASE} -name ".mpRM" -print | xargs -I{} rm -rf {}
 rm -rf ${BUILDROOT}
@@ -529,7 +514,7 @@ fi
 if $MP_MAC_PKG; then
 	#clear
 	echo
-	echo "Begin creating MacPatch Server PKG for Mac OS X..."
+	echo "* Begin creating MacPatch Server PKG for Mac OS X..."
 	echo "-----------------------------------------------------------------------"
 	echo
 	echo
