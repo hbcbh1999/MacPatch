@@ -139,9 +139,9 @@ def readServicesConfig(platformType):
 		return _conf
 
 	if platformType == 'Darwin':
-		return _conf.Darwin
+		return _conf['Darwin']
 	elif platformType == 'Linux':
-		return _conf.Linux
+		return _conf['Linux']
 	else:
 		return _conf
 
