@@ -300,11 +300,17 @@ do
 	echo "Installing ${p}, python module." 
 	if $USELINUX; then
 		pip install --quiet --upgrade --trusted-host pypi.python.org ${p}
+		if [ $? != 0 ] ; then
+			echo "Error installing ${p}"
+		fi
 	else
 		if [[ ${p} == *"python-crontab"* ]]; then
 			continue
 		fi
 		pip install --quiet --no-cache-dir --upgrade ${p}
+		if [ $? != 0 ] ; then
+			echo "Error installing ${p}"
+		fi
 	fi
 done
 
