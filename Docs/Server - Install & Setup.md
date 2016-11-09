@@ -54,8 +54,8 @@ root or sudo access will be needed to perform these tasks.
 - ##### Configure MacPatch schema & populate default data
 	- cd /opt/MacPatch/Server/apps
 	- source env/bin/activate
-	- manage.py db upgrade head
-	- manage.py populateDB
+	- mpapi.py db upgrade head
+	- mpapi.py populateDB
 	- deactivate
 
 #### Software & Patch Content
