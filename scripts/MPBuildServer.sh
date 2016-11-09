@@ -294,13 +294,16 @@ fi
 echo
 echo "Upgrade/Install required python tools."
 echo "-----------------------------------------------------------------------"
-pip_mods=( "pip" "setuptools" "virtualenv" "pycrypto" )
+pip_mods=( "pip" "setuptools" "virtualenv" "pycrypto" "argparse" "biplist" "python-crontab" "python-dateutil" "requests" "six" "wheel" "mysql-connector-python-rf")
 for p in "${pip_mods[@]}"
 do
 	echo "Installing ${p}, python module." 
 	if $USELINUX; then
 		pip install --quiet --upgrade --trusted-host pypi.python.org ${p}
 	else
+		if [[ ${p} == *"python-crontab"* ]]; then
+			continue
+		fi
 		pip install --quiet --no-cache-dir --upgrade ${p}
 	fi
 done
@@ -443,7 +446,7 @@ if [ -f "/usr/bin/easy_install" ]; then
 			fi
 		fi
 		echo "Install py mod ${p}" 
-	    easy_install --quiet ${p}
+	    #easy_install --quiet ${p}
 	done
 fi
 
