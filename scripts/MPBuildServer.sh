@@ -492,6 +492,9 @@ echo "-----------------------------------------------------------------------"
 
 cd "${MPSERVERBASE}/apps"
 virtualenv env
+source env/bin/activate
+python install.py
+deactivate
 
 # ------------------
 # Clean up structure place holders
