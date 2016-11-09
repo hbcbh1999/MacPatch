@@ -129,7 +129,7 @@ class MpClientsWantingRegistration(CommonBase):
 class MpClientsRegistrationSettings(CommonBase):
     __tablename__ = 'mp_clients_reg_conf'
 
-    rid = Column(Integer, primary_key=True, nullable=False, autoincrement=True
+    rid = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
     autoreg = Column(Integer, nullable=True, server_default='0')
     autoreg_key = Column(Integer, nullable=True, server_default='999999')
 
