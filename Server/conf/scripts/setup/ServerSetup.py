@@ -876,7 +876,7 @@ def main():
 		srvList = setupServices()
 
 		print "Write Service List"
-		_enabled_services['services'] = srvList
+		_enabled_services = {"services": srvList}
 		writeJSON(_enabled_services,MP_SRVC_FILE)
 		
 
