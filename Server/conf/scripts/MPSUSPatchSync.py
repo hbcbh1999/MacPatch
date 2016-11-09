@@ -422,7 +422,11 @@ def main():
         patchesRaw = []
         for catalog in catalogs:
             logger.info("Parsing catalog %s" % os.path.basename(catalog))
-            _patches = readSUSCatalogFile(catalog,settings['filter'])
+            if 'filter' in settings:
+                _patches = readSUSCatalogFile(catalog,settings['filter'])
+            else:
+                _patches = readSUSCatalogFile(catalog)
+
             patchesRaw.extend(_patches)
 
         # Remove any duplicate keys from the array before posting

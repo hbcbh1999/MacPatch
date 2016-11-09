@@ -26,6 +26,14 @@
     	],
     	"MPServerAddress":"127.0.0.1",
     	"MPServerPort":"3601",
-    	"MPServerUseSSL": false
+    	"MPServerUseSSL": false,
+        "filter": [
+                "Voice Update*",
+                "*Printer Software Update",
+                "Dictation Language Update*",
+                "SpeechRecognition*",
+                "FontAssets*",
+                "*Printer Drivers Update"
+        ]
     }
 }
