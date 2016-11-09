@@ -875,8 +875,10 @@ def main():
 		os.system('clear')
 		srvList = setupServices()
 
-		print "Service List"
-		print srvList		
+		print "Write Service List"
+		_enabled_services['services'] = srvList
+		writeJSON(_enabled_services,MP_SRVC_FILE)
+		
 
 	if os_type == 'Darwin':
 		if args.setup != False:
