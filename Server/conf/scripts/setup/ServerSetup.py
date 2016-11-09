@@ -58,6 +58,7 @@ MP_SRV_BASE	 = "/opt/MacPatch/Server"
 MP_CONTENT	 = "/opt/MacPatch/Content"
 MP_SRV_ETC	 = MP_SRV_BASE+"/etc"
 MP_CONF_FILE = MP_SRV_BASE+"/etc/siteconfig.json"
+MP_SRVC_FILE = MP_SRV_BASE+"/etc/.mpservices.json"
 
 if sys.platform.startswith('linux'):	
 	dist_type 	 = platform.dist()[0]
@@ -873,6 +874,9 @@ def main():
 
 		os.system('clear')
 		srvList = setupServices()
+
+		print "Service List"
+		print srvList		
 
 	if os_type == 'Darwin':
 		if args.setup != False:
