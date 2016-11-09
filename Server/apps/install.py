@@ -62,15 +62,17 @@ def installAlt(package):
     # Debugging
     # pip.main(["install", "--pre", "--upgrade", "--no-index",
     #         "--find-links=.", package, "--log-file", "log.txt", "-vv"])
-    pip.main(["install", "--no-cache-dir", "--no-index", "--find-links=.", package])
+    pip.main(["install", "--quiet", "--no-cache-dir", "--no-index", "--find-links=.", package])
 
 def upgrade(packages):
     for package in packages:
-        pip.main(['install', "--egg", "--no-cache-dir", "--upgrade", "--trusted-host", "pypi.python.org", package])
+        pip.main(['install', "--quiet", "--egg", "--no-cache-dir", "--upgrade", "--trusted-host", "pypi.python.org", package])
 
 def install(packages):
     for package in packages:
-        pip.main(['install', "--egg", "--no-cache-dir", "--trusted-host", "pypi.python.org", package])
+        print("Installing Python Module: " + package)
+        res = pip.main(['install', "--quiet", "--egg", "--no-cache-dir", "--trusted-host", "pypi.python.org", package])
+        print("Install Result = " + res)
 
 if __name__ == '__main__':
 

@@ -80,6 +80,10 @@ root or sudo access will be needed to perform these tasks.
 	- mpapi.py populateDB
 	- deactivate
 
+- ##### Start Services
+	- cd /opt/MacPatch/Server/conf/scripts/setup
+	- sudo ServerSetup.py --load All
+
 --
 
 ### Server Setup & Configuration <a name='a4'></a>
