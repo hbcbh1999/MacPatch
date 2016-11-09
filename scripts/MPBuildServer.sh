@@ -292,18 +292,17 @@ fi
 echo
 echo "Upgrade/Install required python tools."
 echo "-----------------------------------------------------------------------"
-if $USELINUX; then
-	pip install --upgrade --trusted-host pypi.python.org pip
-	pip install --upgrade --trusted-host pypi.python.org setuptools
-	pip install --upgrade --trusted-host pypi.python.org virtualenv
-	pip install --upgrade --trusted-host pypi.python.org pycrypto
-fi
-if $USEMACOS; then
-	pip install --no-cache-dir --upgrade pip
-	pip install --no-cache-dir --upgrade setuptools
-	pip install --no-cache-dir --upgrade virtualenv
-	pip install --no-cache-dir --upgrade pycrypto
-fi
+pip_mods=( "pip" "setuptools" "virtualenv" "pycrypto" )
+for p in $pip_mods
+do
+	echo "Installing ${p}, python module." 
+	if $USELINUX; then
+		pip install --quiet --upgrade --trusted-host pypi.python.org ${p}
+	else
+		pip install --quiet --no-cache-dir --upgrade ${p}
+	fi
+done
+
 sleep 1
 
 # ------------------
@@ -442,7 +441,7 @@ if [ -f "/usr/bin/easy_install" ]; then
 			fi
 		fi
 		echo "Install py mod ${p}" 
-	    easy_install ${p}
+	    easy_install --quiet ${p}
 	done
 fi
 
