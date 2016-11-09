@@ -147,6 +147,8 @@ done
 # ----------------------------------------------------------------------------
 # Requirements
 # ----------------------------------------------------------------------------
+clear
+
 if $USEMACOS; then
 	if JHOME="$(/usr/libexec/java_home -v 2>/dev/null)"; then
 	    # Do this if you want to export JAVA_HOME
@@ -280,7 +282,7 @@ if $USELINUX; then
 			p=`rpm -qa --qf '%{NAME}\n' | grep -e ${i}$ | head -1`
 			if [ -z $p ]; then
 				echo "Install $i"
-				yum install -y ${i}
+				yum install -y -q -e 1 ${i}
 			fi
 		done
 	fi
