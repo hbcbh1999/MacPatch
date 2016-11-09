@@ -72,7 +72,8 @@ def install(packages):
     for package in packages:
         print("Installing Python Module: " + package)
         res = pip.main(['install', "--quiet", "--egg", "--no-cache-dir", "--trusted-host", "pypi.python.org", package])
-        print("Install Result = " + str(res))
+        if res != 0:
+            print("Error installing " + package + ". Please verify env.")
 
 if __name__ == '__main__':
 
