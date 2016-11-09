@@ -52,10 +52,10 @@ LOCAL_CONTENT=MP_HOME+"/Content/Web"
 
 
 MP_SRV_CONF=MP_SRV_BASE+"/conf"
-MP_SYNC_PLIST=MP_SRV_BASE+"/etc/gov.llnl.mp.sync.plist"
+MP_SYNC_CONF=MP_SRV_BASE+"/etc/syncContent.json"
 
 # Global OS vars
-__version__ = "1.2.3"
+__version__ = "1.3.0"
 os_type = platform.system()
 system_name = platform.uname()[1]
 
@@ -68,34 +68,27 @@ def script_is_running():
         logger.error("Error, script is already running. Now exiting script.")
         sys.exit(0);
 
-def readPlist(plistFile):
+def readJSONFile(filename):
+    returndata = {}
 
-    # Make sure the plist file exists
-    if not os.path.exists(plistFile):
-        print "Unable to open " + plistFile +". File not found."
+    if not os.path.exists(filename):
+        print "Unable to open " + filename +". File not found."
         sys.exit(1)   
 
-    # Read First Line to check and see if binary and convert
-    infile = open(plistFile, 'r')
-    if not '<?xml' in infile.readline():
-        if os_type == "Darwin":
-            # Convert the plist to xml
-            os.system('/usr/bin/plutil -convert xml1 ' + plistFile)
-        
-        elif os_type == "Linux":
-            print "Plist file is a binary file, unable to open the file type on Linux."
-            print "Exiting script."
-            sys.exit(1) 
-    
-    # Read Plist File and return data
-    _pData = plistlib.readPlist(plistFile)
-    return _pData
+    try:
+        fd = open(filename, 'r+')
+        returndata = json.load(fd)
+        fd.close()
+    except: 
+        print 'COULD NOT LOAD:', filename
+
+    return returndata
 
 def main():
     '''Main command processing'''
     parser = argparse.ArgumentParser(description='Process some args.')
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument('--plist', help="MacPatch SUS Config file", required=False)
+    group.add_argument('--config', help="MacPatch Sync Config file ", required=False)
     group.add_argument('--server', help="Rsync Server to Sync from.", required=False)
     parser.add_argument('--checksum', help='Use checksum verificartion', action='store_true')
     parser.add_argument('--dry', help="Outputs results, dry run.", action='store_true', required=False)
@@ -133,13 +126,14 @@ def main():
     logger.info('# Starting content sync  '                               )
     logger.info('# ------------------------------------------------------')
 
-    if args.plist != None:
-        plistData = readPlist(args.plist)
-        if plistData != None:
-            if plistData.has_key('MPServerAddress'):
-                MASTER_SERVER = plistData['MPServerAddress']
+    if args.config != None:
+        _conf = readJSONFile(args.config)
+        if _conf != None:
+
+            if 'MPServerAddress' in _conf:
+                MASTER_SERVER = _conf['MPServerAddress']
             else:
-                logger.error("Error, MPServerAddress was not found in plist config.")
+                logger.error("Error, MPServerAddress was not found in config.")
                 sys.exit(1)
 
     elif args.server != None:

@@ -75,6 +75,7 @@ os_type 		= platform.system()
 system_name 	= platform.uname()[1]
 gUID 			= 79
 gGID 			= 70
+cronList		= []
 
 
 if sys.platform.startswith('linux'):
@@ -96,8 +97,8 @@ macServices=["gov.llnl.mp.tomcat.plist","gov.llnl.mp.invd.plist","gov.llnl.mp.py
 "gov.llnl.mploader.plist","gov.llnl.mpavdl.plist","gov.llnl.mp.rsync.plist",
 "gov.llnl.mp.sync.plist","gov.llnl.mp.pfctl.plist","gov.llnl.mp.fw.plist","gov.llnl.mp.nginx.plist"]
 
-lnxServices=["MPTomcat","MPInventoryD","MPAPI","MPNginx"]
-lnxCronSrvs=["MPPatchLoader","MPAVLoader"]
+lnxServices=["MPTomcat","MPInventoryD","MPAPI","MPNginx","MPRsyncServer"]
+lnxCronSrvs=["MPPatchLoader","MPAVLoader","MPSyncContent"]
 
 # ----------------------------------------------------------------------------
 # Script Methods
@@ -129,6 +130,21 @@ def writeJSON(data, filename):
 	except:
 		print 'ERROR writing', filename
 		pass
+
+def readServicesConfig(platformType):
+	_conf = []
+	if os.path.exists(MP_SRVC_FILE):
+		_conf = readJSON(MP_SRVC_FILE)
+	else:
+		return _conf
+
+	if platformType == 'Darwin':
+		return _conf.Darwin
+	elif platformType == 'Linux':
+		return _conf.Linux
+	else:
+		return _conf
+
 
 def repairPermissions():
 	try:
@@ -263,10 +279,20 @@ def linuxLoadCronServices(service):
 	if service == "MPPatchLoader":
 		print("Loading MPPatchLoader")
 
-		cmd = MP_SRV_CONF + '/scripts/MPSUSPatchSync.py --config ' + MP_SRV_BASE + '/etc/patchloader.json'
+		cmd = MP_SRV_CONF + '/scripts/MPSUSPatchSync.py --config ' + MP_SRV_BASE + '/etc/patchloader.json'		
 		job  = cron.new(command=cmd)
 		job.set_comment("MPPatchLoader")
 		job.hour.every(8)
+		job.enable()
+		cron.write_to_user(user='root')
+
+	if service == "MPSyncContent":
+		print("Loading MPSyncContent")
+
+		cmd = MP_SRV_CONF + '/scripts/MPSyncContent.py --config ' + MP_SRV_BASE + '/etc/syncContent.json'
+		job  = cron.new(command=cmd)
+		job.set_comment("MPSyncContent")
+		job.minute.every(30)
 		job.enable()
 		cron.write_to_user(user='root')
 	
@@ -346,18 +372,13 @@ def setupRsyncFromMaster():
 	server_name = raw_input("MacPatch Server \"hostname\" or \"IP Address\" TO sync data from: ")
 
 	'''	Write the Plist With Changes '''
-	theFile = MP_SRV_BASE + "/etc/gov.llnl.mp.sync.plist"
-	if os.path.exists(theFile):
-		prefs = plistlib.readPlist(theFile)
-	else:
-		prefs = {}
-
-	prefs['MPServerAddress'] = server_name
-
+	theFile = MP_SRV_BASE + "/etc/syncContent.json"
+	prefs = {'MPServerAddress': server_name}
+	
 	try:
-		plistlib.writePlist(prefs,theFile)	
+		writeJSON(prefs, theFile)
 	except Exception, e:
-		print("Error: %s" % e)	
+		print("Error: %s" % e)
 
 	''' Enable Startup Scripts '''
 	if os_type == "Darwin":
@@ -370,13 +391,7 @@ def setupRsyncFromMaster():
 			os.chmod(MP_SRV_BASE+"/conf/launchd/gov.llnl.mp.sync.plist", 0644)
 
 	if os_type == "Linux":
-		from crontab import CronTab
-		cron = CronTab()
-		cron_cmd = MP_SRV_BASE+"/conf/scripts/MPSyncContent.py --plist "+MP_SRV_BASE+"/etc/gov.llnl.mp.sync.plist"
-		job  = cron.new(command=cron_cmd)
-		job.set_comment("MPSyncContent")
-		job.every(15).minute()	
-		cron.write()
+		linuxLoadCronServices("MPSyncContent")
 
 def setupPatchLoader():
 
@@ -500,7 +515,11 @@ def setupServices():
 	cRsync = raw_input('Start Content Sync Service (Master Only) [%s]' % _CONTENT)
 	cRsync = cRsync or _CONTENT
 	if cRsync.lower() == 'y':
-		srvsList.append('gov.llnl.mp.rsync.plist')
+		if os_type == 'Darwin':
+			srvsList.append('gov.llnl.mp.rsync.plist')
+		else:
+			linkStartupScripts('MPRsyncServer')
+			srvsList.append('MPRsyncServer')
 
 	# Patch Loader
 	_PATCHLOAD = 'Y' if masterType else 'N'
@@ -876,31 +895,43 @@ def main():
 		srvList = setupServices()
 
 		print "Write Service List"
-		_enabled_services = {"services": srvList}
+		if os_type == 'Darwin':
+			_enabled_services = {"Darwin": {"services": list(srvList)} }
+		else:
+			_enabled_services = {"Linux": {"services": list(srvList)} }
+
 		writeJSON(_enabled_services,MP_SRVC_FILE)
 		
+	_srvs = readServicesConfig(os_type)
+	if args.load != None:
+		if _srvs:
+			if os_type == 'Linux':
+				linuxLoadServices(_srvs)
+			else:
+				osxLoadServices(_srvs)
+		else:
+			if os_type == 'Linux':
+				linuxLoadServices(args.load)
+			else:
+				osxLoadServices(args.load)
+		
+	elif args.unload != None:
+		if _srvs:
+			if os_type == 'Linux':
+				linuxUnLoadServices(_srvs)
+			else:
+				osxUnLoadServices(_srvs)
+		else:
+			if os_type == 'Linux':
+				linuxUnLoadServices(args.load)
+			else:
+				osxUnLoadServices(args.load)
 
-	if os_type == 'Darwin':
-		if args.setup != False:
-			for srvc in srvList:
-				osxLoadServices(srvc)
-		elif args.load != None:
-			osxLoadServices(args.load)
-		elif args.unload != None:
-			osxUnLoadServices(args.unload)
-
-	elif os_type == 'Linux':
-		if args.setup != False:
-			for srvc in srvList:
-				linuxLoadServices(srvc)
-
-		if args.cron != None:
+	# CRON Tab Additions
+	if args.cron != None:
+		if os_type == 'Linux':
 			linuxLoadCronServices(args.cron)
 
-		if args.load != None:
-			linuxLoadServices(args.load)
-		elif args.unload != None:
-			linuxUnLoadServices(args.unload)
 
 def usage():
 	print "Setup.py --setup or --load/--unload [All - Service]\n"
