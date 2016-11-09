@@ -35,10 +35,10 @@ class BaseConfig:
     SECRET_KEY          = '~t\x86\xc9\x1ew\x8bOcX\x85O\xb6\xa2\x11kL\xd1\xce\x7f\x14<y\x9e'
     LOGGING_FORMAT      = '%(asctime)s [%(name)s][%(levelname).3s] --- %(message)s'
     LOGGING_LEVEL       = logging.INFO
-    LOGGING_LOCATION    = '/opt/MacPatch/logs/mpwsapi.log'
+    LOGGING_LOCATION    = '/opt/MacPatch/Server/logs/mpwsapi.log'
 
     # MacPatch App Options
-    SITECONFIG_FILE     = '/opt/MacPatch/etc/siteconfig.json'
+    SITECONFIG_FILE     = '/opt/MacPatch/Server/etc/siteconfig.json'
     VERIFY_CLIENTID     = False
     REQUIRE_SIGNATURES  = False
     CONTENT_DIR         = '/opt/MacPatch/Content'
