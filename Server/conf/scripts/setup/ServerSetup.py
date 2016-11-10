@@ -519,6 +519,8 @@ def setupServices():
 			srvsList.append('gov.llnl.mp.rsync.plist')
 		else:
 			linkStartupScripts('MPRsyncServer')
+			linkStartupScripts('MPRsyncServer@','copy')
+			linkStartupScripts('MPRsyncServer','copy','socket')
 			srvsList.append('MPRsyncServer')
 
 	# Patch Loader
@@ -558,7 +560,7 @@ def setupServices():
 
 	return set(srvsList)
 
-def linkStartupScripts(service):
+def linkStartupScripts(service,action='enable',altType=None):
 	
 	print "Copy Startup Script for "+service
 	useSYSTEMD=False
@@ -572,11 +574,15 @@ def linkStartupScripts(service):
 		return
 
 	if useSYSTEMD == True:
-		serviceName=service+".service"
+		if altType == None:
+			serviceName=service+".service"
+		else:
+			serviceName=service+"."+altType
 		serviceConf=MP_SRV_BASE+"/conf/systemd/"+serviceName
 		etcServiceConf="/etc/systemd/system/"+serviceName
 		shutil.copy2(serviceConf, etcServiceConf)
 
+	if action == 'enable':
 		os.system("/bin/systemctl enable "+serviceName)
 
 	else:
