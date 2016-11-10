@@ -57,8 +57,6 @@ root or sudo access will be needed to perform these tasks.
 	
 ##### Install Software <a name='a3c'></a>
 	
-	**Server Software**
-	
 		cd /opt/MacPatch/scripts
 		sudo MPBuildServer.sh	
 		
