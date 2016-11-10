@@ -27,7 +27,7 @@
   MacPatch Patch Loader Setup Script
   MacPatch Version 3.0.x
   
-  Script Version 2.0.3
+  Script Version 2.1.0
 '''
 
 import os
@@ -171,16 +171,20 @@ def repairPermissions():
 def linuxLoadServices(service):
 
 	_services = list()
-	_servicesC = list()
+	#_servicesC = list()
 	
-	if service.lower() == "all":
-		_services = lnxServices
-		_servicesC = lnxCronSrvs
+	if hasattr(service, 'lower'):
+		if service.lower() == "all":
+			_services = lnxServices
+			#_servicesC = lnxCronSrvs
+		else:
+			if service in lnxServices:
+				_services.append(service)
+			#elif service in lnxCronSrvs:
+			#	_servicesC.append(service)
 	else:
-		if service in lnxServices:
-			_services.append(service)
-		elif service in lnxCronSrvs:
-			_servicesC.append(service)
+		_services = service['services']
+
 
 	# Load Init.d Services
 	if _services != None:
@@ -188,23 +192,26 @@ def linuxLoadServices(service):
 			linuxLoadInitServices(srvs)
 	
 	# Load Cron Services
-	if _servicesC != None:
-		for srvs in _servicesC:
-			linuxLoadCronServices(srvs)
+	#if _servicesC != None:
+	#	for srvs in _servicesC:
+	#		linuxLoadCronServices(srvs)
 
 def linuxUnLoadServices(service):
 
 	_services = list()
-	_servicesC = list()
+	#_servicesC = list()
 	
-	if service.lower() == "all":
-		_services = lnxServices
-		_servicesC = lnxCronSrvs
+	if hasattr(service, 'lower'):
+		if service.lower() == "all":
+			_services = lnxServices
+			#_servicesC = lnxCronSrvs
+		else:
+			if service in lnxServices:
+				_services.append(service)
+			#elif service in lnxCronSrvs:
+			#	_servicesC.append(service)
 	else:
-		if service in lnxServices:
-			_services.append(service)
-		elif service in lnxCronSrvs:
-			_servicesC.append(service)
+		_services = service['services']
 
 	# Load Init.d Services
 	if _services != None:
@@ -212,9 +219,9 @@ def linuxUnLoadServices(service):
 			linuxUnLoadInitServices(srvs)
 	
 	# Load Cron Services
-	if _servicesC != None:
-		for srvs in _servicesC:
-			removeCronJob(srvs)
+	#if _servicesC != None:
+	#	for srvs in _servicesC:
+	#		removeCronJob(srvs)
 
 def linuxLoadInitServices(service):
 	
