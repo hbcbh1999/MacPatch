@@ -145,6 +145,21 @@ def readServicesConfig(platformType):
 	else:
 		return _conf
 
+def passwordEntry():
+	pass1 = ""
+	pass2 = ""
+
+	while True:
+		pass1 = getpass.getpass("Password:")
+		pass2 = getpass.getpass("Password (verify):")
+		if pass1 == pass2:
+			break
+		else:
+			print "Passwords did not match, please try again."
+
+	return pass1
+
+
 def repairPermissions():
 	try:
 		if os_type == "Darwin":
@@ -666,10 +681,12 @@ class MPDatabase:
 		mp_db_usr = raw_input("MacPatch Database User Name [mpdbadm]: ") or "mpdbadm"
 		conf["settings"]["database"]["prod"]["username"] = mp_db_usr
 		
-		mp_db_pas = getpass.getpass('MacPatch Database User Password:')
+		print('MacPatch Database User (' +mp_db_usr+ ') Password')
+		mp_db_pas = passwordEntry()
 		conf["settings"]["database"]["prod"]["password"] = mp_db_pas
 		
-		mp_db_pas_ro = getpass.getpass('MacPatch Database Read Only User Password:')
+		print('MacPatch Database Read Only User (mpdbro) Password:')
+		mp_db_pas_ro = passwordEntry()
 		conf["settings"]["database"]["ro"]["password"] = mp_db_pas_ro
 
 		save_answer = raw_input("Would you like the save these settings [Y]?:").upper() or "Y"
@@ -799,7 +816,8 @@ class MPAdmin:
 		if set_admin_info == "Y":
 			mp_adm_name = raw_input("MacPatch Default Admin Account Name [mpadmin]: ") or "mpadmin"
 			conf["settings"]["users"]["admin"]["name"] = mp_adm_name
-			mp_adm_pass = getpass.getpass("MacPatch MacPatch Default Admin Account Password:")
+			print("MacPatch MacPatch Default Admin Account Password")
+			mp_adm_pass = passwordEntry()
 			conf["settings"]["users"]["admin"]["pass"] = mp_adm_pass
 		else:
 			return

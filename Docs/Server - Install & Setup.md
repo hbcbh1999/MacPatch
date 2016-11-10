@@ -52,6 +52,8 @@ root or sudo access will be needed to perform these tasks.
 
 The database setup script only creates the MacPatch database and the 2 database accounts needed to use the database. Tuning the MySQL server is out of scope for this document. 
 
+Please remeber the passwords for mpdbadm and mpdbro accounts while running this script. They will be required during the SetupServer.py script database section.
+
 		cd /opt/MacPatch/Server/conf/scripts/setup
 		MPDBSetup.sh (must be run on the MySQL server)
 
