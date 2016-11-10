@@ -145,7 +145,6 @@ def readServicesConfig(platformType):
 	else:
 		return _conf
 
-
 def repairPermissions():
 	try:
 		if os_type == "Darwin":
@@ -675,7 +674,7 @@ class MPDatabase:
 			self.writeFlaskConfig('DB_USER',mp_db_usr)
 			self.writeFlaskConfig('DB_PASS',mp_db_pas)
 		else:
-			return configDatabase()
+			return self.configDatabase()
 
 # ----------------------------------------------------------------------------
 # LDAP Config Class
@@ -748,7 +747,7 @@ class MPLdap:
 			if save_answer == "Y":
 				self.writeConfig(conf)
 			else:
-				return configLdap()
+				return self.configLdap()
 
 		else:
 			conf["settings"]["ldap"]["enabled"] = "NO"
@@ -795,6 +794,8 @@ class MPAdmin:
 			conf["settings"]["users"]["admin"]["name"] = mp_adm_name
 			mp_adm_pass = getpass.getpass("MacPatch MacPatch Default Admin Account Password:")
 			conf["settings"]["users"]["admin"]["pass"] = mp_adm_pass
+		else:
+			return
 
 		save_answer = raw_input("Would you like the save these settings [Y]?:").upper() or "Y"
 		if save_answer == "Y":
