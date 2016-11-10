@@ -39,7 +39,7 @@ root or sudo access will be needed to perform these tasks.
 
 #### Prequisits <a name='a2'></a>
 - Install MySQL 5.6.x (must have root password)
-- If Installing on Mac OS X, Xcode and command line developer tools need to be installed and the license agreement needs to have been accepted.
+- If Installing on Mac OS X, Xcode and command line developer tools need to be installed **AND** the license agreement needs to have been accepted.
 
 ### Download, Setup and Install <a name='a3'></a>
 
@@ -49,7 +49,9 @@ root or sudo access will be needed to perform these tasks.
 		git clone https://github.com/SMSG-DEV/MacPatch
 
 ##### Setup Database <a name='a3b'></a>
-		
+
+The database setup script only creates the MacPatch database and the 2 database accounts needed to use the database. Tuning the MySQL server is out of scope for this document. 
+
 		cd /opt/MacPatch/Server/conf/scripts/setup
 		MPDBSetup.sh (must be run on the MySQL server)
 

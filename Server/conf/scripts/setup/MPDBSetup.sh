@@ -88,15 +88,26 @@ read -p "MacPatch User Account [mpdbadm]: " MPUSER
 MPUSER=${MPUSER:-mpdbadm}
 
 promptA="MacPatch User Account Password: "
-while IFS= read -p "$promptA" -r -s -n 1 char
+while true
 do
-    if [[ $char == $'\0' ]]
-    then
-         break
-    fi
-    promptA='*'
-    MPUSRPAS+="$char"
+    read -s -p "Password: " MPUSRPAS
+    echo
+    read -s -p "Password (again): " MPUSRPASb
+    echo
+    [ "$MPUSRPAS" = "$MPUSRPASb" ] && break
+    echo "Please try again"
 done
+
+#while IFS= read -p "$promptA" -r -s -n 1 char
+#do
+#    if [[ $char == $'\0' ]]
+#    then
+#         break
+#    fi
+#    promptA='*'
+#    MPUSRPAS+="$char"
+#done
+
 
 echo
 read -p "MacPatch Read Only User Account [mpdbro]: " MPROUSR
