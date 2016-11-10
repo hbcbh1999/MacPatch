@@ -236,7 +236,7 @@ mkdir -p ${MPBASE}/Content/Web/sw
 mkdir -p ${MPBASE}/Content/Web/tools
 mkdir -p ${MPSERVERBASE}/InvData/files
 mkdir -p ${MPSERVERBASE}/lib
-mkdir -p ${MPSERVERBASE}/logs
+echo `mkdir -p ${MPSERVERBASE}/logs`
 
 # ------------------
 # Copy compiled files
