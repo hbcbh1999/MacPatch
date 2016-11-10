@@ -582,8 +582,8 @@ def linkStartupScripts(service,action='enable',altType=None):
 		etcServiceConf="/etc/systemd/system/"+serviceName
 		shutil.copy2(serviceConf, etcServiceConf)
 
-	if action == 'enable':
-		os.system("/bin/systemctl enable "+serviceName)
+		if action == 'enable':
+			os.system("/bin/systemctl enable "+serviceName)
 
 	else:
 		_initFile = "/etc/init.d/"+service
