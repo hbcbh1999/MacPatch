@@ -27,7 +27,7 @@
 
 # -------------------------------------------------------------
 # Script: MPDBSetup.sh
-# Version: 1.1.0
+# Version: 1.2.0
 #
 # Description:
 # This script will setup and configure a MySQL server for
@@ -38,6 +38,7 @@
 # then the user may continue and add the schema to the db.
 # 
 # 1.1.0 Altered script for new python based backend
+# 1.2.0 Changed the code for adding password, now requires a verify
 #
 # -------------------------------------------------------------
 
@@ -56,6 +57,21 @@ MPROUSR="mpdbro"
 MPUSRPAS=""
 MPUSRROPAS=""
 HOST=`hostname`
+RESSTR=""
+
+readUsrPass () {
+  _prompt="$1"
+    _thePass=""
+    while IFS= read -p "$_prompt" -r -s -n 1 char
+    do
+      if [[ $char == $'\0' ]]; then
+          break
+      fi
+      _prompt='*'
+      _thePass+="$char"
+    done
+    RESSTR="$_thePass"
+}
 
 BTICK='`'
 export PATH=$PATH:/usr/local/mysql/bin
@@ -87,41 +103,34 @@ echo
 read -p "MacPatch User Account [mpdbadm]: " MPUSER
 MPUSER=${MPUSER:-mpdbadm}
 
-promptA="MacPatch User Account Password: "
+echo="MacPatch User Account Password"
 while true
 do
-    read -s -p "Password: " MPUSRPAS
+    readUsrPass "Password: "
+    MPUSRPAS="$RESSTR"
     echo
-    read -s -p "Password (again): " MPUSRPASb
+    readUsrPass "Password (again): "
+    MPUSRPASb="$RESSTR"
     echo
     [ "$MPUSRPAS" = "$MPUSRPASb" ] && break
     echo "Please try again"
 done
 
-#while IFS= read -p "$promptA" -r -s -n 1 char
-#do
-#    if [[ $char == $'\0' ]]
-#    then
-#         break
-#    fi
-#    promptA='*'
-#    MPUSRPAS+="$char"
-#done
-
-
 echo
 read -p "MacPatch Read Only User Account [mpdbro]: " MPROUSR
 MPROUSR=${MPROUSR:-mpdbro}
 
-promptB="MacPatch Read Only User Account Password: "
-while IFS= read -p "$promptB" -r -s -n 1 char
+echo "MacPatch Read Only User Account Password"
+while true
 do
-    if [[ $char == $'\0' ]]
-    then
-         break
-    fi
-    promptB='*'
-    MPUSRROPAS+="$char"
+    readUsrPass "Password: "
+    MPUSRROPAS="$RESSTR"
+    echo
+    readUsrPass "Password (again): "
+    MPUSRROPASb="$RESSTR"
+    echo
+    [ "$MPUSRROPAS" = "$MPUSRROPASb" ] && break
+    echo "Please try again"
 done
 
 # For MySQL 5.7, not supported yet
