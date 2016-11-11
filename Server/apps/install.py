@@ -1,6 +1,7 @@
 import pip
 import zipfile
 import os
+from sys import platform
 
 _pre_ = [
     "pip",
@@ -53,6 +54,7 @@ linux = ["M2Crypto>=0.24.0","mysql-connector-python-rf>=2.1.3"]
 darwin = ["mysql-connector-python-rf>=2.1.3",]
 
 def easyInstall(package):
+    print "Running Easy Install"
     if os.path.exists(package):
         print("Easy Install Python Module: " + package)
         os.system("easy_install --quiet" + package)
@@ -83,7 +85,6 @@ def install(packages,platformStr="linux"):
 
 if __name__ == '__main__':
 
-    from sys import platform
     isMac = platform.startswith('darwin')
     isLinux = platform.startswith('linux')
 
@@ -100,9 +101,11 @@ if __name__ == '__main__':
     install(_all_, osType) 
     
     if platform.startswith('linux'):
+        print "Install Linux Packages"
         install(linux, osType)
 
     if platform.startswith('darwin'): # MacOS
+        print "Install Darwin Packages" 
         install(darwin, osType)
         easyInstall(cryptoPKG)
 
