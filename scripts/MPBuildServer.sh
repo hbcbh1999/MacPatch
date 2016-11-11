@@ -335,8 +335,8 @@ sleep 1
 echo
 echo "* Uncompress and setup Tomcat."
 echo "-----------------------------------------------------------------------"
-
 TOMCAT_SW=`find "${SRC_DIR}" -name "apache-tomcat-"* -type f -exec basename {} \; | head -n 1`	
+echo " - Uncompress ${TOMCAT_SW}"
 mkdir -p "${MPSERVERBASE}/apache-tomcat"
 tar xfz ${SRC_DIR}/${TOMCAT_SW} --strip 1 -C ${MPSERVERBASE}/apache-tomcat
 chmod +x ${MPSERVERBASE}/apache-tomcat/bin/*
