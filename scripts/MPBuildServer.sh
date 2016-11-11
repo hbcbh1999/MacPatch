@@ -227,7 +227,7 @@ function mkdirP {
 	if [ ! -n "$1" ]; then
 		echo "Enter a directory name"
 	elif [ -d $1 ]; then
-		echo "\`$1' already exists"
+		echo "$1 already exists"
 	else
 		echo "Creating directory $1"
 		mkdir -p $1
