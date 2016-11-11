@@ -216,7 +216,7 @@ class PatchScanData(MPResource):
                 MpClientPatchesApple.query.filter(MpClientPatchesApple.cuuid == cuuid).delete()
                 db.session.commit()
 
-                if _body != None and _body['rows']:
+                if _body != None and 'rows' in _body:
                     for row in _body['rows']:
                         apple_object = MpClientPatchesApple()
                         # Set All of the column values
@@ -245,7 +245,7 @@ class PatchScanData(MPResource):
                 MpClientPatchesThird.query.filter(MpClientPatchesThird.cuuid == cuuid).delete()
                 db.session.commit()
 
-                if _body != None and _body['rows']:
+                if _body != None and 'rows' in _body:
                     for row in _body['rows']:
                         third_object = MpClientPatchesThird()
                         # Set All of the column values
