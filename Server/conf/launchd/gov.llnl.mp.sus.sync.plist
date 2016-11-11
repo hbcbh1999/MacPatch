@@ -9,8 +9,8 @@
 	<key>ProgramArguments</key>
 	<array>
 		<string>/opt/MacPatch/Server/conf/scripts/MPSUSPatchSync.py</string>
-		<string>--plist</string>
-		<string>/opt/MacPatch/Server/etc/gov.llnl.mp.patchloader.plist</string>
+		<string>--config</string>
+		<string>/opt/MacPatch/Server/etc/patchloader.json</string>
 	</array>
 	<key>StartInterval</key>
 	<integer>28800</integer>
