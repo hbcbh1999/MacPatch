@@ -93,6 +93,8 @@ if __name__ == '__main__':
     elif isLinux:
         osType = 'linux'
 
+    print "Running python package installs for operating system type " + osType
+
 
     upgrade(_pre_, osType) 
     install(_all_, osType) 
