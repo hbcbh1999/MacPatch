@@ -265,7 +265,7 @@ if $USEMACOS; then
 
 	# PCRE
 	echo " - Uncompress ${PCRE_SW}"
-	mkdir ${TMP_DIR}/pcre
+	mkdir -p ${TMP_DIR}/pcre
 	tar xfz ${SRC_DIR}/${PCRE_SW} --strip 1 -C ${TMP_DIR}/pcre
 
 	# NGINX Done else where in script
@@ -274,7 +274,7 @@ if $USEMACOS; then
 
 	# OpenSSL
 	echo " - Uncompress ${OSSL_SW}"
-	mkdir ${TMP_DIR}/openssl
+	mkdir -p ${TMP_DIR}/openssl
 	tar xfz ${SRC_DIR}/${OSSL_SW} --strip 1 -C ${TMP_DIR}/openssl
 fi
 
@@ -450,8 +450,8 @@ chown -R $OWNERGRP "${MPTOMCAT}"
 if $USEMACOS; then
 	chown -R $OWNERGRP ${MPSERVERBASE}/logs
 	chmod 0775 ${MPSERVERBASE}
-	chown root:wheel ${MPSERVERBASE}/conf/LaunchDaemons/*.plist
-	chmod 0644 ${MPSERVERBASE}/conf/LaunchDaemons/*.plist
+	chown root:wheel ${MPSERVERBASE}/conf/launchd/*.plist
+	chmod 0644 ${MPSERVERBASE}/conf/launchd/*.plist
 fi
 
 # ------------------------------------------------------------
