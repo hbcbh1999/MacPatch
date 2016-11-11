@@ -9,39 +9,39 @@ _pre_ = [
 ]
 
 _all_ = [
-    "alembic==0.8.7",
-    "aniso8601==1.1.0",
-    "blinker==1.4",
-    "click==6.6",
-    "enum34==1.1.6",
-    "Flask==0.11.1",
+    "alembic>=0.8.7",
+    "aniso8601>=1.1.0",
+    "blinker>=1.4",
+    "click>=6.6",
+    "enum34>=1.1.6",
+    "Flask>=0.11.1",
     "Flask-DebugToolbar==0.10.0",
-    "Flask-Cache==0.13.1",
-    "flask-ldap3-login==0.9.12",
-    "Flask-Login==0.3.2",
-    "Flask-Migrate==1.8.1",
-    "Flask-RESTful==0.3.5",
+    "Flask-Cache>=0.13.1",
+    "flask-ldap3-login>=0.9.12",
+    "Flask-Login>=0.3.2",
+    "Flask-Migrate>=1.8.1",
+    "Flask-RESTful>=0.3.5",
     "flask-restful-swagger==0.19",
-    "Flask-Script==2.0.5",
-    "Flask-SQLAlchemy==2.1",
-    "Flask-WTF==0.13.1",
-    "gevent==1.1.2",
-    "greenlet==0.4.10",
-    "gunicorn==19.6.0",
-    "healthcheck==1.3.1",
-    "itsdangerous==0.24",
-    "Jinja2==2.8",
-    "ldap3==2.1.0",
-    "Mako==1.0.4",
-    "MarkupSafe==0.23",
-    "pyasn1==0.1.9",
-    "python-dateutil==2.5.3",
-    "python-editor==1.0.1",
-    "pytz==2016.6.1",
-    "six==1.10.0",
-    "uWSGI==2.0.14",
-    "Werkzeug==0.11.11",
-    "WTForms==2.1",
+    "Flask-Script>=2.0.5",
+    "Flask-SQLAlchemy>=2.1",
+    "Flask-WTF>=0.13.1",
+    "gevent>=1.1.2",
+    "greenlet>=0.4.10",
+    "gunicorn>=19.6.0",
+    "healthcheck>=1.3.1",
+    "itsdangerous>=0.24",
+    "Jinja2>=2.8",
+    "ldap3>=2.1.0",
+    "Mako>=1.0.4",
+    "MarkupSafe>=0.23",
+    "pyasn1>=0.1.9",
+    "python-dateutil>=2.5.3",
+    "python-editor>=1.0.1",
+    "pytz>=2016.6.1",
+    "six>=1.10.0",
+    "uWSGI>=2.0.14",
+    "Werkzeug>=0.11.11",
+    "WTForms>=2.1",
 ]
 
 MP_HOME     = "/opt/MacPatch"
@@ -55,6 +55,7 @@ darwin = ["mysql-connector-python-rf>=2.1.3",]
 
 def easyInstall(package):
     print "Running Easy Install"
+    print package
     if os.path.exists(package):
         print("Easy Install Python Module: " + package)
         os.system("easy_install --quiet" + package)
