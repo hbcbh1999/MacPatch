@@ -307,7 +307,7 @@ do
 		if [[ ${p} == *"python-crontab"* ]]; then
 			continue
 		fi
-		pip install --quiet --no-cache-dir --upgrade ${p}
+		pip install --egg --quiet --no-cache-dir --upgrade ${p}
 		if [ $? != 0 ] ; then
 			echo "Error installing ${p}"
 		fi
@@ -337,7 +337,7 @@ rm -rf ${MPSERVERBASE}/apache-tomcat/webapps/ROOT
 echo
 echo "* Build and configure NGINX"
 echo "-----------------------------------------------------------------------"
-echo "See mginx build status in ${MPSERVERBASE}/logs/nginx-build.log"
+echo "See nginx build status in ${MPSERVERBASE}/logs/nginx-build.log"
 echo
 NGINX_SW=`find "${SRC_DIR}" -name "nginx-"* -type f -exec basename {} \; | head -n 1`
 
