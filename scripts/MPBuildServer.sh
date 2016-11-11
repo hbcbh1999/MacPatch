@@ -243,9 +243,7 @@ function rmF {
 	#
 	if [ ! -n "$1" ]; then
 		echo "Enter a path"
-	elif [ -d $1 ]; then
-		echo "$1 already exists"
-	else
+	elif [ -d $1 || -f $1 ]; then
 		echo "Removing $1"
 		rm -rf $1
 	fi
