@@ -223,13 +223,13 @@ fi
 # ------------------
 # Create Skeleton Dir Structure
 # ------------------
-func mkdirP {
+function mkdirP {
 	if [ ! -n "$1" ]; then
 		echo "Enter a directory name"
 	elif [ -d $1 ]; then
 		echo "\`$1' already exists"
 	else
-		echo "Make dir $1"
+		echo "Creating directory $1"
 		mkdir -p $1
 	fi
 }
