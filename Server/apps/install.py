@@ -46,10 +46,8 @@ _all_ = [
 MP_HOME     = "/opt/MacPatch"
 MP_SRV_BASE = MP_HOME+"/Server"
 
-srcDir      = MP_SRV_BASE+"/WSService/_src_"
-mysqlZIP    = "_src_/mysql-connector-python-2.1.3.zip"
-mysqlPKG    = "_src_/mysql-connector-python-2.1.3"
-cryptoPKG   = MP_SRV_BASE+"/WSService/_src_/M2Crypto-0.21.1-py2.7-macosx-10.8-intel.egg"
+srcDir      = MP_SRV_BASE+"/apps/_src_"
+cryptoPKG   = srcDir+"/M2Crypto-0.21.1-py2.7-macosx-10.8-intel.egg"
 
 linux = ["M2Crypto>=0.24.0","mysql-connector-python-rf>=2.1.3"]
 darwin = ["mysql-connector-python-rf>=2.1.3",]
