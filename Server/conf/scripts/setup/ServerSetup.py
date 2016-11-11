@@ -454,13 +454,13 @@ def setupPatchLoader():
 
 	''' Enable Startup Scripts '''
 	if os_type == "Darwin":
-		if os.path.exists(MP_SRV_BASE+"/conf/launchd/gov.llnl.mploader.plist"):
-			if os.path.exists("/Library/LaunchDaemons/gov.llnl.mploader.plist"):
-				os.remove("/Library/LaunchDaemons/gov.llnl.mploader.plist")
+		if os.path.exists(MP_SRV_BASE+"/conf/launchd/gov.llnl.mp.sus.sync.plist"):
+			if os.path.exists("/Library/LaunchDaemons/gov.llnl.mp.sus.sync.plist"):
+				os.remove("/Library/LaunchDaemons/gov.llnl.mp.sus.sync.plist")
 			
-			os.symlink(MP_SRV_BASE+"/conf/launchd/gov.llnl.mploader.plist","/Library/LaunchDaemons/gov.llnl.mploader.plist")
-			os.chown(MP_SRV_BASE+"/conf/launchd/gov.llnl.mploader.plist", 0, 0)
-			os.chmod(MP_SRV_BASE+"/conf/launchd/gov.llnl.mploader.plist", 0644)
+			os.symlink(MP_SRV_BASE+"/conf/launchd/gov.llnl.mp.sus.sync.plist","/Library/LaunchDaemons/gov.llnl.mp.sus.sync.plist")
+			os.chown(MP_SRV_BASE+"/conf/launchd/gov.llnl.mp.sus.sync.plist", 0, 0)
+			os.chmod(MP_SRV_BASE+"/conf/launchd/gov.llnl.mp.sus.sync.plist", 0644)
 	else:
 		linuxLoadCronServices('MPPatchLoader')
 
@@ -557,7 +557,7 @@ def setupServices():
 	if patchLoader.lower() == 'y':
 		setupPatchLoader()
 		if os_type == 'Darwin':
-			srvsList.append('gov.llnl.mploader.plist')
+			srvsList.append('gov.llnl.mp.sus.sync.plist')
 	
 	# Sync From Master
 	if masterType == False:
