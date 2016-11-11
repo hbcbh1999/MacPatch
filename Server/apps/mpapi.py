@@ -72,8 +72,8 @@ class GunicornServer(Command):
 		FlaskApplication().run()
 
 class Populate(Command):
-    def run(self):
-        print 'Add Default Data To Database'
+	def run(self):
+		print 'Add Default Data To Database'
 		addDefaultData()
 		print 'Default Data Added Database'
 
