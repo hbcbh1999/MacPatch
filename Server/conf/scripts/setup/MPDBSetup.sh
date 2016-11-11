@@ -103,13 +103,12 @@ echo
 read -p "MacPatch User Account [mpdbadm]: " MPUSER
 MPUSER=${MPUSER:-mpdbadm}
 
-echo="MacPatch User Account Password"
 while true
 do
     readUsrPass "Password: "
     MPUSRPAS="$RESSTR"
     echo
-    readUsrPass "Password (again): "
+    readUsrPass "Password (verify): "
     MPUSRPASb="$RESSTR"
     echo
     [ "$MPUSRPAS" = "$MPUSRPASb" ] && break
@@ -120,13 +119,12 @@ echo
 read -p "MacPatch Read Only User Account [mpdbro]: " MPROUSR
 MPROUSR=${MPROUSR:-mpdbro}
 
-echo "MacPatch Read Only User Account Password"
 while true
 do
     readUsrPass "Password: "
     MPUSRROPAS="$RESSTR"
     echo
-    readUsrPass "Password (again): "
+    readUsrPass "Password (verify): "
     MPUSRROPASb="$RESSTR"
     echo
     [ "$MPUSRROPAS" = "$MPUSRROPASb" ] && break
