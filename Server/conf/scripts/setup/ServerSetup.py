@@ -94,7 +94,7 @@ if sys.platform.startswith('linux'):
 		exit(1)
 
 macServices=["gov.llnl.mp.tomcat.plist","gov.llnl.mp.invd.plist","gov.llnl.mp.py.api.plist",
-"gov.llnl.mploader.plist","gov.llnl.mpavdl.plist","gov.llnl.mp.rsync.plist",
+"gov.llnl.mp.sus.sync.plist","gov.llnl.mpavdl.plist","gov.llnl.mp.rsync.plist",
 "gov.llnl.mp.sync.plist","gov.llnl.mp.pfctl.plist","gov.llnl.mp.fw.plist","gov.llnl.mp.nginx.plist"]
 
 lnxServices=["MPTomcat","MPInventoryD","MPAPI","MPNginx","MPRsyncServer"]
@@ -688,7 +688,7 @@ class MPDatabase:
 		conf["settings"]["database"]["prod"]["username"] = mp_db_usr
 		
 		#print('MacPatch Database User (' +mp_db_usr+ ') Password')
-		mp_db_pas = getpass.getpass('MacPatch Database User (' +mp_db_usr+ ') Password')
+		mp_db_pas = getpass.getpass('MacPatch Database User (' +mp_db_usr+ ') Password:')
 		conf["settings"]["database"]["prod"]["password"] = mp_db_pas
 		
 		#print('MacPatch Database Read Only User (mpdbro) Password:')
