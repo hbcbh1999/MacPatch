@@ -46,7 +46,7 @@ root or sudo access will be needed to perform these tasks.
 ##### Get Software <a name='a3a'></a>
 		mkdir /opt (If Needed)
 		cd /opt
-		git clone https://github.com/SMSG-DEV/MacPatch
+		git clone https://github.com/LLNL/MacPatch.git
 
 ##### Setup Database <a name='a3b'></a>
 
@@ -141,7 +141,7 @@ The Apple Software Update content settings are stored in a json file (/opt/MacPa
 
 Run the following command via the Terminal.app on the Master MacPatch server.
 
-`sudo -u www-data /opt/MacPatch/Server/conf/scripts/MPSUSPatchSync.py --config /opt/MacPatch/Server/etc/patchloader.plist`
+`sudo -u www-data /opt/MacPatch/Server/conf/scripts/MPSUSPatchSync.py --config /opt/MacPatch/Server/etc/patchloader.json`
 
 **Custom Updates** <a name='a5b'></a>
 
