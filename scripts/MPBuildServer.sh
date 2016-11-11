@@ -253,6 +253,7 @@ if $USEMACOS; then
 	OSSL_SW=`find "${SRC_DIR}" -name "openssl-"* -type f -exec basename {} \; | head -n 1`
 
 	# PCRE
+	echo " - Uncompress ${PCRE_SW}"
 	mkdir ${TMP_DIR}/pcre
 	tar xfz ${SRC_DIR}/${PCRE_SW} --strip 1 -C ${TMP_DIR}/pcre
 
@@ -261,6 +262,7 @@ if $USEMACOS; then
 	#tar xfz ${SRC_DIR}/${HTTP_SW} --strip 1 -C ${TMP_DIR}/nginx
 
 	# OpenSSL
+	echo " - Uncompress ${OSSL_SW}"
 	mkdir ${TMP_DIR}/openssl
 	tar xfz ${SRC_DIR}/${OSSL_SW} --strip 1 -C ${TMP_DIR}/openssl
 fi
