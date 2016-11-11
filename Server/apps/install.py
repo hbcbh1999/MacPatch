@@ -54,7 +54,8 @@ darwin = ["mysql-connector-python-rf>=2.1.3",]
 
 def easyInstall(package):
     if os.path.exists(package):
-        os.system("easy_install " + package)
+        print("Easy Install Python Module: " + package)
+        os.system("easy_install --quiet" + package)
 
 def installAlt(package):
     # Debugging
@@ -62,29 +63,45 @@ def installAlt(package):
     #         "--find-links=.", package, "--log-file", "log.txt", "-vv"])
     pip.main(["install", "--quiet", "--no-cache-dir", "--no-index", "--find-links=.", package])
 
-def upgrade(packages):
+def upgrade(packages,platformStr="linux"):
     for package in packages:
-        pip.main(['install', "--quiet", "--egg", "--no-cache-dir", "--upgrade", "--trusted-host", "pypi.python.org", package])
+        if platformStr == 'linux':
+            pip.main(['install', "--quiet", "--egg", "--no-cache-dir", "--upgrade", "--trusted-host", "pypi.python.org", package])
+        else:
+            pip.main(['install', "--quiet", "--egg", "--no-cache-dir", "--upgrade", package])
 
-def install(packages):
+def install(packages,platformStr="linux"):
     for package in packages:
         print("Installing Python Module: " + package)
-        res = pip.main(['install', "--quiet", "--egg", "--no-cache-dir", "--trusted-host", "pypi.python.org", package])
+        if platformStr == 'linux':
+            res = pip.main(['install', "--quiet", "--egg", "--no-cache-dir", "--trusted-host", "pypi.python.org", package])
+        else:
+            res = pip.main(['install', "--quiet", "--egg", "--no-cache-dir", package])
+
         if res != 0:
             print("Error installing " + package + ". Please verify env.")
 
 if __name__ == '__main__':
 
     from sys import platform
+    isMac = platform.startswith('darwin')
+    isLinux = platform.startswith('linux')
 
-    upgrade(_pre_) 
-    install(_all_) 
+    osType = 'NA'
+    if isMac:
+        osType = 'darwin'
+    elif isLinux:
+        osType = 'linux'
+
+
+    upgrade(_pre_, osType) 
+    install(_all_, osType) 
     
     if platform.startswith('linux'):
-        install(linux)
+        install(linux, osType)
 
     if platform.startswith('darwin'): # MacOS
-        install(darwin)
+        install(darwin, osType)
         easyInstall(cryptoPKG)
 
 
