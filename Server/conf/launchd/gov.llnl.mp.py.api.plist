@@ -9,6 +9,7 @@
         <key>ProgramArguments</key>
         <array>
                 <string>/opt/MacPatch/Server/conf/scripts/systemd/MPAPI.sh</string>
+                <string>start</string>
         </array>
         <key>RunAtLoad</key>
         <true/>
