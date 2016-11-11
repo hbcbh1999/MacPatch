@@ -71,20 +71,8 @@ class GunicornServer(Command):
 
 		FlaskApplication().run()
 
-class Populate(Command):
-	def run(self):
-		print 'Add Default Data To Database'
-		addDefaultData()
-		print 'Default Data Added Database'
-
 # DB Migrate -----------------------------------------------------------------
 manager.add_command('db', MigrateCommand)
-#manager.add_command('db', Populate())
-
-@migrate.configure
-def configure_alembic(config):
-    # modify config object
-    return config
 
 @manager.command
 def insert_data():
