@@ -44,6 +44,8 @@ _all_ = [
     "WTForms>=2.1",
 ]
 
+_failed_ = []
+
 MP_HOME     = "/opt/MacPatch"
 MP_SRV_BASE = MP_HOME+"/Server"
 
@@ -82,6 +84,7 @@ def install(packages,platformStr="linux"):
             res = pip.main(['install', "--quiet", "--egg", "--no-cache-dir", package])
 
         if res != 0:
+            _failed_.append(package)
             print("Error installing " + package + ". Please verify env.")
 
 if __name__ == '__main__':
@@ -100,6 +103,11 @@ if __name__ == '__main__':
 
     upgrade(_pre_, osType) 
     install(_all_, osType) 
+
+    if len(_failed_) > 0:
+        print "Retrying failed packages"
+        install(_failed_, osType) 
+
     
     if platform.startswith('linux'):
         print "Install Linux Packages"

@@ -221,9 +221,12 @@ else
 fi	
 
 # ------------------
-# Create Skeleton Dir Structure
+# Global Functions
 # ------------------
 function mkdirP {
+	#
+	# Function for creating directory and echo it
+	#
 	if [ ! -n "$1" ]; then
 		echo "Enter a directory name"
 	elif [ -d $1 ]; then
@@ -234,6 +237,9 @@ function mkdirP {
 	fi
 }
 
+# ------------------
+# Create Skeleton Dir Structure
+# ------------------
 echo
 echo "* Create MacPatch server directory structure."
 echo "-----------------------------------------------------------------------"
