@@ -542,6 +542,11 @@ rm -rf ${BUILDROOT}
 # ------------------
 if $USEMACOS; then
 	echo "Setting Permissions..."
+	chmod -R 0775 "${MPBASE}/Content"
+	chown -R $OWNERGRP "${MPBASE}/Content"
+	chmod -R 0775 "${MPSERVERBASE}/logs"
+	chmod -R 0775 "${MPSERVERBASE}/etc"
+	chmod -R 0775 "${MPSERVERBASE}/InvData"
 	#/Library/MacPatch/Server/conf/scripts/Permissions.sh
 fi
 
