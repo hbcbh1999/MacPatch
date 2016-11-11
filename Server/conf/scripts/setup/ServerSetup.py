@@ -564,19 +564,19 @@ def setupServices():
 				srvsList.append('gov.llnl.mp.sync.plist')
 
 	# Firewall Config / Port Forwarding
-	if os_type == 'Darwin':
-		_PFLOAD = 'Y'
-		print "MacPatch Tomcat Runs on several tcp ports (8080,8443,2600)"
-		print "Port forwading forwards the following ports"
-		print "80 -> 8080"
-		print "443 -> 8443"
-		pfConf = raw_input('Enable port forwading (Recommended) [%s]' % _PFLOAD)
-		pfConf = pfConf or _PFLOAD
-		if pfConf.lower() == 'y':
-			if platform.mac_ver()[0] >= "10.10.0":
-				srvsList.append('gov.llnl.mp.pfctl.plist')
-			else:
-				srvsList.append('gov.llnl.mp.fw.plist')
+	#if os_type == 'Darwin':
+#		_PFLOAD = 'Y'
+#		print "MacPatch Tomcat Runs on several tcp ports (8080,8443,2600)"
+#		print "Port forwading forwards the following ports"
+#		print "80 -> 8080"
+#		print "443 -> 8443"
+#		pfConf = raw_input('Enable port forwading (Recommended) [%s]' % _PFLOAD)
+#		pfConf = pfConf or _PFLOAD
+#		if pfConf.lower() == 'y':
+#			if platform.mac_ver()[0] >= "10.10.0":
+#				srvsList.append('gov.llnl.mp.pfctl.plist')
+#			else:
+#				srvsList.append('gov.llnl.mp.fw.plist')
 
 
 	return set(srvsList)
