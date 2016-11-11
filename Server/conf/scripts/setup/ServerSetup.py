@@ -340,15 +340,18 @@ def removeCronJob(comment):
 
 def osxLoadServices(service):
 	_services = list()
-	
-	if service.lower() == "all":
-		_services = macServices
-	else:
-		if service in macServices:
-			_services.append(service)
+
+	if hasattr(service, 'lower'):
+		if service.lower() == "all":
+			_services = macServices
 		else:
-			print service + " was not found. Service will not load."
-			return
+			if service in macServices:
+				_services.append(service)
+			else:
+				print service + " was not found. Service will not load."
+	else:
+		_services = service['services']
+
 			
 	for srvc in _services:
 		# Set Permissions
@@ -373,13 +376,16 @@ def osxLoadServices(service):
 				print srvc + " was not found in MacPatch Server directory. Service will not load."
 						
 def osxUnLoadServices(service):
+	_services = list()
 
-	_services = []
-	if service.lower() == "all":
-		_services = macServices
+	if hasattr(service, 'lower'):
+		if service.lower() == "all":
+			_services = macServices
+		else:
+			if service in macServices:
+				_services.append(service)
 	else:
-		if service in macServices:
-			_services = service
+		_services = service['services']
 			
 	for srvc in _services:
 		_launchdFile = "/Library/LaunchDaemons/"+srvc
