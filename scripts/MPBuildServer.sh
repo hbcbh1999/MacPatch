@@ -223,20 +223,31 @@ fi
 # ------------------
 # Create Skeleton Dir Structure
 # ------------------
+func mkdirP {
+	if [ ! -n "$1" ]; then
+		echo "Enter a directory name"
+	elif [ -d $1 ]; then
+		echo "\`$1' already exists"
+	else
+		echo "Make dir $1"
+		mkdir -p $1
+	fi
+}
+
 echo
 echo "* Create MacPatch server directory structure."
 echo "-----------------------------------------------------------------------"
-mkdir -p ${MPBASE}
-mkdir -p ${MPBASE}/Content
-mkdir -p ${MPBASE}/Content/Web
-mkdir -p ${MPBASE}/Content/Web/clients
-mkdir -p ${MPBASE}/Content/Web/patches
-mkdir -p ${MPBASE}/Content/Web/sav
-mkdir -p ${MPBASE}/Content/Web/sw
-mkdir -p ${MPBASE}/Content/Web/tools
-mkdir -p ${MPSERVERBASE}/InvData/files
-mkdir -p ${MPSERVERBASE}/lib
-echo `mkdir -p ${MPSERVERBASE}/logs`
+mkdirP ${MPBASE}
+mkdirP ${MPBASE}/Content
+mkdirP ${MPBASE}/Content/Web
+mkdirP ${MPBASE}/Content/Web/clients
+mkdirP ${MPBASE}/Content/Web/patches
+mkdirP ${MPBASE}/Content/Web/sav
+mkdirP ${MPBASE}/Content/Web/sw
+mkdirP ${MPBASE}/Content/Web/tools
+mkdirP ${MPSERVERBASE}/InvData/files
+mkdirP ${MPSERVERBASE}/lib
+mkdirP ${MPSERVERBASE}/logs
 
 # ------------------
 # Copy compiled files

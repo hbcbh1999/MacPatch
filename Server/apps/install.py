@@ -58,7 +58,7 @@ def easyInstall(package):
     print package
     if os.path.exists(package):
         print("Easy Install Python Module: " + package)
-        os.system("easy_install --quiet" + package)
+        os.system("easy_install --quiet " + package)
 
 def installAlt(package):
     # Debugging
