@@ -8,9 +8,12 @@
         <string>MacPatch REST API</string>
         <key>ProgramArguments</key>
         <array>
-                <string>/opt/MacPatch/Server/conf/scripts/systemd/MPAPI.sh</string>
-                <string>start</string>
+                <string>/opt/MacPatch/Server/apps/env/bin/python</string>
+                <string>/opt/MacPatch/Server/apps/mpapi.py</string>
+                <string>gunicorn</string>
         </array>
+        <key>KeepAlive</key>
+        <true/>
         <key>RunAtLoad</key>
         <true/>
         <key>UserName</key>
@@ -19,5 +22,7 @@
         <string>/opt/MacPatch/Server/logs/mpapi_stderr.log</string>
         <key>StandardOutPath</key>
         <string>/opt/MacPatch/Server/logs/mpapi_stdout.log</string>
+        <key>WorkingDirectory</key>
+        <string>/opt/MacPatch/Server/apps/env/bin</string>
 </dict>
 </plist>

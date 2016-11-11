@@ -523,7 +523,7 @@ echo "* Create Virtualenv for Web services app"
 echo "-----------------------------------------------------------------------"
 
 cd "${MPSERVERBASE}/apps"
-virtualenv env
+virtualenv --no-site-packages env
 source env/bin/activate
 python install.py
 deactivate
@@ -547,6 +547,7 @@ if $USEMACOS; then
 	chmod -R 0775 "${MPSERVERBASE}/logs"
 	chmod -R 0775 "${MPSERVERBASE}/etc"
 	chmod -R 0775 "${MPSERVERBASE}/InvData"
+	chown -R $OWNERGRP "${MPSERVERBASE}/apps/env"
 	#/Library/MacPatch/Server/conf/scripts/Permissions.sh
 fi
 

@@ -36,8 +36,8 @@ case "$1" in
  start)
 	echo $"Starting MacPatch REST Services"
 	cd $WS_HOME
-    source $WS_HOME/env/bin/activate
-    $WS_HOME/mpapi.py gunicorn --daemon &
+	source $WS_HOME/env/bin/activate
+	$WS_HOME/mpapi.py gunicorn --daemon &
 	;;
  stop)
 	echo $"Stopping MacPatch REST Services"
