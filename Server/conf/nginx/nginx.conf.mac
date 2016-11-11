@@ -9,6 +9,9 @@ events {
     worker_connections  2048;
 }
 
+tcp_nopush on;
+reset_timedout_connection on;
+server_tokens off;
 
 http {
 
