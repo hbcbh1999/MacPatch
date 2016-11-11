@@ -237,6 +237,20 @@ function mkdirP {
 	fi
 }
 
+function rmF {
+	#
+	# Function for remove files and dirs and echos
+	#
+	if [ ! -n "$1" ]; then
+		echo "Enter a path"
+	elif [ -d $1 ]; then
+		echo "$1 already exists"
+	else
+		echo "Removing $1"
+		rm -rf $1
+	fi
+}
+
 # ------------------
 # Create Skeleton Dir Structure
 # ------------------
@@ -346,9 +360,9 @@ echo " - Uncompress ${TOMCAT_SW}"
 mkdir -p "${MPSERVERBASE}/apache-tomcat"
 tar xfz ${SRC_DIR}/${TOMCAT_SW} --strip 1 -C ${MPSERVERBASE}/apache-tomcat
 chmod +x ${MPSERVERBASE}/apache-tomcat/bin/*
-rm -rf ${MPSERVERBASE}/apache-tomcat/webapps/docs
-rm -rf ${MPSERVERBASE}/apache-tomcat/webapps/examples
-rm -rf ${MPSERVERBASE}/apache-tomcat/webapps/ROOT
+rmF ${MPSERVERBASE}/apache-tomcat/webapps/docs
+rmF ${MPSERVERBASE}/apache-tomcat/webapps/examples
+rmF ${MPSERVERBASE}/apache-tomcat/webapps/ROOT
 
 # ------------------
 # Build NGINX
@@ -386,10 +400,13 @@ make install >> ${MPSERVERBASE}/logs/nginx-build.log 2>&1
 
 mv ${MPSERVERBASE}/nginx/conf/nginx.conf ${MPSERVERBASE}/nginx/conf/nginx.conf.orig
 if $USEMACOS; then
+	echo " - Copy nginx.conf.mac to ${MPSERVERBASE}/nginx/conf/nginx.conf"
 	cp ${MPSERVERBASE}/conf/nginx/nginx.conf.mac ${MPSERVERBASE}/nginx/conf/nginx.conf
 else
+	echo " - Copy nginx.conf to ${MPSERVERBASE}/nginx/conf/nginx.conf"
 	cp ${MPSERVERBASE}/conf/nginx/nginx.conf ${MPSERVERBASE}/nginx/conf/nginx.conf
 fi
+echo " - Copy nginx sites to ${MPSERVERBASE}/nginx/conf/sites"
 cp -r ${MPSERVERBASE}/conf/nginx/sites ${MPSERVERBASE}/nginx/conf/sites
 
 perl -pi -e "s#\[SRVBASE\]#$MPSERVERBASE#g" $MPSERVERBASE/nginx/conf/nginx.conf
@@ -423,11 +440,14 @@ cp -r "${MPSERVERBASE}"/conf/app/mods/site/* "${MPSERVERBASE}"/conf/app/.site
 chmod -R 0775 "${MPSERVERBASE}/conf/app/.site"
 chown -R $OWNERGRP "${MPSERVERBASE}/conf/app/.site"
 
+echo " - Creating console.war file"
 jar cf "${MPSERVERBASE}/conf/app/war/site/console.war" -C "${MPSERVERBASE}/conf/app/.site" .
 
 # Tomcat Config
 MPTCCONF="${MPSERVERBASE}/conf/tomcat/server"
 MPTOMCAT="${MPSERVERBASE}/apache-tomcat"
+
+echo " - Copy console.war to ${MPTOMCAT}/webapps"
 cp "${MPSERVERBASE}/conf/app/war/site/console.war" "${MPTOMCAT}/webapps"
 if $USEMACOS; then
 	cp "${MPTCCONF}/bin/setenv.sh.sml" "${MPTOMCAT}/bin/setenv.sh"
@@ -470,7 +490,7 @@ echo "-----------------------------------------------------------------------"
 
 certsDir="${MPSERVERBASE}/etc/apacheCerts"
 if [ ! -d "${certsDir}" ]; then
-	mkdir -p "${certsDir}"
+	mkdirP "${certsDir}"
 fi
 
 USER="MacPatch"
