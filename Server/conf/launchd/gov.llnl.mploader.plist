@@ -6,18 +6,18 @@
 	<string>gov.llnl.mploader</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>/opt/MacPatch/conf/scripts/MPSUSPatchSync.py</string>
+		<string>/opt/MacPatch/Server/conf/scripts/MPSUSPatchSync.py</string>
 		<string>--plist</string>
-		<string>/opt/MacPatch/etc/gov.llnl.mp.patchloader.plist</string>
+		<string>/opt/MacPatch/Server/etc/gov.llnl.mp.patchloader.plist</string>
 	</array>
 	<key>StartInterval</key>
 	<integer>28800</integer>
 	<key>ServiceDescription</key>
 	<string>MacPatch Apple Patches Downloader</string>
 	<key>StandardOutPath</key>
-	<string>/opt/MacPatch/logs/mpPatchLoader_stdout.log</string>
+	<string>/opt/MacPatch/Server/logs/mpPatchLoader_stdout.log</string>
 	<key>StandardErrorPath</key>
-	<string>/opt/MacPatch/logs/mpPatchLoader_stderr.log</string>
+	<string>/opt/MacPatch/Server/logs/mpPatchLoader_stderr.log</string>
 	<key>RunAtLoad</key>
 	<true/>
 </dict>

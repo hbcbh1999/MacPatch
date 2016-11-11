@@ -8,11 +8,11 @@
 	<string>gov.llnl.mp.invd</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>/opt/MacPatch/conf/scripts/MPInventoryD.py</string>
+		<string>/opt/MacPatch/Server/conf/scripts/MPInventoryD.py</string>
 		<string>--siteJSON</string>
-		<string>/opt/MacPatch/conf/etc/siteconfig.json</string>
+		<string>/opt/MacPatch/Server/etc/siteconfig.json</string>
 		<string>--files</string>
-		<string>/opt/MacPatch/InvData/Files</string>
+		<string>/opt/MacPatch/Server/InvData/Files</string>
 	</array>
 	<key>RunAtLoad</key>
 	<true/>

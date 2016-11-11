@@ -8,14 +8,14 @@
 	<string>gov.llnl.mp.sync</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>/opt/MacPatch/conf/scripts/MPSyncContent.py</string>
+		<string>/opt/MacPatch/Server/conf/scripts/MPSyncContent.py</string>
 	</array>
 	<key>ServiceDescription</key>
 	<string>MacPatch Content Sync Script</string>
 	<key>StandardErrorPath</key>
-	<string>/opt/MacPatch/logs/mp_sync_stdout.log</string>
+	<string>/opt/MacPatch/Server/logs/mp_sync_stdout.log</string>
 	<key>StandardOutPath</key>
-	<string>/opt/MacPatch/logs/mp_sync_stdout.log</string>
+	<string>/opt/MacPatch/Server/logs/mp_sync_stdout.log</string>
 	<key>StartInterval</key>
 	<integer>1800</integer>
 	<key>RunAtLoad</key>
