@@ -71,9 +71,13 @@ def installAlt(package):
 def upgrade(packages,platformStr="linux"):
     for package in packages:
         if platformStr == 'linux':
-            pip.main(['install', "--quiet", "--egg", "--no-cache-dir", "--upgrade", "--trusted-host", "pypi.python.org", package])
+            res = pip.main(['install', "--quiet", "--egg", "--no-cache-dir", "--upgrade", "--trusted-host", "pypi.python.org", package])
         else:
-            pip.main(['install', "--quiet", "--egg", "--no-cache-dir", "--upgrade", package])
+            res = pip.main(['install', "--quiet", "--egg", "--no-cache-dir", "--upgrade", package])
+
+        if res != 0:
+            _failed_.append(package)
+            print("Error installing " + package + ". Please verify env.")
 
 def install(packages,platformStr="linux"):
     for package in packages:
