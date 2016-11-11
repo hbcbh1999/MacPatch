@@ -243,26 +243,26 @@ echo `mkdir -p ${MPSERVERBASE}/logs`
 # ------------------
 if $USEMACOS; then
 	echo
-	echo "* Copy Mac OS gui tools."
+	echo "* Uncompress source files needed for build"
 	echo "-----------------------------------------------------------------------"
 	#cp -R ${GITROOT}/MacPatch\ Server/Server ${MPBASE}
 	#cp ${MPSERVERBASE}/conf/Content/Web/tools/MPAgentUploader.app.zip /Library/MacPatch/Content/Web/tools/
 
-	HTTP_SW=`find "${SRC_DIR}" -name "nginx"* -type f -exec basename {} \; | head -n 1`
+	#HTTP_SW=`find "${SRC_DIR}" -name "nginx"* -type f -exec basename {} \; | head -n 1`
 	PCRE_SW=`find "${SRC_DIR}" -name "pcre-"* -type f -exec basename {} \; | head -n 1`
 	OSSL_SW=`find "${SRC_DIR}" -name "openssl-"* -type f -exec basename {} \; | head -n 1`
 
 	# PCRE
 	mkdir ${TMP_DIR}/pcre
-	tar xvfz ${SRC_DIR}/${PCRE_SW} --strip 1 -C ${TMP_DIR}/pcre
+	tar xfz ${SRC_DIR}/${PCRE_SW} --strip 1 -C ${TMP_DIR}/pcre
 
-	# NGINX
-	mkdir ${TMP_DIR}/nginx
-	tar xvfz ${SRC_DIR}/${HTTP_SW} --strip 1 -C ${TMP_DIR}/nginx
+	# NGINX Done else where in script
+	#mkdir ${TMP_DIR}/nginx
+	#tar xfz ${SRC_DIR}/${HTTP_SW} --strip 1 -C ${TMP_DIR}/nginx
 
 	# OpenSSL
 	mkdir ${TMP_DIR}/openssl
-	tar xvfz ${SRC_DIR}/${OSSL_SW} --strip 1 -C ${TMP_DIR}/openssl
+	tar xfz ${SRC_DIR}/${OSSL_SW} --strip 1 -C ${TMP_DIR}/openssl
 fi
 
 # ------------------
