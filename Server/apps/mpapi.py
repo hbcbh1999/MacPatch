@@ -79,27 +79,18 @@ class Populate(Command):
 
 # DB Migrate -----------------------------------------------------------------
 manager.add_command('db', MigrateCommand)
-manager.add_command('db', Populate())
+#manager.add_command('db', Populate())
 
-@manager.command
-def init_db():
-    db.create_all()
-    db.session.commit()
-    print 'Initialized the database'
+@migrate.configure
+def configure_alembic(config):
+    # modify config object
+    return config
 
 @manager.command
 def insert_data():
-	_pass = hashlib.md5("*mpadmin*").hexdigest()
-	db.session.add(AdmUsers(user_id="mpadmin", user_RealName="MPAdmin", user_pass=_pass, enabled='1'))
-	db.session.commit()
-
-
-@manager.command
-def dropdb():
-    if prompt_bool(
-        "Are you sure you want to lose all your data"):
-        db.drop_all()
-        print 'Dropped the database'
+	print 'Add Default Data To Database'
+	addDefaultData()
+	print 'Default Data Added Database'
 
 @manager.command
 def populateDB():
