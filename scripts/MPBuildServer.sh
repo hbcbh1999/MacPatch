@@ -333,6 +333,13 @@ do
 		pip install --quiet --upgrade --trusted-host pypi.python.org ${p}
 		if [ $? != 0 ] ; then
 			echo "Error installing ${p}"
+			sleep 2
+			echo
+			echo "Trying ${p}, python module again."
+			pip install --quiet --upgrade --trusted-host pypi.python.org ${p}
+			if [ $? != 0 ] ; then
+				echo "Error installing ${p}"
+			fi
 		fi
 	else
 		if [[ ${p} == *"python-crontab"* ]]; then
@@ -341,6 +348,13 @@ do
 		pip install --egg --quiet --no-cache-dir --upgrade ${p}
 		if [ $? != 0 ] ; then
 			echo "Error installing ${p}"
+			sleep 2
+			echo
+			echo "Trying ${p}, python module again."
+			pip install --quiet --upgrade --trusted-host pypi.python.org ${p}
+			if [ $? != 0 ] ; then
+				echo "Error installing ${p}"
+			fi
 		fi
 	fi
 done
