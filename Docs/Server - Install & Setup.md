@@ -78,8 +78,10 @@ Please remeber the passwords for mpdbadm and mpdbro accounts while running this 
 		cd /opt/MacPatch/Server/apps
 		source env/bin/activate
 		mpapi.py db upgrade head
-		mpapi.py populateDB
+		mpapi.py populate_db
 		deactivate
+		
+**Note:** If "mpapi.py db upgrade head" is done using a root shell. Please delete the "/opt/MacPatch/Server/logs/mpwsapi.log" file. It will be owned by root and the REST api will not launch.
 
 ##### Start Services
 		
