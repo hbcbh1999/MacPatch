@@ -232,7 +232,7 @@ function mkdirP {
 	elif [ -d $1 ]; then
 		echo "$1 already exists"
 	else
-		echo "Creating directory $1"
+		echo " - Creating directory $1"
 		mkdir -p $1
 	fi
 }
@@ -244,10 +244,10 @@ function rmF {
 	if [ ! -n "$1" ]; then
 		echo "Enter a path"
 	elif [ -d $1 ]; then
-		echo "Removing $1"
+		echo " - Removing $1"
 		rm -rf $1
 	elif [ -f $1 ]; then
-		echo "Removing $1"
+		echo " - Removing $1"
 		rm -rf $1
 	fi
 }
@@ -315,7 +315,7 @@ if $USELINUX; then
 		do
 			p=`rpm -qa --qf '%{NAME}\n' | grep -e ${i}$ | head -1`
 			if [ -z $p ]; then
-				echo "Install $i"
+				echo " - Install $i"
 				yum install -y -q -e 1 ${i}
 			fi
 		done
@@ -331,17 +331,17 @@ echo "-----------------------------------------------------------------------"
 pip_mods=( "pip" "setuptools" "virtualenv" "pycrypto" "argparse" "biplist" "python-crontab" "python-dateutil" "requests" "six" "wheel" "mysql-connector-python-rf")
 for p in "${pip_mods[@]}"
 do
-	echo "Installing ${p}, python module." 
+	echo " - Installing ${p}, python module." 
 	if $USELINUX; then
 		pip install --quiet --upgrade --trusted-host pypi.python.org ${p}
 		if [ $? != 0 ] ; then
-			echo "Error installing ${p}"
+			echo " Error installing ${p}"
 			sleep 2
 			echo
-			echo "Trying ${p}, python module again."
+			echo " - Trying ${p}, python module again."
 			pip install --quiet --upgrade --trusted-host pypi.python.org ${p}
 			if [ $? != 0 ] ; then
-				echo "Error installing ${p}"
+				echo " Error installing ${p}"
 			fi
 		fi
 	else
@@ -350,13 +350,13 @@ do
 		fi
 		pip install --egg --quiet --no-cache-dir --upgrade ${p}
 		if [ $? != 0 ] ; then
-			echo "Error installing ${p}"
+			echo " Error installing ${p}"
 			sleep 2
 			echo
-			echo "Trying ${p}, python module again."
+			echo " - Trying ${p}, python module again."
 			pip install --quiet --upgrade --trusted-host pypi.python.org ${p}
 			if [ $? != 0 ] ; then
-				echo "Error installing ${p}"
+				echo " Error installing ${p}"
 			fi
 		fi
 	fi

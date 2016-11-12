@@ -6,6 +6,11 @@
         <string>gov.llnl.mp.py.api</string>
         <key>ServiceDescription</key>
         <string>MacPatch REST API</string>
+        <key>EnvironmentVariables</key>
+        <dict>
+                <key>PYTHON_EGG_CACHE</key>
+                <string>/opt/MacPatch/Server/apps/env</string>
+        </dict>
         <key>ProgramArguments</key>
         <array>
                 <string>/opt/MacPatch/Server/apps/env/bin/python</string>
