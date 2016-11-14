@@ -319,7 +319,6 @@
 // Parses Request Result using know reponse result type (json, string)
 - (id)returnRequestWithType:(NSData *)requestData resultType:(NSString *)resultType error:(NSError **)err
 {
-
     MPJsonResult *jres = [[MPJsonResult alloc] init];
     [jres setJsonData:requestData];
     NSError *error = nil;
@@ -807,71 +806,6 @@
     qlinfo(@"Data was successfully posted.");
     return YES;
 }
-
-// SWDist
-/* Not Used
-- (NSString *)getHashForSWTaskGroup:(NSString *)aGroupName error:(NSError **)err
-{
-    NSString *resultHash = @"NA";
-
-    // Request
-    NSError *error = nil;
-    NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
-    [params setObject:aGroupName forKey:@"GroupName"];
-    NSData *res = [self requestWithMethodAndParams:@"GetSoftwareTasksForGroupHash" params:(NSDictionary *)params error:&error];
-    if (error)
-    {
-		if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return resultHash;
-    }
-
-    // Parse Main JSON Result
-    // MPJsonResult does all of the error checking on the result
-    MPJsonResult *jres = [[MPJsonResult alloc] init];
-    [jres setJsonData:res];
-    error = nil;
-    id result = [jres returnJsonResult:&error];
-    qldebug(@"JSON Result: %@",result);
-    if (error)
-    {
-        if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return resultHash;
-    }
-
-    error = nil;
-    NSDictionary *jsonResult = [jres deserializeJSONString:[result objectForKey:@"result"] error:&error];
-    if (error) {
-        if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return resultHash;
-    }
-
-    // Does it have the right key?
-    if (![jsonResult objectForKey:@"hash"])
-    {
-        NSDictionary *userInfoDict = [NSDictionary dictionaryWithObject:@"\"hash\" key is missing." forKey:NSLocalizedDescriptionKey];
-        if (err != NULL) *err = [NSError errorWithDomain:@"gov.llnl.mp" code:1  userInfo:userInfoDict];
-        qlerror(@"%@",[userInfoDict objectForKey:NSLocalizedDescriptionKey]);
-        return resultHash;
-    } else {
-        resultHash = [jsonResult objectForKey:@"hash"];
-    }
-
-    return resultHash;
-}
- */
-
 
 #pragma mark - OS Migration
 
