@@ -368,6 +368,114 @@ OSStatus extractIdentityAndTrust(CFDataRef inPKCS12Data, SecIdentityRef *outIden
     return request;
 }
 
+#pragma mark REST
+- (NSURLRequest *)buildJSONGETRequest:(NSString *)aURI error:(NSError **)error
+{
+    return [self buildJSONRequest:@"GET" uri:aURI body:nil error:error];
+}
+
+- (NSURLRequest *)buildJSONPOSTRequest:(NSString *)aURI body:(NSDictionary *)aBody error:(NSError **)error
+{
+    return [self buildJSONRequest:@"POST" uri:aURI body:aBody error:error];
+}
+
+- (NSURLRequest *)buildJSONRequest:(NSString *)aHttpMethod uri:(NSString *)aURI body:(NSDictionary *)aBody error:(NSError **)error
+{
+    NSError *netErr = nil;
+    [self networkIsReachable:&netErr];
+    if (netErr) {
+        if (error != NULL) *error = netErr;
+        return nil;
+    }
+    
+    NSString *ts = [self generateTimeStampForSignature];
+    NSString *theURL;
+    NSString *signedData;
+    NSMutableURLRequest *request = [[NSMutableURLRequest alloc] init];
+    
+    theURL = [NSString stringWithFormat:@"%@://%@:%d%@",(mpServer.useHTTPS ? @"https" : @"http"),mpServer.host,(int)mpServer.port,aURI];
+    qldebug(@"%@",theURL);
+    
+    if ([aHttpMethod isEqualToString:@"POST"])
+    {
+        if (aBody != nil)
+        {
+            netErr = nil;
+            NSData *jsonData = [NSJSONSerialization dataWithJSONObject:aBody options:0 error:&netErr];
+            if (netErr) {
+                if (error != NULL) *error = netErr;
+                return nil;
+            }
+            
+            NSString *jString = [[NSMutableString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+            signedData = [self signWebServiceRequest:jString timeStamp:ts];
+            qldebug(@"Signature For Get Request[%@]: %@",ts ,signedData);
+            
+            [request setHTTPBody:jsonData];
+        }
+        else
+        {
+            signedData = [self signWebServiceRequest:aURI timeStamp:ts];
+        }
+    }
+    else
+    {
+        signedData = [self signWebServiceRequest:aURI timeStamp:ts];
+    }
+    
+    NSString *properlyEscapedURL = [theURL stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+    [request setCachePolicy:NSURLRequestReloadIgnoringLocalCacheData];
+    [request setTimeoutInterval:_urlTimeout];
+    [request setURL:[NSURL URLWithString:(NSString *)properlyEscapedURL]];
+    [request setHTTPMethod:[aHttpMethod uppercaseString]];
+    [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
+    [request addValue:ts forHTTPHeaderField:@"X-API-TS"];
+    [request addValue:signedData forHTTPHeaderField: @"X-API-Signature"];
+    
+    return request;
+}
+
+- (NSURLRequest *)buildJSONRequestString:(NSString *)aHttpMethod uri:(NSString *)aURI body:(NSString *)aBody error:(NSError **)error
+{
+    NSError *netErr = nil;
+    [self networkIsReachable:&netErr];
+    if (netErr) {
+        if (error != NULL) *error = netErr;
+        return nil;
+    }
+    
+    NSString *ts = [self generateTimeStampForSignature];
+    NSString *theURL;
+    NSString *signedData;
+    NSMutableURLRequest *request = [[NSMutableURLRequest alloc] init];
+    
+    theURL = [NSString stringWithFormat:@"%@://%@:%d%@",(mpServer.useHTTPS ? @"https" : @"http"),mpServer.host,(int)mpServer.port,aURI];
+    qldebug(@"%@",theURL);
+    
+    if ([aHttpMethod isEqualToString:@"POST"])
+    {
+        signedData = [self signWebServiceRequest:aBody timeStamp:ts];
+        qldebug(@"Signature For Get Request[%@]: %@",ts ,signedData);
+        
+        [request setHTTPBody:[aBody dataUsingEncoding:NSUTF8StringEncoding]];
+    }
+    else
+    {
+        signedData = [self signWebServiceRequest:aURI timeStamp:ts];
+    }
+    
+    NSString *properlyEscapedURL = [theURL stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+    [request setCachePolicy:NSURLRequestReloadIgnoringLocalCacheData];
+    [request setTimeoutInterval:_urlTimeout];
+    [request setURL:[NSURL URLWithString:(NSString *)properlyEscapedURL]];
+    [request setHTTPMethod:[aHttpMethod uppercaseString]];
+    [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
+    [request addValue:ts forHTTPHeaderField:@"X-API-TS"];
+    [request addValue:signedData forHTTPHeaderField: @"X-API-Signature"];
+    
+    return request;
+}
+
 #pragma mark - MPNetRequestController
 
 - (NSData *)sendSynchronousRequest:(NSURLRequest *)request returningResponse:(NSURLResponse **)response error:(NSError **)error
@@ -384,7 +492,8 @@ OSStatus extractIdentityAndTrust(CFDataRef inPKCS12Data, SecIdentityRef *outIden
 
     [self waitForDidFinishLoading];
     if (self.error != nil) {
-        if (response) *response = nil;
+        //if (response) *response = nil;
+        if (response) *response = self.response;
         if (error) *error = self.error;
         return nil;
     } else {

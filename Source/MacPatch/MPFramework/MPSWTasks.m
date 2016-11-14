@@ -68,47 +68,7 @@
 
 - (void)main 
 {
-    NSError *error = nil;
-    NSString *_remoteGroupHash = nil;
-    _remoteGroupHash = [self getHashForGroup:&error];
-    if (error) {
-        qlerror(@"Error [getHashForGroup]: %@",[error description]);
-        return;
-    }
-    
-    if ([groupHash isEqualTo:NULL] || ([groupHash isEqualToString:_remoteGroupHash] == NO)) {
-        error = nil;
-        id jResult = [self getSWTasksForGroupFromServer:&error]; 
-        if (error) {
-            qlerror(@"Error [getSWTasksForGroupFromServer]: %@",[error description]);
-            return;
-        }
-        if (jResult != nil) {
-            [jResult writeToFile:[NSString stringWithFormat:@"%@/Data/.swTasks.plist",MP_ROOT_CLIENT] 
-                      atomically:YES 
-                        encoding:NSUTF8StringEncoding error:NULL];
-        }
-    }
-    
-}
-
-- (NSString *)getHashForGroup:(NSError **)err
-{
-    NSError *error = nil;
-    NSString *result = @"NA";
-    MPWebServices *mpws = [[MPWebServices alloc] init];
-    result = [mpws getHashForSWTaskGroup:self.groupName error:&error];
-    if (error) {
-        if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return @"NA";
-    }
-    
-    qldebug(@"Result: %@",result);
-    return result;    
+    return;
 }
 
 - (id)getSWTasksForGroupFromServer:(NSError **)err
@@ -138,6 +98,7 @@
     [params setObject:[taskDict objectForKey:@"id"] forKey:@"SWTaskID"];
     [params setObject:[taskDict valueForKeyPath:@"Software.sid"] forKey:@"SWDistID"];
     [params setObject:[NSNumber numberWithInt:resultNo] forKey:@"ResultNo"];
+    [params setObject:[NSNumber numberWithInt:resultNo] forKey:@"result"];
     [params setObject:resultString forKey:@"ResultString"];
     [params setObject:@"i" forKey:@"Action"];
 
@@ -164,6 +125,7 @@
     [params setObject:[taskDict objectForKey:@"id"] forKey:@"SWTaskID"];
     [params setObject:[taskDict valueForKeyPath:@"Software.sid"] forKey:@"SWDistID"];
     [params setObject:[NSNumber numberWithInt:resultNo] forKey:@"ResultNo"];
+    [params setObject:[NSNumber numberWithInt:resultNo] forKey:@"result"];
     [params setObject:resultString forKey:@"ResultString"];
     [params setObject:@"u" forKey:@"Action"];
 

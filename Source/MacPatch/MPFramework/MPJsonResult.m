@@ -47,7 +47,8 @@
     NSMutableDictionary *errInfo = [NSMutableDictionary dictionary];
 
     id jMsgResult = [NSJSONSerialization JSONObjectWithData:self.jsonData options:kNilOptions error:&err];
-    NSLog(@"returnResult: %@",jMsgResult);
+    qldebug(@"returnResult: %@",jMsgResult);
+    
     // Check for valid object
     if (err)
     {
@@ -103,6 +104,7 @@
     NSError *err = nil;
     NSMutableDictionary *errInfo = [NSMutableDictionary dictionary];
     id jMsgResult = [NSJSONSerialization JSONObjectWithData:self.jsonData options:kNilOptions error:&err];
+    qldebug(@"returnJsonResult: %@",jMsgResult);
 
     // Check for valid object
     if (err)

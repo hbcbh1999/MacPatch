@@ -203,7 +203,7 @@
     NSMutableArray *_randComplete;
     
     for (NSDictionary *_srv in aServers) {
-        if ([[_srv objectForKey:@"serverType"] isEqualToString:@"1"] || [[_srv objectForKey:@"serverType"] isEqualToString:@"2"])
+        if ((int)[_srv objectForKey:@"serverType"] == 1 || (int)[_srv objectForKey:@"serverType"] == 2)
         {
             [_staticItems addObject:_srv];
         } else {
@@ -218,8 +218,10 @@
     if ([_randItems count] > 1) {
         _randComplete = [NSMutableArray arrayWithArray:[self randomizeArray:(NSArray *)_randItems]];
         [_randComplete addObjectsFromArray:_staticItems];
+    } else {
+        _randComplete = [NSMutableArray arrayWithArray:(NSArray *)_randItems];
+        [_randComplete addObjectsFromArray:_staticItems];
     }
-    
     
     return (NSArray *)_randComplete;
 }

@@ -43,4 +43,5 @@
 
 - (BOOL)stringToBoolValue;
 - (NSString *)validXMLString;
+- (BOOL)isNSStringType;
 @end

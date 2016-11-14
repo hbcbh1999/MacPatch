@@ -1206,7 +1206,6 @@ done:
                             [spStatusText setStringValue:[NSString stringWithFormat:@"Downloading %@",[[currPatchToInstallDict objectForKey:@"url"] lastPathComponent]]];
                             [spStatusText display];
                             //Pre Proxy Config
-                            //downloadURL = [NSString stringWithFormat:@"/mp-content%@",[[currPatchToInstallDict objectForKey:@"url"] urlEncode]];
                             downloadURL = [NSString stringWithFormat:@"/mp-content%@",[currPatchToInstallDict objectForKey:@"url"]];
                             logit(lcl_vInfo,@"Download patch from: %@",downloadURL);
                             err = nil;
@@ -1270,7 +1269,6 @@ done:
                         if ([[currPatchToInstallDict objectForKey:@"preinst"] length] > 0 && [[currPatchToInstallDict objectForKey:@"preinst"] isEqualTo:@"NA"] == NO) {
                             [spStatusText setStringValue:[NSString stringWithFormat:@"Begin pre install script."]];
                             [spStatusText display];
-                            //NSString *preInstScript = [[currPatchToInstallDict objectForKey:@"preinst"] decodeBase64WithNewLinesReturnString:NO];
                             NSString *preInstScript = [[currPatchToInstallDict objectForKey:@"preinst"] decodeBase64AsString];
                             logit(lcl_vDebug,@"preInstScript=%@",preInstScript);
                             if ([self runScript:preInstScript] != 0 ) 
@@ -1330,7 +1328,6 @@ done:
                         if ([[currPatchToInstallDict objectForKey:@"postinst"] length] > 0 && [[currPatchToInstallDict objectForKey:@"postinst"] isEqualTo:@"NA"] == NO) {
                             [spStatusText setStringValue:[NSString stringWithFormat:@"Begin post install script."]];
                             [spStatusText display];
-                            //NSString *postInstScript = [[currPatchToInstallDict objectForKey:@"postinst"] decodeBase64WithNewLinesReturnString:NO];
                             NSString *postInstScript = [[currPatchToInstallDict objectForKey:@"postinst"] decodeBase64AsString];
                             logit(lcl_vDebug,@"postInstScript=%@",postInstScript);
                             if ([self runScript:postInstScript] != 0 ) 
@@ -1374,7 +1371,6 @@ done:
                         logit(lcl_vInfo,@"%@ has install criteria assigned to it.",[patch objectForKey:@"patch"]);
                         
                         NSDictionary *criteriaDictPre, *criteriaDictPost;
-                        //NSData *scriptData;
                         NSString *scriptText;
                         
                         int i = 0;
@@ -1384,10 +1380,7 @@ done:
                             logit(lcl_vInfo,@"Processing pre-install criteria."); 
                             for (i=0;i<[[patch objectForKey:@"criteria_pre"] count];i++)
                             {
-                                criteriaDictPre = [[patch objectForKey:@"criteria_pre"] objectAtIndex:i]; 
-                                
-                                //scriptData = [[criteriaDictPre objectForKey:@"data"] decodeBase64WithNewlines:NO];
-                                //scriptText = [[NSString alloc] initWithData:scriptData encoding:NSASCIIStringEncoding];
+                                criteriaDictPre = [[patch objectForKey:@"criteria_pre"] objectAtIndex:i];
                                 scriptText = [[criteriaDictPre objectForKey:@"data"] decodeBase64AsString];
                                 
                                 s_res = [self runScript:scriptText];
@@ -1418,9 +1411,6 @@ done:
                             for (i=0;i<[[patch objectForKey:@"criteria_post"] count];i++)
                             {
                                 criteriaDictPost = [[patch objectForKey:@"criteria_post"] objectAtIndex:i];
-                                
-                                //scriptData = [[criteriaDictPost objectForKey:@"data"] decodeBase64WithNewlines:NO];
-                                //scriptText = [[NSString alloc] initWithData:scriptData encoding:NSASCIIStringEncoding];
                                 scriptText = [[criteriaDictPost objectForKey:@"data"] decodeBase64AsString];
                                 
                                 s_res = [self runScript:scriptText];
@@ -1784,7 +1774,8 @@ done:
 	if(notification)
 	{
         NSDictionary *tmpDict = [notification userInfo];
-		[spStatusText setStringValue:[NSString stringWithFormat:@"Scanning for %@",[tmpDict objectForKey:@"pname"]]];
+        NSLog(@"%@", tmpDict);
+		[spStatusText setStringValue:[NSString stringWithFormat:@"Scanning for %@",[tmpDict objectForKey:@"patch_name"]]];
 		[spStatusText display];
 	}	
 }

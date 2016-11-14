@@ -26,7 +26,7 @@
 #import "MPWebServices.h"
 #import "MPDefaults.h"
 #import "MPFailedRequests.h"
-#import <CommonCrypto/CommonHMAC.h>
+
 
 @interface MPWebServices ()
 
@@ -34,12 +34,11 @@
 @property (strong) NSString *_osver;
 @property (strong) NSDictionary *_defaults;
 
-- (BOOL)isPatchGroupHashValid:(NSError **)err;
 - (void)writePatchGroupCacheFileData:(NSString *)aData;
 
 - (NSData *)requestWithMethodAndParams:(NSString *)aMethod params:(NSDictionary *)aParams error:(NSError **)err;
+- (NSData *)requestWithURIAndMethodAndParams:(NSString *)aURI method:(NSString *)aMethod params:(NSDictionary *)aParams error:(NSError **)err;
 - (NSData *)postRequestWithMethodAndParams:(NSString *)aMethod params:(NSDictionary *)aParams error:(NSError **)err;
-- (NSData *)postRequestWithURIAndMethodAndParams:(NSString *)aURI method:(NSString *)aMethod params:(NSDictionary *)aParams error:(NSError **)err;
 
 @end
 
@@ -197,7 +196,9 @@
     return res;
 }
 
-- (NSData *)postRequestWithURIAndMethodAndParams:(NSString *)aURI method:(NSString *)aMethod params:(NSDictionary *)aParams error:(NSError **)err
+#pragma mark REST
+// New for Python REST Web Services
+- (NSData *)getRequestWithURIforREST:(NSString *)aURI error:(NSError **)err
 {
     MPNetConfig *mpNetConfig = [[MPNetConfig alloc] init];
     
@@ -212,9 +213,8 @@
     {
         qlinfo(@"Trying Server %@",srv.host);
         req = [[MPNetRequest alloc] initWithMPServer:srv];
-        [req setApiURI:aURI];
         error = nil;
-        urlReq = [req buildRequestForWebServiceMethod:aMethod formData:aParams error:&error];
+        urlReq =  [req buildJSONGETRequest:aURI error:&error];
         if (error) {
             if (err != NULL) {
                 *err = error;
@@ -249,13 +249,104 @@
             continue;
         }
     }
+
+    return res;
+}
+
+- (NSData *)postRequestWithURIforREST:(NSString *)aURI body:(id)aBody error:(NSError **)err
+{
+    MPNetConfig *mpNetConfig = [[MPNetConfig alloc] init];
+    
+    NSError *error = nil;
+    NSURLResponse *response;
+    
+    MPNetRequest *req;
+    NSURLRequest *urlReq;
+    NSData *res = nil;
+    NSArray *servers = [mpNetConfig servers];
+    for (MPNetServer *srv in servers)
+    {
+        qlinfo(@"Trying Server %@",srv.host);
+        req = [[MPNetRequest alloc] initWithMPServer:srv];
+        error = nil;
+        if ([aBody isKindOfClass:[NSDictionary class]]) {
+            urlReq =  [req buildJSONPOSTRequest:aURI body:aBody error:&error];
+        } else if ([aBody isKindOfClass:[NSString class]]) {
+            urlReq =  [req buildJSONRequestString:@"POST" uri:aURI body:aBody error:&error];
+        } else {
+            urlReq =  [req buildJSONRequestString:@"POST" uri:aURI body:nil error:&error];
+        }
+        
+        if (error) {
+            if (err != NULL) {
+                *err = error;
+            }
+            qlerror(@"[%@][%d](%@ %d): %@",srv.host,(int)srv.port,error.domain,(int)error.code,error.localizedDescription);
+            continue;
+        }
+        error = nil;
+        if (urlReq)
+        {
+            res = nil;
+            res = [req sendSynchronousRequest:urlReq returningResponse:&response error:&error];
+            if (error) {
+                if (err != NULL) {
+                    *err = error;
+                }
+                qlerror(@"[%@][%d](%@ %d): %@",srv.host,(int)srv.port,error.domain,(int)error.code,error.localizedDescription);
+                continue;
+            }
+            // Make any previouse error pointers nil, now that we have a valid host/connection
+            if (err != NULL) {
+                *err = nil;
+            }
+            return res;
+            break;
+        } else {
+            NSDictionary *userInfo = [NSDictionary dictionaryWithObject:@"NSURLRequest was nil." forKey:NSLocalizedDescriptionKey];
+            error = [NSError errorWithDomain:NSOSStatusErrorDomain code:-1001 userInfo:userInfo];
+            qlerror(@"%@",error.localizedDescription);
+            if (err != NULL) {
+                *err = error;
+            }
+            continue;
+        }
+    }
     
     return res;
 }
 
+// Parses Request Result using know reponse result type (json, string)
+- (id)returnRequestWithType:(NSData *)requestData resultType:(NSString *)resultType error:(NSError **)err
+{
+
+    MPJsonResult *jres = [[MPJsonResult alloc] init];
+    [jres setJsonData:requestData];
+    NSError *error = nil;
+    id result;
+    
+    if ([resultType isEqualToString:@"json"]) {
+        result = [jres returnJsonResult:&error];
+    } else {
+        result = [jres returnResult:&error];
+    }
+    
+    qldebug(@"JSON Result: %@",result);
+    if (error)
+    {
+        if (err != NULL) {
+            *err = error;
+        } else {
+            qlerror(@"%@",error.localizedDescription);
+        }
+        return nil;
+    }
+    
+    return result;
+}
+
 #pragma mark main methods
 
-#pragma mark - Registration
 - (BOOL)getIsClientAgentRegistered:(NSError **)err
 {
     return NO;
@@ -274,420 +365,6 @@
 - (NSDictionary *)getRegisterAgent:(NSString *)aRegKey hostName:(NSString *)hostName clientKey:(NSString *)clientKey error:(NSError **)err
 {
     return nil;
-}
-
-- (NSDictionary *)registerAgentUsingPayload:(NSDictionary *)regPayload regKey:(NSString *)aRegKey error:(NSError **)err
-{
-    // Request
-    NSError *error = nil;
-    NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
-    [params setObject:self._cuuid forKey:@"clientID"];
-    [params setObject:aRegKey forKey:@"registrationKey"];
-    [params setObject:[regPayload objectForKey:@"cKey"] forKey:@"clientKey"];
-    [params setObject:[regPayload objectForKey:@"CPubKeyPem"] forKey:@"clientPubKeyPem"];
-    [params setObject:[regPayload objectForKey:@"CPubKeyDer"] forKey:@"clientPubKeyDer"];
-    [params setObject:[regPayload objectForKey:@"ClientHash"] forKey:@"clientPubKeyHash"];
-    
-    NSData *res = [self requestWithURIAndMethodAndParams:WS_CLIENT_REG method:@"registerClient" params:(NSDictionary *)params error:&error];
-    if (error)
-    {
-        if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return nil;
-    }
-    
-    // Parse Main JSON Result
-    // MPJsonResult does all of the error checking on the result
-    MPJsonResult *jres = [[MPJsonResult alloc] init];
-    [jres setJsonData:res];
-    error = nil;
-    id result = [jres returnResult:&error];
-    qldebug(@"JSON Result: %@",result);
-    if (error)
-    {
-        if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return nil;
-    }
-    
-    return result;
-    
-    return nil;
-}
-
-#pragma mark - Servers MP/SUS Lists
-- (NSDictionary *)getMPServerList:(NSError **)err
-{
-    // Request
-    NSError *error = nil;
-    NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
-    [params setObject:self._cuuid forKey:@"clientID"];
-    [params setObject:@"1" forKey:@"listID"];
-    NSData *res = [self requestWithMethodAndParams:@"getServerList" params:(NSDictionary *)params error:&error];
-    if (error)
-    {
-		if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return nil;
-    }
-
-    // Parse Main JSON Result
-    // MPJsonResult does all of the error checking on the result
-    MPJsonResult *jres = [[MPJsonResult alloc] init];
-    [jres setJsonData:res];
-    error = nil;
-    id result = [jres returnJsonResult:&error];
-    qldebug(@"JSON Result: %@",result);
-    if (error)
-    {
-        if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return nil;
-    }
-
-    return result;
-}
-
-- (NSDictionary *)getMPServerListVersion:(NSString *)aVersion listid:(NSString *)aListID error:(NSError **)err
-{
-    // Request
-    NSError *error = nil;
-    NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
-    [params setObject:self._cuuid forKey:@"clientID"];
-    [params setObject:aListID forKey:@"listID"];
-    NSData *res = [self requestWithMethodAndParams:@"getServerListVersion" params:(NSDictionary *)params error:&error];
-    if (error)
-    {
-		if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return nil;
-    }
-
-    // Parse Main JSON Result
-    // MPJsonResult does all of the error checking on the result
-    MPJsonResult *jres = [[MPJsonResult alloc] init];
-    [jres setJsonData:res];
-    error = nil;
-    id result = [jres returnJsonResult:&error];
-    qldebug(@"JSON Result: %@",result);
-    if (error)
-    {
-        if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return nil;
-    }
-
-    return result;
-}
-
-- (NSDictionary *)getSUSServerList:(NSError **)err
-{
-    // Request
-    NSError *error = nil;
-    NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
-    [params setObject:self._cuuid forKey:@"clientID"];
-    [params setObject:@"1" forKey:@"listID"];
-    NSData *res = [self requestWithMethodAndParams:@"getSUServerList" params:(NSDictionary *)params error:&error];
-    if (error)
-    {
-        if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return nil;
-    }
-    
-    // Parse Main JSON Result
-    // MPJsonResult does all of the error checking on the result
-    MPJsonResult *jres = [[MPJsonResult alloc] init];
-    [jres setJsonData:res];
-    error = nil;
-    id result = [jres returnJsonResult:&error];
-    qldebug(@"JSON Result: %@",result);
-    if (error)
-    {
-        if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return nil;
-    }
-    
-    return result;
-}
-
-- (NSDictionary *)getSUSServerListVersion:(NSString *)aVersion listid:(NSString *)aListID error:(NSError **)err
-{
-    // Request
-    NSError *error = nil;
-    NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
-    [params setObject:self._cuuid forKey:@"clientID"];
-    [params setObject:aListID forKey:@"listID"];
-    NSData *res = [self requestWithMethodAndParams:@"getSUServerListVersion" params:(NSDictionary *)params error:&error];
-    if (error)
-    {
-        if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return nil;
-    }
-    
-    // Parse Main JSON Result
-    // MPJsonResult does all of the error checking on the result
-    MPJsonResult *jres = [[MPJsonResult alloc] init];
-    [jres setJsonData:res];
-    error = nil;
-    id result = [jres returnJsonResult:&error];
-    qldebug(@"JSON Result: %@",result);
-    if (error)
-    {
-        if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return nil;
-    }
-    
-    return result;
-}
-
-- (NSDictionary *)getCatalogURLSForHostOS:(NSError **)err
-{
-    // Request
-    NSError *error = nil;
-    NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
-    [params setObject:self._cuuid forKey:@"clientID"];
-    [params setObject:self._osver forKey:@"osminor"];
-    NSData *res = [self requestWithMethodAndParams:@"getAsusCatalogs" params:(NSDictionary *)params error:&error];
-    if (error)
-    {
-		if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return nil;
-    }
-
-    // Parse Main JSON Result
-    // MPJsonResult does all of the error checking on the result
-    MPJsonResult *jres = [[MPJsonResult alloc] init];
-    [jres setJsonData:res];
-    error = nil;
-    id result = [jres returnJsonResult:&error];
-    qldebug(@"JSON Result: %@",result);
-    if (error)
-    {
-        if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return nil;
-    }
-
-    return result;
-}
-
-#pragma mark - Patch
-- (NSDictionary *)getPatchGroupContent:(NSError **)err
-{
-    MPJsonResult *jres = [[MPJsonResult alloc] init];
-
-	NSDictionary *jsonResult = nil;
-    // Check to see if local content is up to date
-    NSError *isErr = nil;
-    BOOL isValid = [self isPatchGroupHashValid:&isErr];
-    if (isValid) {
-        NSString *preJData = [self getPatchGroupCacheFileDataForGroup];
-        if ([preJData isEqualToString:@"ERROR"] == NO) {
-            @try {
-                qlinfo(@"Using patch group cache data.");
-                jsonResult = [jres deserializeJSONString:preJData error:NULL];
-                return jsonResult;
-            }
-            @catch (NSException *exception) {
-                qlerror(@"%@",exception);
-            }
-        }
-    }
-
-    // Request
-    NSError *error = nil;
-    //NSDictionary *param = [NSDictionary dictionaryWithObject:[[_defaults objectForKey:@"PatchGroup"] urlEncode] forKey:@"PatchGroup"];
-    NSDictionary *param = [NSDictionary dictionaryWithObject:[_defaults objectForKey:@"PatchGroup"] forKey:@"PatchGroup"];
-    NSData *res = [self requestWithMethodAndParams:@"GetPatchGroupPatches" params:param error:&error];
-
-    if (error)
-    {
-		if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return nil;
-    }
-
-    // Parse Main JSON Result
-    // MPJsonResult does all of the error checking on the result
-    [jres setJsonData:res];
-    error = nil;
-    id result = [jres returnJsonResult:&error];
-    qldebug(@"JSON Result: %@",result);
-    if (error)
-    {
-        if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return nil;
-    }
-
-    error = nil;
-    NSString *jstr = [jres serializeJSONDataAsString:(NSDictionary *)result error:NULL];
-    [self writePatchGroupCacheFileData:jstr];
-    if (error) {
-        if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return nil;
-    }
-
-    return result;
-}
-
-- (BOOL)isPatchGroupHashValid:(NSError **)err
-{
-    /* Had a problem with the hash, will now use
-       revision instead
-    */
-    
-    // Data is not complete from web service will fix this in 2.7.1
-    return NO;
-    //return [self isPatchGroupDataCurrent:err];
-}
-
-- (BOOL)isPatchGroupDataCurrent:(NSError **)err
-{
-    // Data is not complete from web service will fix this in 2.7.1
-    return NO;
-    
-    /* 
-     Switching to isPatchGroupDataCurrent from isPatchGroupHashValid
-     NSJSONSerialization was reordering the JSON causing the hash to 
-     not match.
-    */
-    
-    NSString        *PatchGroupCacheFile = @"/Library/MacPatch/Client/Data/.gov.llnl.mp.patchgroup.data.plist";
-    int             patchGroupRevision = -1;
-    
-    /*
-     PatchGroup Cache File Layout
-     NSDictionary:
-        PatchGroupName: Default
-        hash: xxxx
-        data: ....
-        rev: ###
-     NSDictionary:
-        PatchGroupName: QA
-        hash: xxxx
-        data: ....
-        rev: ###
-     */
-    
-    if ([[NSFileManager defaultManager] fileExistsAtPath:PatchGroupCacheFile])
-    {
-        NSDictionary *PatchGroupCacheFileData = [NSDictionary dictionaryWithContentsOfFile:PatchGroupCacheFile];
-        if (!PatchGroupCacheFileData) {
-            return NO;
-        } else {
-            if ([PatchGroupCacheFileData objectForKey:[_defaults objectForKey:@"PatchGroup"]])
-            {
-                if ([[PatchGroupCacheFileData objectForKey:[_defaults objectForKey:@"PatchGroup"]] objectForKey:@"rev"]) {
-                    patchGroupRevision = (int)[[PatchGroupCacheFileData objectForKey:[_defaults objectForKey:@"PatchGroup"]] objectForKey:@"rev"];
-                    qlinfo(@"[isPatchGroupDataCurrent]: Revision = %d",patchGroupRevision);
-                }
-            }
-        }
-    }
-    if (patchGroupRevision == -1)
-    {
-        qlinfo(@"Cached data did not contain a revision.");
-        return NO;
-    }
-    
-    // Request
-    NSError *error = nil;
-    NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
-    [params setObject:[_defaults objectForKey:@"PatchGroup"] forKey:@"PatchGroup"];
-    [params setObject:[NSNumber numberWithInt:patchGroupRevision] forKey:@"revision"];
-    NSData *res = [self requestWithMethodAndParams:@"GetIsLatestRevisionForPatchGroup" params:(NSDictionary *)params error:&error];
-    if (error)
-    {
-        if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return NO;
-    }
-    
-    // Parse Main JSON Result
-    // MPJsonResult does all of the error checking on the result
-    MPJsonResult *jres = [[MPJsonResult alloc] init];
-    [jres setJsonData:res];
-    error = nil;
-    id result = [jres returnResult:&error];
-    qldebug(@"JSON Result: %@",result);
-    if (error)
-    {
-        if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return NO;
-    }
-    
-    // Has Object
-    if ([result objectForKey:@"result"]) {
-        if ([[result objectForKey:@"result"] integerValue] == 1) {
-            qlinfo(@"Patch group hash is valid.");
-            return YES;
-        } else {
-            qlinfo(@"Patch group hash is not valid.");
-            return NO;
-        }
-    }
-    
-    // Should not get here
-    return NO;
 }
 
 - (void)writePatchGroupCacheFileData:(NSString *)jData
@@ -726,29 +403,9 @@
 
 }
 
-- (NSString *)getPatchGroupCacheFileDataForGroup
-{
-    NSString *result = @"ERROR";
-    NSDictionary *PatchGroupCacheFileData;
-    NSString *PatchGroupCacheFile = [MP_ROOT_CLIENT stringByAppendingPathComponent:@"/Data/.gov.llnl.mp.patchgroup.data.plist"];
-
-    if ([[NSFileManager defaultManager] fileExistsAtPath:PatchGroupCacheFile])
-    {
-        PatchGroupCacheFileData = [NSMutableDictionary dictionaryWithContentsOfFile:PatchGroupCacheFile];
-        if ([PatchGroupCacheFileData objectForKey:[_defaults objectForKey:@"PatchGroup"]]) {
-            NSDictionary *pInfo = [PatchGroupCacheFileData objectForKey:[_defaults objectForKey:@"PatchGroup"]];
-            if ([pInfo objectForKey:@"data"]) {
-                result = [pInfo objectForKey:@"data"];
-            }
-        }
-    }
-
-    return result;
-}
-
 #define appleScanResults    0
 #define customScanResults   1
-
+/*
 - (BOOL)postPatchScanResultsForType:(NSInteger)aPatchScanType results:(NSDictionary *)resultsDictionary error:(NSError **)err
 {
 	// Create the JSON String
@@ -842,7 +499,9 @@
     // Should not get here
     return NO;
 }
+*/
 
+/* REST Below
 - (BOOL)postPatchInstallResultsToWebService:(NSString *)aPatch patchType:(NSString *)aPatchType error:(NSError **)err
 {
     // Request
@@ -860,15 +519,15 @@
         MPFailedRequests *mpf = [[MPFailedRequests alloc] init];
         [mpf addFailedRequest:@"postPatchInstallResultsToWebService" params:errDict errorNo:error.code errorMsg:error.localizedDescription];
         mpf = nil;
-
-		if (err != NULL) {
+        
+        if (err != NULL) {
             *err = error;
         } else {
             qlerror(@"%@",error.localizedDescription);
         }
         return NO;
     }
-
+    
     // Parse Main JSON Result
     // MPJsonResult does all of the error checking on the result
     MPJsonResult *jres = [[MPJsonResult alloc] init];
@@ -885,56 +544,11 @@
         }
         return NO;
     }
-
+    
     return YES;
 }
-
-- (NSArray *)getCustomPatchScanList:(NSError **)err
-{
-    NSString *patchState;
-	if ([[_defaults allKeys] containsObject:@"PatchState"] == YES) {
-		patchState = [NSString stringWithString:[_defaults objectForKey:@"PatchState"]];
-	} else {
-		patchState = @"Production";
-	}
-
-
-    // Request
-    NSError *error = nil;
-    NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
-    [params setObject:self._cuuid forKey:@"clientID"];
-    [params setObject:patchState forKey:@"state"];
-    NSData *res = [self requestWithMethodAndParams:@"GetScanList" params:(NSDictionary *)params error:&error];
-    if (error)
-    {
-		if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return nil;
-    }
-
-    // Parse Main JSON Result
-    // MPJsonResult does all of the error checking on the result
-    MPJsonResult *jres = [[MPJsonResult alloc] init];
-    [jres setJsonData:res];
-    error = nil;
-    id result = [jres returnJsonResult:&error];
-    qldebug(@"JSON Result: %@",result);
-    if (error)
-    {
-        if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return nil;
-    }
-
-    return result;
-}
-
+*/
+/*
 - (BOOL)postClientAVData:(NSDictionary *)aDict error:(NSError **)err
 {
     MPJsonResult *jres = [[MPJsonResult alloc] init];
@@ -989,7 +603,7 @@
     qlinfo(@"SAV Client Data was posted to webservice.");
     return YES;
 }
-
+*/
 - (NSString *)getLatestAVDefsDate:(NSError **)err
 {
     // Get Host Arch Type
@@ -1080,200 +694,6 @@
     return [result objectForKey:@"result"];
 }
 
-- (NSDictionary *)getAgentUpdates:(NSString *)curAppVersion build:(NSString *)curBuildVersion error:(NSError **)err
-{
-    // Request
-    NSError *error = nil;
-    NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
-    [params setObject:self._cuuid forKey:@"clientID"];
-    [params setObject:curAppVersion forKey:@"agentVersion"];
-    [params setObject:curBuildVersion forKey:@"agentBuild"];
-    NSData *res = [self requestWithMethodAndParams:@"GetAgentUpdates" params:(NSDictionary *)params error:&error];
-    if (error)
-    {
-		if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return nil;
-    }
-
-    // Parse Main JSON Result
-    // MPJsonResult does all of the error checking on the result
-    MPJsonResult *jres = [[MPJsonResult alloc] init];
-    [jres setJsonData:res];
-    error = nil;
-    id result = [jres returnJsonResult:&error];
-    qldebug(@"JSON Result: %@",result);
-    if (error)
-    {
-        if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return nil;
-    }
-
-    return result;
-}
-
-- (NSDictionary *)getAgentUpdaterUpdates:(NSString *)curAppVersion error:(NSError **)err
-{
-    // Request
-    NSError *error = nil;
-    NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
-    [params setObject:self._cuuid forKey:@"clientID"];
-    [params setObject:curAppVersion forKey:@"agentUp2DateVer"];
-    NSData *res = [self requestWithMethodAndParams:@"GetAgentUpdaterUpdates" params:(NSDictionary *)params error:&error];
-    if (error)
-    {
-		if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return nil;
-    }
-
-    // Parse Main JSON Result
-    // MPJsonResult does all of the error checking on the result
-    MPJsonResult *jres = [[MPJsonResult alloc] init];
-    [jres setJsonData:res];
-    error = nil;
-    id result = [jres returnJsonResult:&error];
-    qldebug(@"JSON Result: %@",result);
-    if (error)
-    {
-        if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return nil;
-    }
-
-    return result;
-}
-
-- (BOOL)postClientScanDataWithType:(NSArray *)scanData type:(NSInteger)aType error:(NSError **)err
-{
-    MPJsonResult *jres = [[MPJsonResult alloc] init];
-    
-    // Request
-    NSError *error = nil;
-    NSDictionary *pData = [NSDictionary dictionaryWithObjectsAndKeys:scanData, @"rows", nil];
-    NSString *jData = [jres serializeJSONDataAsString:pData error:&error];
-    if (error) {
-        if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return NO;
-    }
-    
-    NSDictionary *params;
-    // 1 = Apple, 2 = Third
-    if (aType == 0) {
-        params = [NSDictionary dictionaryWithObjectsAndKeys:_cuuid, @"clientID", @"1", @"type", jData, @"jsonData", nil];
-    } else if ( aType == 1 ) {
-        params = [NSDictionary dictionaryWithObjectsAndKeys:_cuuid, @"clientID", @"2", @"type", jData, @"jsonData", nil];
-    } else {
-        //Err
-    }
-    
-    NSData *res = [self postRequestWithMethodAndParams:@"PostClientScanData" params:params error:&error];
-    if (error)
-    {
-        NSMutableDictionary *errDict = [[NSMutableDictionary alloc] init];
-        [errDict setObject:scanData forKey:@"aDict"];
-        MPFailedRequests *mpf = [[MPFailedRequests alloc] init];
-        [mpf addFailedRequest:@"PostClientScanData" params:errDict errorNo:error.code errorMsg:error.localizedDescription];
-        mpf = nil;
-        
-        if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return NO;
-    }
-    
-    // Parse Main JSON Result
-    // MPJsonResult does all of the error checking on the result
-    [jres setJsonData:res];
-    error = nil;
-    id result = [jres returnResult:&error];
-    qldebug(@"JSON Result: %@",result);
-    if (error)
-    {
-        if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        qlerror(@"Client Scan Data was not posted to webservice.");
-        return NO;
-    }
-    
-    qlinfo(@"Client Scan Data was posted to webservice.");
-    return YES;
-}
-
-// deprecated as of 2.5 release
-- (BOOL)postDataMgrXML:(NSString *)aDataMgrXML error:(NSError **)err __deprecated
-{
-    qlerror(@"[postDataMgrXML]: has been removed.");
-    return NO;
-}
-
-- (BOOL)postDataMgrJSON:(NSString *)aDataMgrJSON error:(NSError **)err
-{
-    // Request
-    NSError *error = nil;
-    NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
-    [params setObject:self._cuuid forKey:@"clientID"];
-    [params setObject:aDataMgrJSON forKey:@"encodedData"];
-    NSData *res = [self postRequestWithMethodAndParams:@"PostDataMgrJSON" params:(NSDictionary *)params error:&error];
-    if (error)
-    {
-        NSMutableDictionary *errDict = [[NSMutableDictionary alloc] init];
-        [errDict setObject:aDataMgrJSON forKey:@"aDataMgrJSON"];
-        MPFailedRequests *mpf = [[MPFailedRequests alloc] init];
-        [mpf addFailedRequest:@"postDataMgrJSON" params:errDict errorNo:error.code errorMsg:error.localizedDescription];
-        mpf = nil;
-
-		if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return NO;
-    }
-
-    // Parse Main JSON Result
-    // MPJsonResult does all of the error checking on the result
-    MPJsonResult *jres = [[MPJsonResult alloc] init];
-    [jres setJsonData:res];
-    error = nil;
-    id result = [jres returnResult:&error];
-    qldebug(@"JSON Result: %@",result);
-    if (error)
-    {
-        if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return NO;
-    }
-
-    qlinfo(@"Data was successfully posted.");
-    return YES;
-}
-
 - (BOOL)postSAVDefsDataXML:(NSString *)aAVXML encoded:(BOOL)aEncoded error:(NSError **)err
 {
     // Request
@@ -1320,85 +740,6 @@
     return YES;
 }
 
-- (BOOL)clientHasInvDataInDB:(NSError **)err
-{
-    // Request
-    NSError *error = nil;
-    NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
-    [params setObject:self._cuuid forKey:@"clientID"];
-    NSData *res = [self requestWithMethodAndParams:@"clientHasInventoryData" params:(NSDictionary *)params error:&error];
-    if (error)
-    {
-		if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return NO;
-    }
-
-    // Parse Main JSON Result
-    // MPJsonResult does all of the error checking on the result
-    MPJsonResult *jres = [[MPJsonResult alloc] init];
-    [jres setJsonData:res];
-    error = nil;
-    id result = [jres returnResult:&error];
-    qldebug(@"JSON Result: %@",result);
-    if (error)
-    {
-        if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return NO;
-    }
-
-    return [result boolValue];
-}
-
-- (int)postClientHasInvData:(NSError **)err
-{
-    // Request
-    NSError *error = nil;
-    NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
-    [params setObject:self._cuuid forKey:@"clientID"];
-    NSData *res = [self requestWithMethodAndParams:@"postClientHasInventoryData" params:(NSDictionary *)params error:&error];
-    if (error)
-    {
-        MPFailedRequests *mpf = [[MPFailedRequests alloc] init];
-        [mpf addFailedRequest:@"postClientHasInvData" params:nil errorNo:error.code errorMsg:error.localizedDescription];
-        mpf = nil;
-
-		if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return 1;
-    }
-
-    // Parse Main JSON Result
-    // MPJsonResult does all of the error checking on the result
-    MPJsonResult *jres = [[MPJsonResult alloc] init];
-    [jres setJsonData:res];
-    error = nil;
-    id result = [jres returnResult:&error];
-    qldebug(@"JSON Result: %@",result);
-    if (error)
-    {
-        if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return 1;
-    }
-
-    qlinfo(@"Data was successfully posted.");
-    return 0;
-}
-
 - (BOOL)postJSONDataForMethod:(NSString *)aMethod data:(NSDictionary *)aData error:(NSError **)err
 {
     MPJsonResult        *jres           = [[MPJsonResult alloc] init];
@@ -1425,7 +766,7 @@
     [params setObject:self._cuuid forKey:@"clientID"];
     [params setObject:@"json" forKey:@"type"];
     [params setObject:jData forKey:@"data"];
-    //[params setObject:@"NA" forKey:@"signature"];
+    [params setObject:@"NA" forKey:@"signature"];
     NSData *res = [self requestWithMethodAndParams:aMethod params:(NSDictionary *)params error:&error];
     if (error)
     {
@@ -1467,131 +808,8 @@
     return YES;
 }
 
-// Client Status
-- (id)GetClientPatchStatusCount:(NSError **)err
-{
-    // Request
-    NSError *error = nil;
-    NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
-    [params setObject:self._cuuid forKey:@"clientID"];
-    NSData *res = [self requestWithMethodAndParams:@"GetClientPatchStatusCount" params:(NSDictionary *)params error:&error];
-    if (error)
-    {
-		if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return nil;
-    }
-
-    // Parse Main JSON Result
-    // MPJsonResult does all of the error checking on the result
-    MPJsonResult *jres = [[MPJsonResult alloc] init];
-    [jres setJsonData:res];
-    error = nil;
-    id result = [jres returnJsonResult:&error];
-    qldebug(@"JSON Result: %@",result);
-    if (error)
-    {
-        if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return nil;
-    }
-
-    return result;
-}
-
-- (id)GetLastCheckIn:(NSError **)err
-{
-    // Request
-    NSError *error = nil;
-    NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
-    [params setObject:self._cuuid forKey:@"clientID"];
-    NSData *res = [self requestWithMethodAndParams:@"GetLastCheckIn" params:(NSDictionary *)params error:&error];
-    if (error)
-    {
-		if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return nil;
-    }
-
-    if (!res) {
-        qlerror(@"No result for NSURLRequest.");
-        return nil;
-    }
-
-    // Parse Main JSON Result
-    // MPJsonResult does all of the error checking on the result
-    MPJsonResult *jres = [[MPJsonResult alloc] init];
-    [jres setJsonData:res];
-    error = nil;
-    id result = [jres returnJsonResult:&error];
-    qldebug(@"JSON Result: %@",result);
-    if (error)
-    {
-        if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return nil;
-    }
-
-    return result;
-}
-
 // SWDist
-- (id)getSWDistGroups:(NSError **)err
-{
-    return [self getSWDistGroupsWithState:nil error:err];
-}
-
-- (id)getSWDistGroupsWithState:(NSString *)aState error:(NSError **)err
-{
-    // Request
-    NSError *error = nil;
-    NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
-    if (aState) {
-        [params setObject:aState forKey:@"state"];
-    }
-    NSData *res = [self requestWithMethodAndParams:@"GetSWDistGroups" params:(NSDictionary *)params error:&error];
-    if (error)
-    {
-		if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return nil;
-    }
-
-    // Parse Main JSON Result
-    // MPJsonResult does all of the error checking on the result
-    MPJsonResult *jres = [[MPJsonResult alloc] init];
-    [jres setJsonData:res];
-    error = nil;
-    id result = [jres returnJsonResult:&error];
-    qldebug(@"JSON Result: %@",result);
-    if (error)
-    {
-        if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return nil;
-    }
-
-    return result;
-}
-
+/* Not Used
 - (NSString *)getHashForSWTaskGroup:(NSString *)aGroupName error:(NSError **)err
 {
     NSString *resultHash = @"NA";
@@ -1652,185 +870,22 @@
 
     return resultHash;
 }
+ */
 
-- (id)getSWTasksForGroup:(NSString *)aGroupName error:(NSError **)err
-{
-    if (!aGroupName) {
-        if (err != NULL) *err = [NSError errorWithDomain:NSCocoaErrorDomain
-                                   code:-1000
-                               userInfo:[NSDictionary dictionaryWithObject:@"No Group Name Found" forKey:NSLocalizedDescriptionKey]];
-        return nil;
-    }
 
-    // Request
-    NSError *error = nil;
-    NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
-    [params setObject:aGroupName forKey:@"GroupName"];
-    NSData *res = [self requestWithMethodAndParams:@"GetSoftwareTasksForGroup" params:(NSDictionary *)params error:&error];
-    if (error)
-    {
-		if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return nil;
-    }
+#pragma mark - OS Migration
 
-    // Parse Main JSON Result
-    // MPJsonResult does all of the error checking on the result
-    MPJsonResult *jres = [[MPJsonResult alloc] init];
-    [jres setJsonData:res];
-    error = nil;
-    id result = [jres returnJsonResult:&error];
-    qldebug(@"JSON Result: %@",result);
-    if (error)
-    {
-        if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return nil;
-    }
-
-    return result;
-}
-
-- (int)postSWInstallResults:(NSDictionary *)aParams error:(NSError **)err
-{
-    // Request
-    NSError *error = nil;
-    NSData *res = [self requestWithMethodAndParams:@"PostSoftwareInstallResults" params:aParams error:&error];
-    if (error)
-    {
-        NSMutableDictionary *errDict = [[NSMutableDictionary alloc] init];
-        [errDict setObject:aParams forKey:@"aParams"];
-        MPFailedRequests *mpf = [[MPFailedRequests alloc] init];
-        [mpf addFailedRequest:@"postSWInstallResults" params:errDict errorNo:error.code errorMsg:error.localizedDescription];
-        mpf = nil;
-
-		if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return 1;
-    }
-
-    // Parse Main JSON Result
-    // MPJsonResult does all of the error checking on the result
-    MPJsonResult *jres = [[MPJsonResult alloc] init];
-    [jres setJsonData:res];
-    error = nil;
-    id result = [jres returnJsonResult:&error];
-    qldebug(@"JSON Result: %@",result);
-    if (error)
-    {
-        if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return 1;
-    }
-
-    qlinfo(@"Data was successfully posted.");
-    return 0;
-}
-
-- (id)getSWTaskForID:(NSString *)aTaskID error:(NSError **)err
-{
-    if (!aTaskID) {
-        if (err != NULL) *err = [NSError errorWithDomain:NSCocoaErrorDomain
-                                   code:-1000
-                               userInfo:[NSDictionary dictionaryWithObject:@"No TaskID Found" forKey:NSLocalizedDescriptionKey]];
-        return nil;
-    }
-
-    // Request
-    NSError *error = nil;
-    NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
-    [params setObject:aTaskID forKey:@"TaskID"];
-    NSData *res = [self requestWithMethodAndParams:@"GetSoftwareTasksUsingID" params:(NSDictionary *)params error:&error];
-    if (error)
-    {
-		if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return nil;
-    }
-
-    // Parse Main JSON Result
-    // MPJsonResult does all of the error checking on the result
-    MPJsonResult *jres = [[MPJsonResult alloc] init];
-    [jres setJsonData:res];
-    error = nil;
-    id result = [jres returnJsonResult:&error];
-    qldebug(@"JSON Result: %@",result);
-    if (error)
-    {
-        if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return nil;
-    }
-
-    return result;
-}
-
-// Profiles
-- (NSArray *)getProfileIDDataForClient:(NSError **)err
+- (NSString *)postOSMigrationStatus:(NSString *)aStatus label:(NSString *)Label migrationID:(NSString *)migrationID error:(NSError **)err
 {
     // Request
     NSError *error = nil;
     NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
     [params setObject:self._cuuid forKey:@"clientID"];
-    NSData *res = [self requestWithMethodAndParams:@"GetProfileIDDataForClient" params:(NSDictionary *)params error:&error];
-    if (error)
-    {
-		if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return nil;
-    }
-
-    // Parse Main JSON Result
-    // MPJsonResult does all of the error checking on the result
-    MPJsonResult *jres = [[MPJsonResult alloc] init];
-    [jres setJsonData:res];
-    error = nil;
-    id result = [jres returnJsonResult:&error];
-    qldebug(@"JSON Result: %@",result);
-    if (error)
-    {
-        if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return nil;
-    }
-    
-    return result;
-}
-
-- (NSString *)getHashForPluginName:(NSString *)pName pluginBunleID:(NSString *)bundleID pluginVersion:(NSString *)pVer error:(NSError **)err
-{
-    // Request
-    NSError *error = nil;
-    NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
-    [params setObject:self._cuuid forKey:@"clientID"];
-    [params setObject:pName forKey:@"pluginName"];
-    [params setObject:bundleID forKey:@"pluginBundle"];
-    [params setObject:pVer forKey:@"pluginVersion"];
-    NSData *res = [self requestWithMethodAndParams:@"GetPluginHash" params:(NSDictionary *)params error:&error];
+    [params setObject:aStatus forKey:@"action"];
+    [params setObject:[[MPSystemInfo osVersionInfo] objectForKey:@"ProductUserVisibleVersion"] forKey:@"os"];
+    [params setObject:Label forKey:@"label"];
+    [params setObject:migrationID forKey:@"migrationID"];
+    NSData *res = [self requestWithMethodAndParams:@"PostOSMigration" params:(NSDictionary *)params error:&error];
     if (error)
     {
         if (err != NULL) {
@@ -1855,6 +910,584 @@
             qlerror(@"%@",error.localizedDescription);
         }
         return nil;
+    }
+    
+    return result;
+}
+
+
+#pragma mark - Helper Methods for REST WS
+
+- (id)restGetRequestforURI:(NSString *)aURI resultType:(NSString *)resType error:(NSError **)err
+{
+    NSError *wsErr = nil;
+    NSData *reqData;
+    id result;
+    
+    @try
+    {
+        reqData = [self getRequestWithURIforREST:aURI error:&wsErr];
+        if (wsErr) {
+            if (err != NULL) *err = wsErr;
+            logit(lcl_vError,@"%@",wsErr.localizedDescription);
+            return nil;
+        } else {
+            // Parse JSON result, if error code is not 0
+            wsErr = nil;
+            result = [self returnRequestWithType:reqData resultType:resType error:&wsErr];
+            if (wsErr) {
+                if (err != NULL) *err = wsErr;
+                logit(lcl_vError,@"%@",wsErr.localizedDescription);
+                return nil;
+            }
+            logit(lcl_vDebug,@"%@",result);
+            return result;
+        }
+        
+    }
+    @catch (NSException * e) {
+        logit(lcl_vError,@"[NSException]: %@",e);
+    }
+    // Should not get here
+    return nil;
+}
+
+- (id)restPostRequestforURI:(NSString *)aURI body:(NSString *)aBody resultType:(NSString *)resType error:(NSError **)err
+{
+    NSError *wsErr = nil;
+    NSData *reqData;
+    id result;
+    
+    @try
+    {
+        logit(lcl_vDebug,@"JSON Data to post: %@",aBody);
+        wsErr = nil;
+        reqData = [self postRequestWithURIforREST:aURI body:aBody error:&wsErr];
+        if (wsErr) {
+            if (err != NULL) *err = wsErr;
+            logit(lcl_vError,@"%@",wsErr.localizedDescription);
+            return nil;
+        } else {
+            // Parse JSON result, if error code is not 0
+            wsErr = nil;
+            result = [self returnRequestWithType:reqData resultType:resType error:&wsErr];
+            logit(lcl_vInfo,@"%@",result);
+            if (wsErr) {
+                if (err != NULL) *err = wsErr;
+                logit(lcl_vError,@"%@",wsErr.localizedDescription);
+                return nil;
+            }
+            
+            // Error Code is 0 and result is empty then we are done.
+            if ([result isNSStringType]) {
+                if ([result isEqualToString:@""]) {
+                    return nil;
+                }
+            } else {
+                logit(lcl_vWarning,@"Result is not of string type: %@",result);
+            }
+            
+            
+            logit(lcl_vDebug,@"%@",result);
+            wsErr = nil;
+            MPJsonResult *jres = [[MPJsonResult alloc] init];
+            NSString *jstr = [jres serializeJSONDataAsString:(NSDictionary *)result error:NULL];
+            [self writePatchGroupCacheFileData:jstr];
+            if (wsErr) {
+                if (err != NULL) {
+                    *err = wsErr;
+                } else {
+                    qlerror(@"%@",wsErr.localizedDescription);
+                }
+                return nil;
+            }
+            
+            return result;
+        }
+        
+    }
+    @catch (NSException * e) {
+        logit(lcl_vError,@"[NSException]: %@",e);
+    }
+    // Should not get here
+    return nil;
+}
+
+
+#pragma mark Convience methods
+
+- (NSDictionary *)getPatchGroupContent:(NSError **)err
+{
+    NSError *wsErr = nil;
+    NSString *uri;
+    NSData *reqData;
+    id result;
+    
+    @try
+    {
+        uri = [NSString stringWithFormat:@"/api/v1/client/patch/group/%@/%@",[_defaults objectForKey:@"PatchGroup"],[MPSystemInfo clientUUID]];
+        reqData = [self getRequestWithURIforREST:uri error:&wsErr];
+        if (wsErr) {
+            if (err != NULL) *err = wsErr;
+            logit(lcl_vError,@"%@",wsErr.localizedDescription);
+            return nil;
+        } else {
+            // Parse JSON result, if error code is not 0
+            wsErr = nil;
+            result = [self returnRequestWithType:reqData resultType:@"json" error:&wsErr];
+            if (wsErr) {
+                if (err != NULL) *err = wsErr;
+                logit(lcl_vError,@"%@",wsErr.localizedDescription);
+                return nil;
+            }
+            logit(lcl_vDebug,@"%@",result);
+            
+            wsErr = nil;
+            MPJsonResult *jres = [[MPJsonResult alloc] init];
+            NSString *jstr = [jres serializeJSONDataAsString:(NSDictionary *)result error:NULL];
+            [self writePatchGroupCacheFileData:jstr];
+            if (wsErr) {
+                if (err != NULL) {
+                    *err = wsErr;
+                } else {
+                    qlerror(@"%@",wsErr.localizedDescription);
+                }
+                return nil;
+            }
+            
+            return result;
+        }
+        
+    }
+    @catch (NSException * e) {
+        logit(lcl_vError,@"[NSException]: %@",e);
+    }
+    // Should not get here
+    return nil;
+}
+
+- (NSDictionary *)getMPServerList:(NSError **)err
+{
+    NSError *error = nil;
+    NSDictionary *result = nil;
+    NSString *aURI = [NSString stringWithFormat:@"/api/v1/server/list/%@",[MPSystemInfo clientUUID]];
+    result = [self restGetRequestforURI:aURI resultType:@"json" error:&error];
+    if (err != NULL) *err = error;
+    return result;
+}
+
+- (NSDictionary *)getMPServerListVersion:(NSString *)aVersion listid:(NSString *)aListID error:(NSError **)err
+{
+    NSError *error = nil;
+    NSDictionary *result = nil;
+    NSString *aURI = [NSString stringWithFormat:@"/api/v1/server/list/version/%@/%@",aListID,[MPSystemInfo clientUUID]];
+    result = [self restGetRequestforURI:aURI resultType:@"json" error:&error];
+    if (err != NULL) *err = error;
+    return result;
+}
+
+- (BOOL)postDataMgrData:(NSString *)aDataMgrJSON error:(NSError **)err
+{
+    NSError *error = nil;
+    id result = nil;
+    NSString *aURI = [NSString stringWithFormat:@"/api/v1/client/inventory/%@",[MPSystemInfo clientUUID]];
+    result = [self restPostRequestforURI:aURI body:aDataMgrJSON resultType:@"string" error:&error];
+    if (err != NULL) *err = error;
+    if (([result isEqualToString:@""] || (result == nil)) && !error) {
+        return YES;
+    } else {
+        return NO;
+    }
+}
+
+- (NSArray *)getCustomPatchScanList:(NSError **)err
+{
+    NSString *patchState;
+    if ([[_defaults allKeys] containsObject:@"PatchState"] == YES) {
+        patchState = [NSString stringWithString:[_defaults objectForKey:@"PatchState"]];
+    } else {
+        patchState = @"Production";
+    }
+    
+    
+    // Request
+    NSError *error = nil;
+    NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
+    [params setObject:self._cuuid forKey:@"clientID"];
+    [params setObject:patchState forKey:@"state"];
+    
+    NSString *uri = [NSString stringWithFormat:@"/api/v1/client/patch/scanlist/%@",[MPSystemInfo clientUUID]];
+    NSDictionary *res = [self restGetRequestforURI:uri resultType:@"json" error:&error];
+    if (error)
+    {
+        if (err != NULL) {
+            *err = error;
+        } else {
+            qlerror(@"%@",error.localizedDescription);
+        }
+        return nil;
+    }
+    NSString *aCMDName1, *aCMDName2;
+    if ([res objectForKey:@"patches"] && [[res objectForKey:@"patches"] isKindOfClass:[NSArray class]]) {
+        
+        if ([[patchState lowercaseString] isEqualToString:@"all"]) {
+            aCMDName1 = @"Production";
+            aCMDName2 = @"QA";
+        } else {
+            aCMDName1 = patchState;
+            aCMDName2 = patchState;
+        }
+        
+        NSPredicate *pred = [NSPredicate predicateWithFormat:@"patch_state contains[cd] %@ OR patch_state contains[cd] %@",aCMDName1, aCMDName2];
+        NSArray *filteredarray = [[res objectForKey:@"patches"] filteredArrayUsingPredicate:pred];
+        
+        
+        return filteredarray;
+    } else {
+        qlerror(@"patches key in dictionary was not found.");
+        return nil;
+    }
+    
+}
+
+- (BOOL)postClientScanDataWithType:(NSArray *)scanData type:(NSInteger)aType error:(NSError **)err
+{
+    MPJsonResult *jres = [[MPJsonResult alloc] init];
+    
+    // Request
+    NSError *error = nil;
+    NSDictionary *pData = [NSDictionary dictionaryWithObjectsAndKeys:scanData, @"rows", nil];
+    NSString *jData = [jres serializeJSONDataAsString:pData error:&error];
+    if (error) {
+        if (err != NULL) {
+            *err = error;
+        } else {
+            qlerror(@"%@",error.localizedDescription);
+        }
+        return NO;
+    }
+    
+    NSString *uri;
+    // 1 = Apple, 2 = Third
+    if (aType == 0) {
+        uri = [NSString stringWithFormat:@"/api/v1/client/patch/scan/1/%@",[MPSystemInfo clientUUID]];
+    } else if ( aType == 1 ) {
+        uri = [NSString stringWithFormat:@"/api/v1/client/patch/scan/2/%@",[MPSystemInfo clientUUID]];
+    } else {
+        //Err
+        uri = [NSString stringWithFormat:@"/api/v1/client/patch/scan/3/<string:cuuid>"];
+    }
+    
+    error = nil;
+    id res = [self restPostRequestforURI:uri body:jData resultType:@"string" error:&error];
+    qldebug(@"[postClientScanDataWithType]; %@",res);
+    if (error) {
+        if (err != NULL) {
+            *err = error;
+        } else {
+            qlerror(@"%@",error.localizedDescription);
+        }
+        return NO;
+    }
+    
+    qlinfo(@"Client Scan Data was posted to webservice.");
+    return YES;
+}
+
+- (NSDictionary *)getAgentUpdates:(NSString *)curAppVersion build:(NSString *)curBuildVersion error:(NSError **)err
+{
+    NSError *error = nil;
+    NSDictionary *result = nil;
+    NSString *aURI = [NSString stringWithFormat:@"/api/v1/agent/update/%@/%@/%@",[MPSystemInfo clientUUID], curAppVersion, curBuildVersion];
+    result = [self restGetRequestforURI:aURI resultType:@"json" error:&error];
+    if (err != NULL) *err = error;
+    return result;
+}
+
+- (NSDictionary *)getAgentUpdaterUpdates:(NSString *)curAppVersion error:(NSError **)err
+{
+    NSError *error = nil;
+    NSDictionary *result = nil;
+    NSString *aURI = [NSString stringWithFormat:@"/api/v1/agent/updater/%@/%@",[MPSystemInfo clientUUID], curAppVersion];
+    result = [self restGetRequestforURI:aURI resultType:@"json" error:&error];
+    if (err != NULL) *err = error;
+    return result;
+}
+
+- (NSDictionary *)getSUSServerList:(NSError **)err
+{
+    NSDictionary *os = [MPSystemInfo osVersionOctets];
+    
+    NSError *error = nil;
+    NSDictionary *result = nil;
+    NSString *aURI = [NSString stringWithFormat:@"/api/v1/sus/catalogs/list/%@/%@/%@",[os objectForKey:@"major"],[os objectForKey:@"minor"],[MPSystemInfo clientUUID]];
+    result = [self restGetRequestforURI:aURI resultType:@"json" error:&error];
+    if (err != NULL) *err = error;
+    return result;
+}
+
+- (NSDictionary *)getSUSServerListVersion:(NSString *)aVersion listid:(NSString *)aListID error:(NSError **)err
+{
+    NSString *susListID = @"1";
+    if ([_defaults objectForKey:@"SUSListID"])
+    {
+        if ([[_defaults objectForKey:@"SUSListID"] isKindOfClass:[NSString class]]) {
+            susListID = [_defaults objectForKey:@"SUSListID"];
+        } else if ([[_defaults objectForKey:@"SUSListID"] isKindOfClass:[NSNumber class]]) {
+            susListID = [[_defaults objectForKey:@"SUSListID"] stringValue];
+        }
+    }
+    //susListID = [NSString stringWithFormat:@"/%@",[susListID copy]];
+    
+    NSError *error = nil;
+    NSDictionary *result = nil;
+    NSString *aURI = [NSString stringWithFormat:@"/api/v1/sus/list/version/%@/%@",[MPSystemInfo clientUUID],susListID];
+    result = [self restGetRequestforURI:aURI resultType:@"json" error:&error];
+    if (err != NULL) *err = error;
+    return result;
+}
+
+- (BOOL)clientHasInvDataInDB:(NSError **)err
+{
+    NSError *error = nil;
+    NSString *result = nil;
+    id raw_res;
+    NSString *aURI = [NSString stringWithFormat:@"/api/v1/client/inventory/state/%@",[MPSystemInfo clientUUID]];
+    raw_res = [self restGetRequestforURI:aURI resultType:@"string" error:&error];
+    if (err != NULL) *err = error;
+    
+    if ([raw_res isKindOfClass:[NSNumber class]]) {
+        result = [raw_res stringValue];
+    } else if ([raw_res isKindOfClass:[NSString class]]) {
+        result = raw_res;
+    } else {
+        qlerror(@"Result is not a supported type.");
+        return NO;
+    }
+
+    if ([result isEqualToString:@"1"]) {
+        return YES;
+    } else {
+        return NO;
+    }
+}
+
+- (int)postClientHasInvData:(NSError **)err
+{
+    // Request
+    NSError *error = nil;
+    NSString *uri = [NSString stringWithFormat:@"/api/v1/client/inventory/state/%@",[MPSystemInfo clientUUID]];
+    id res = [self restPostRequestforURI:uri body:nil resultType:@"string" error:&error];
+    qldebug(@"[postClientHasInvData]; %@",res);
+    if (error) {
+        if (err != NULL) {
+            *err = error;
+        } else {
+            qlerror(@"%@",error.localizedDescription);
+        }
+        return 1;
+    }
+    
+    return 0;
+}
+
+- (BOOL)postPatchInstallResultsToWebService:(NSString *)aPatch patchType:(NSString *)aPatchType error:(NSError **)err
+{
+    NSError *error = nil;
+    id result = nil;
+    NSString *aURI = [NSString stringWithFormat:@"/api/v1/client/patch/install/%@/%@/%@",aPatch,aPatchType,[MPSystemInfo clientUUID]];
+    result = [self restPostRequestforURI:aURI body:nil resultType:@"string" error:&error];
+    if (err != NULL) *err = error;
+    if ([result isEqualToString:@""] && !error) {
+        return YES;
+    } else {
+        return NO;
+    }
+}
+
+- (NSArray *)getProfileIDDataForClient:(NSError **)err
+{
+    NSError *error = nil;
+    NSArray *result = nil;
+    NSString *aURI = [NSString stringWithFormat:@"/api/v1/client/profiles/%@",[MPSystemInfo clientUUID]];
+    result = [self restGetRequestforURI:aURI resultType:@"json" error:&error];
+    if (err != NULL) *err = error;
+    return result;
+}
+
+- (id)getSWDistGroups:(NSError **)err
+{
+    return [self getSWDistGroupsWithState:@"1" error:err];
+}
+
+- (id)getSWDistGroupsWithState:(NSString *)aState error:(NSError **)err
+{
+    NSError *error = nil;
+    id result = nil;
+    
+    NSString *aURI = [NSString stringWithFormat:@"/api/v1/sw/groups/%@/%@",[MPSystemInfo clientUUID], aState];
+    result = [self restGetRequestforURI:aURI resultType:@"json" error:&error];
+    if (err != NULL) *err = error;
+    return result;
+}
+
+- (id)getSWTasksForGroup:(NSString *)aGroupName error:(NSError **)err
+{
+    if (!aGroupName) {
+        NSError *tErr = [NSError errorWithDomain:NSCocoaErrorDomain code:-1000 userInfo:@{NSLocalizedDescriptionKey: @"No Group Name Found"}];
+        if (err != NULL) *err = tErr;
+        return nil;
+    }
+    
+    NSError *error = nil;
+    id result = nil;
+    
+    NSString *aURI = [NSString stringWithFormat:@"/api/v1/sw/tasks/%@/%@",[MPSystemInfo clientUUID], aGroupName];
+    result = [self restGetRequestforURI:aURI resultType:@"json" error:&error];
+    if (err != NULL) *err = error;
+    return result;
+}
+
+- (int)postSWInstallResults:(NSDictionary *)aParams error:(NSError **)err
+{
+    NSError *error = nil;
+    NSString *bodyStr;
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:aParams options:0 error:&error];
+    if (error) {
+        if (err != NULL) *err = error;
+        qlerror(@"%@",error.localizedDescription);
+        return 1;
+    } else {
+        bodyStr = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+        qldebug(@"Install data as JSON: %@", bodyStr);
+    }
+    
+    
+    id result = nil;
+    NSString *aURI = [NSString stringWithFormat:@"/api/v1/sw/installed/%@",[MPSystemInfo clientUUID]];
+    result = [self restPostRequestforURI:aURI body:bodyStr resultType:@"string" error:&error];
+    if (err != NULL) *err = error;
+    if ([result isEqualToString:@""] && !error) {
+        qlinfo(@"Data was successfully posted.");
+        return 0;
+    } else {
+        qlinfo(@"Install data failed to post.");
+        qldebug(@"Install data: %@",aParams);
+        return 1;
+    }
+}
+
+- (id)getSWTaskForID:(NSString *)aTaskID error:(NSError **)err
+{
+    if (!aTaskID) {
+        NSError *tErr = [NSError errorWithDomain:NSCocoaErrorDomain code:-1000 userInfo:@{NSLocalizedDescriptionKey: @"No TaskID Found"}];
+        if (err != NULL) *err = tErr;
+        return nil;
+    }
+    
+    
+    NSError *error = nil;
+    id result = nil;
+    
+    NSString *aURI = [NSString stringWithFormat:@"/api/v1/sw/tasks/%@/%@",[MPSystemInfo clientUUID], aTaskID];
+    result = [self restGetRequestforURI:aURI resultType:@"json" error:&error];
+    qldebug(@"result: %@",result);
+    if (err != NULL) *err = error;
+    return result;
+}
+
+- (NSString *)getHashForPluginName:(NSString *)pName pluginBunleID:(NSString *)bundleID pluginVersion:(NSString *)pVer error:(NSError **)err
+{
+    NSError *error = nil;
+    NSString *result = nil;
+    
+    NSString *aURI = [NSString stringWithFormat:@"/api/v1/agent/plugin/hash/%@/%@/%@/%@",[MPSystemInfo clientUUID], pName, bundleID, pVer];
+    result = [self restGetRequestforURI:aURI resultType:@"string" error:&error];
+    qldebug(@"result: %@",result);
+    if (err != NULL) *err = error;
+    return result;
+}
+
+// Client Status
+- (id)GetClientPatchStatusCount:(NSError **)err
+{
+    NSError *error = nil;
+    NSDictionary *result = nil;
+    NSString *aURI = [NSString stringWithFormat:@"/api/v1/client/patch/status/%@",[MPSystemInfo clientUUID]];
+    result = [self restGetRequestforURI:aURI resultType:@"json" error:&error];
+    if (err != NULL) *err = error;
+    return result;
+}
+
+- (BOOL)postClientAVData:(NSDictionary *)aDict error:(NSError **)err
+{
+    NSError *error = nil;
+    NSString *bodyStr;
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:aDict options:0 error:&error];
+    if (error) {
+        if (err != NULL) *err = error;
+        qlerror(@"%@",error.localizedDescription);
+        return NO;
+    } else {
+        bodyStr = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+        qldebug(@"Install data as JSON: %@", bodyStr);
+    }
+    
+    
+    id result = nil;
+    NSString *aURI = [NSString stringWithFormat:@"/api/v1/client/av/%@",[MPSystemInfo clientUUID]];
+    result = [self restPostRequestforURI:aURI body:bodyStr resultType:@"string" error:&error];
+    if (err != NULL) *err = error;
+    if ([result isEqualToString:@""] && !error) {
+        qlinfo(@"Data was successfully posted.");
+        return YES;
+    } else {
+        qlinfo(@"Install data failed to post.");
+        qldebug(@"Install data: %@",aDict);
+        return NO;
+    }
+}
+
+- (NSString *)getLatestAVDefsDate:(NSString *)avType error:(NSError **)err
+{
+    // Get Host Arch Type
+    NSString *_theArch = @"x86";
+    if ([[MPSystemInfo hostArchitectureType] isEqualToString:@"ppc"]) {
+        _theArch = @"ppc";
+    }
+    
+    // Request
+    NSError *error = nil;
+    NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
+    [params setObject:self._cuuid forKey:@"clientID"];
+    [params setObject:@"SAV" forKey:@"avAgent"];
+    [params setObject:_theArch forKey:@"theArch"];
+    NSData *res = [self requestWithMethodAndParams:@"GetAVDefsDate" params:(NSDictionary *)params error:&error];
+    if (error)
+    {
+        if (err != NULL) {
+            *err = error;
+        } else {
+            qlerror(@"%@",error.localizedDescription);
+        }
+        return NO;
+    }
+    
+    // Parse Main JSON Result
+    // MPJsonResult does all of the error checking on the result
+    MPJsonResult *jres = [[MPJsonResult alloc] init];
+    [jres setJsonData:res];
+    error = nil;
+    id result = [jres returnResult:&error];
+    qldebug(@"JSON Result: %@",result);
+    if (error)
+    {
+        if (err != NULL) {
+            *err = error;
+        } else {
+            qlerror(@"%@",error.localizedDescription);
+        }
+        return @"NA";
     }
     
     return result;

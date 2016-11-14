@@ -563,7 +563,7 @@ done:
                 // Run PreInstall Script
                 if ([[currPatchToInstallDict objectForKey:@"preinst"] length] > 0 && [[currPatchToInstallDict objectForKey:@"preinst"] isEqualTo:@"NA"] == NO) {
                     logit(lcl_vInfo,@"Begin pre install script.");
-                    NSString *preInstScript = [[currPatchToInstallDict objectForKey:@"preinst"] base64EncodedString];
+                    NSString *preInstScript = [[currPatchToInstallDict objectForKey:@"preinst"] decodeBase64AsString];
                     logit(lcl_vDebug,@"preInstScript=%@",preInstScript);
                     
                     mpScript = [[MPScript alloc] init];
@@ -623,7 +623,7 @@ done:
                 // Run PostInstall Script
                 if ([[currPatchToInstallDict objectForKey:@"postinst"] length] > 0 && [[currPatchToInstallDict objectForKey:@"postinst"] isEqualTo:@"NA"] == NO) {
                     logit(lcl_vInfo,@"Begin post install script.");
-                    NSString *postInstScript = [[currPatchToInstallDict objectForKey:@"postinst"] base64EncodedString];
+                    NSString *postInstScript = [[currPatchToInstallDict objectForKey:@"postinst"] decodeBase64AsString];
                     logit(lcl_vDebug,@"postInstScript=%@",postInstScript);
                     
                     mpScript = [[MPScript alloc] init];
@@ -682,7 +682,6 @@ done:
                 logit(lcl_vInfo,@"%@ has install criteria assigned to it.",[patch objectForKey:@"patch"]);
                 
                 NSDictionary *criteriaDictPre, *criteriaDictPost;
-                //NSData *scriptData;
                 NSString *scriptText;
                 
                 int i = 0;
@@ -692,8 +691,6 @@ done:
                     for (i=0;i<[[patch objectForKey:@"criteria_pre"] count];i++)
                     {
                         criteriaDictPre = [[patch objectForKey:@"criteria_pre"] objectAtIndex:i]; 
-                        //scriptData = [[criteriaDictPre objectForKey:@"data"] base64EncodedString];
-                        //scriptText = [[NSString alloc] initWithData:scriptData encoding:NSASCIIStringEncoding];
                         scriptText = [[criteriaDictPre objectForKey:@"data"] decodeBase64AsString];
                         
                         mpScript = [[MPScript alloc] init];
@@ -730,9 +727,6 @@ done:
                     for (i=0;i<[[patch objectForKey:@"criteria_post"] count];i++)
                     {
                         criteriaDictPost = [[patch objectForKey:@"criteria_post"] objectAtIndex:i];
-                        
-                        //scriptData = [[criteriaDictPost objectForKey:@"data"] base64EncodedString];
-                        //scriptText = [[NSString alloc] initWithData:scriptData encoding:NSASCIIStringEncoding];
                         scriptText = [[criteriaDictPost objectForKey:@"data"] decodeBase64AsString];
                         
                         mpScript = [[MPScript alloc] init];
@@ -1006,7 +1000,7 @@ done:
                 // Run PreInstall Script
                 if ([[currPatchToInstallDict objectForKey:@"preinst"] length] > 0 && [[currPatchToInstallDict objectForKey:@"preinst"] isEqualTo:@"NA"] == NO) {
                     logit(lcl_vInfo,@"Begin pre install script.");
-                    NSString *preInstScript = [[currPatchToInstallDict objectForKey:@"preinst"] base64EncodedString];
+                    NSString *preInstScript = [[currPatchToInstallDict objectForKey:@"preinst"] decodeBase64AsString];
                     logit(lcl_vDebug,@"preInstScript=%@",preInstScript);
                     
                     mpScript = [[MPScript alloc] init];
@@ -1068,7 +1062,7 @@ done:
                 // Run PostInstall Script
                 if ([[currPatchToInstallDict objectForKey:@"postinst"] length] > 0 && [[currPatchToInstallDict objectForKey:@"postinst"] isEqualTo:@"NA"] == NO) {
                     logit(lcl_vInfo,@"Begin post install script.");
-                    NSString *postInstScript = [[currPatchToInstallDict objectForKey:@"postinst"] base64EncodedString];
+                    NSString *postInstScript = [[currPatchToInstallDict objectForKey:@"postinst"] decodeBase64AsString];
                     logit(lcl_vDebug,@"postInstScript=%@",postInstScript);
                     
                     mpScript = [[MPScript alloc] init];
@@ -1271,8 +1265,8 @@ done:
 - (BOOL)isLocalUserLoggedIn
 {
 	BOOL result = YES;
-	// SCDynamicStoreRef store = SCDynamicStoreCreate(NULL, NULL, NULL, NULL);
-	SCDynamicStoreRef store = SCDynamicStoreCreate(NULL, CFSTR("macpatch"), NULL, NULL);
+	
+	SCDynamicStoreRef store = SCDynamicStoreCreate(NULL, (CFStringRef)@"LocalUserLoggedIn", NULL, NULL);
 	CFStringRef consoleUserName;
     consoleUserName = SCDynamicStoreCopyConsoleUser(store, NULL, NULL);
 	

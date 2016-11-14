@@ -26,8 +26,15 @@
 #import "MPAntiVirus.h"
 #import "MacPatch.h"
 
+@interface MPAntiVirus ()
+
+@property (nonatomic, strong) NSMutableArray *avCollectedData;
+
+@end
+
 @implementation MPAntiVirus
 
+@synthesize avCollectedData = _avCollectedData;
 @synthesize avType;
 @synthesize avApp;
 @synthesize avAppInfo;
@@ -35,11 +42,12 @@
 @synthesize l_Defaults;
 @synthesize isNewerSEPSW;
 
--(id)init
+- (id)init
 {
     self = [super init];
 	if (self) {
         fm = [NSFileManager defaultManager];
+        _avCollectedData = [NSMutableArray new];
 		avApp = nil;
         [self setIsNewerSEPSW:NO];
         MPDefaults *mpDefaults = [[MPDefaults alloc] init];
@@ -48,15 +56,19 @@
 	return self;
 }
 
-
--(void)scanDefs
+- (void)scanDefs
 {
-	[self avScanAndUpdate:NO];
+	[self scanAVDataAndUpdate:NO];
 }
 
--(void)scanAndUpdateDefs
+- (void)scanAVData
 {
-	[self avScanAndUpdate:YES];
+    [self scanAVDataAndUpdate:NO];
+}
+
+- (void)scanAndUpdateDefs
+{
+	[self scanAVDataAndUpdate:YES];
 }
 
 - (void)avScanAndUpdate:(BOOL)runUpdate
@@ -74,10 +86,10 @@
 	NSString *_localDefsDate = [self getLocalDefsDate];
 	if (_localDefsDate == nil) {
 		logit(lcl_vError,@"No AV Defs software was found, nothing to validate.");
-		[_avInfoToPost setValue:@"NA" forKey:@"DefsDate"];
+		[_avInfoToPost setValue:@"NA" forKey:@"defs_date"];
 	} else {
         logit(lcl_vInfo, @"Host AV defs date is %@",_localDefsDate);
-        [_avInfoToPost setValue:_localDefsDate forKey:@"DefsDate"];
+        [_avInfoToPost setValue:_localDefsDate forKey:@"defs_date"];
     }
     // Get Latest Defs Date from Server
     NSString *_remoteAvDefsDate = [self getLatestAVDefsDate];
@@ -106,7 +118,7 @@
                         logit(lcl_vInfo,@"AV Defs were updated.");
                         // Get Defs Info and Update The Data to Post
                         _localDefsDate = [self getLocalDefsDate];
-                        [_avInfoToPost setValue:_localDefsDate forKey:@"DefsDate"];
+                        [_avInfoToPost setValue:_localDefsDate forKey:@"defs_date"];
                     }
                 }
             }
@@ -133,7 +145,7 @@
                             logit(lcl_vInfo,@"AV Defs were updated.");
                             // Get Defs Info and Update The Data to Post
                             _localDefsDate = [self getLocalDefsDate];
-                            [_avInfoToPost setValue:_localDefsDate forKey:@"DefsDate"];
+                            [_avInfoToPost setValue:_localDefsDate forKey:@"defs_date"];
                         }
                     }
                 }
@@ -145,6 +157,7 @@
 	// Post AV to WebService
     MPWebServices *mpws = [[MPWebServices alloc] init];
     NSError *wsErr = nil;
+    // CEH
     [mpws postClientAVData:_avInfoToPost error:&wsErr];
     if (wsErr) {
         logit(lcl_vError,@"%@",wsErr.localizedDescription);
@@ -153,7 +166,444 @@
 	return;
 }
 
+- (void)scanAVDataAndUpdate:(BOOL)runUpdate
+{
+    [_avCollectedData removeAllObjects];
+    [self scanForAVSoftwareAndCollectAVData];
+    if (runUpdate) {
+        NSString *_type;
+        NSString *_localDefsDate;
+        NSString *_wsDefsDate;
+        for (NSDictionary *dict in _avCollectedData) {
+            _type = [dict objectForKey:@"type"];
+            _localDefsDate = [[dict objectForKey:@"data"] objectForKey:@"defs_date"];
+            _wsDefsDate = [self getLatestAVDefsDateForType:_type];
+            if (!_wsDefsDate) {
+                logit(lcl_vInfo, @"Latest AV defs date is %@",_wsDefsDate);
+                if (([_wsDefsDate intValue] > [_localDefsDate intValue]) && [_localDefsDate intValue] != -1)
+                {
+                    if ([_type isEqualToString:@"symantec"]) {
+                        [self updateSymantecDefs:[dict objectForKey:@"data"]];
+                    }
+                    if ([_type isEqualToString:@"mcafee"]) {
+                        logit(lcl_vInfo, @"Updating McAfee defs is not supported at this time.");
+                    }
+                }
+            }
+        }
+    }
+}
+
+- (void)scanForAVSoftwareAndCollectAVData
+{
+    NSDictionary *_avDataDict;
+    NSArray *_avArray = @[@"symantec", @"mcafee"];
+    for (NSString *a in _avArray) {
+        if ([a isEqualToString:@"symantec"])
+        {
+            logit(lcl_vInfo,@"Processing Symantec AV Data Collection.");
+            _avDataDict = [self symantecAppInfo];
+            if (_avDataDict != nil) {
+                [_avCollectedData addObject:@{@"type":a,@"data":_avDataDict}];
+                logit(lcl_vInfo,@"Posting symantec av data.");
+                logit(lcl_vDebug,@"Symantec av data: %@", _avDataDict);
+                if ([self postAVDataToWebService:_avDataDict]) {
+                    logit(lcl_vInfo,@"Symantec av data was posted.");
+                } else {
+                    logit(lcl_vError,@"Symantec av data was not posted.");
+                }
+            } else {
+                logit(lcl_vDebug,@"No symantec av data found.");
+            }
+        }
+        if ([a isEqualToString:@"mcafee"])
+        {
+            logit(lcl_vInfo,@"Processing McAfee AV Data Collection.");
+            _avDataDict = [self mcafeeAppInfo];
+            if (_avDataDict != nil) {
+                [_avCollectedData addObject:@{@"type":a,@"data":_avDataDict}];
+                logit(lcl_vInfo,@"Posting mcafee av data.");
+                logit(lcl_vDebug,@"McAfee av data: %@", _avDataDict);
+                if ([self postAVDataToWebService:_avDataDict]) {
+                    logit(lcl_vInfo,@"McAfee av data was posted.");
+                } else {
+                    logit(lcl_vError,@"McAfee av data was not posted.");
+                }
+            } else {
+                logit(lcl_vDebug,@"No McAfee av data found.");
+            }
+        }
+    }
+}
+
+#pragma mark - Symantec
+- (NSDictionary *)symantecAppInfo
+{
+    NSString *avApplication;
+    NSArray *avAppArray = [NSArray arrayWithObjects:
+                           @"/Applications/Symantec Solutions/Symantec AntiVirus.app",
+                           @"/Applications/Symantec Solutions/Norton AntiVirus.app",
+                           @"/Applications/Norton Solutions/Symantec AntiVirus.app",
+                           @"/Applications/Norton Solutions/Norton AntiVirus.app",
+                           @"/Applications/Symantec Solutions/Symantec Endpoint Protection.app",
+                           @"/Applications/Sophos Anti-Virus.app",
+                           nil];
+    // Find the
+    for (NSString *item in avAppArray) {
+        if ([fm fileExistsAtPath:item]) {
+            logit(lcl_vDebug,@"Found AV app, %@.",item);
+            avApplication = [NSString stringWithString:item];
+            break;
+        }
+    }
+    
+    if (avApplication == nil) {
+        logit(lcl_vError,@"Unable to find a AV product.");
+        return nil;
+    }
+    
+    NSString *_plistPath = [avApplication stringByAppendingPathComponent:@"Contents/Info.plist"];
+    NSDictionary *_avAppInfo = [NSDictionary dictionaryWithContentsOfFile:_plistPath];
+    NSMutableDictionary *_tmpAvDict = [[NSMutableDictionary alloc] init];
+    [_tmpAvDict setValue:[MPSystemInfo clientUUID] forKey:@"cuuid"];
+    [_tmpAvDict setValue:@"symantec" forKey:@"av_type"];
+    [_tmpAvDict setValue:[_avAppInfo valueForKey:@"CFBundleExecutable"] forKey:@"app_name"];
+    [_tmpAvDict setValue:avApplication forKey:@"app_path"];
+    [_tmpAvDict setValue:[_avAppInfo valueForKey:@"CFBundleVersion"] forKey:@"app_version"];
+    [_tmpAvDict setValue:[_avAppInfo valueForKey:@"CFBundleShortVersionString"] forKey:@"CFBundleShortVersionString"];
+    [_tmpAvDict setValue:[self symantecDefsDate] forKey:@"defs_date"];
+    
+    [self setAvApp:avApplication];
+    [self setAvAppInfo:_tmpAvDict];
+    return _tmpAvDict;
+}
+
+- (NSString *)symantecDefsDate
+{
+    NSString *_avDefsPath = nil;
+    NSArray *avDefsArray = [NSArray arrayWithObjects:
+                            @"/Library/Application Support/Symantec/AntiVirus/Engine/V.GRD",
+                            @"/Library/Application Support/Norton Solutions Support/Norton AntiVirus/Engine/v.grd",
+                            @"/Library/Application Support/Norton Solutions Support/Norton AntiVirus/Engine/V.GRD",
+                            nil];
+    
+    NSString *avDefsAltPath = @"/Library/Application Support/Symantec/LiveUpdate/ActiveRegistry/NAV12Defs.plist";
+    
+    // Find the
+    for (NSString *item in avDefsArray) {
+        if ([fm fileExistsAtPath:item]) {
+            logit(lcl_vDebug,@"Reading defs file, %@",item);
+            _avDefsPath = [NSString stringWithString:item];
+            break;
+        }
+    }
+    
+    if (_avDefsPath == nil)
+    {
+        if ([fm fileExistsAtPath:avDefsAltPath]) {
+            logit(lcl_vDebug,@"Reading defs file, %@",avDefsAltPath);
+            NSDictionary *newAVDefsFileData = [NSDictionary dictionaryWithContentsOfFile:avDefsAltPath];
+            if (newAVDefsFileData) {
+                /*
+                 Symantec changed the location of the AV Defs file info as of SEP 12.1.4013
+                 It's now stored in a plist and easier to get, but the date still has to be
+                 parsed.
+                 */
+                [self setIsNewerSEPSW:YES];
+                if ([newAVDefsFileData objectForKey:@"ProductArray"])
+                {
+                    if ([[newAVDefsFileData objectForKey:@"ProductArray"] count] >= 1) {
+                        if ([[[newAVDefsFileData objectForKey:@"ProductArray"] objectAtIndex:0] objectForKey:@"itemSeqData"]) {
+                            NSString *itemSeqData = [[[newAVDefsFileData objectForKey:@"ProductArray"] objectAtIndex:0] objectForKey:@"itemSeqData"];
+                            NSString *newDefsDate = [self parseNewDefsDateFormat:itemSeqData];
+                            [self setAvDefsDate:newDefsDate];
+                            return newDefsDate;
+                        }
+                        if ([[[newAVDefsFileData objectForKey:@"ProductArray"] objectAtIndex:0] objectForKey:@"ItemSeqData"]) {
+                            NSString *itemSeqData = [[[newAVDefsFileData objectForKey:@"ProductArray"] objectAtIndex:0] objectForKey:@"ItemSeqData"];
+                            NSString *newDefsDate = [self parseNewDefsDateFormat:itemSeqData];
+                            [self setAvDefsDate:newDefsDate];
+                            return newDefsDate;
+                        }
+                    }
+                }
+                
+            }
+        }
+        logit(lcl_vError,@"Unable to find a AV Defs.");
+        return @"NA";
+    }
+    
+    // Read Defs file
+    NSError *err = nil;
+    NSString *_avDefsFileData = [NSString stringWithContentsOfFile:_avDefsPath encoding:NSUTF8StringEncoding error:&err];
+    if (err) {
+        logit(lcl_vError,@"Unable to read AV Defs file\n%@.",[err localizedDescription]);
+        return @"NA";
+    }
+    logit(lcl_vDebug,@"avDefsFile Data: %@",_avDefsFileData);
+    
+    // Parse Defs File
+    NSString *_defsDate = nil;
+    NSArray *_lines = [_avDefsFileData componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
+    for (NSString *_line in _lines) {
+        //LastModifiedGmtFormated
+        if ([_line containsString:@"LastModifiedGmtFormated" ignoringCase:YES]) {
+            logit(lcl_vDebug,@"containsString: %@",_line);
+            _defsDate = [[[[_line componentsSeparatedByString:@"="] objectAtIndex:1] componentsSeparatedByString:@" "] objectAtIndex:0];
+            logit(lcl_vDebug,@"_defsDate: %@",_defsDate);
+            break;
+        }
+    }
+    [self setAvDefsDate:[NSString stringWithString:_defsDate]];
+    return _defsDate;
+}
+
+- (void)updateSymantecDefs:(NSDictionary *)symData
+{
+    BOOL useLUTool = NO;
+    if ([l_Defaults objectForKey:@"SEPUseLUTool"]) {
+        if ([[l_Defaults objectForKey:@"SEPUseLUTool"] isEqualToString:@"1"]) {
+            useLUTool = YES;
+        }
+    }
+    
+    if (useLUTool) {
+        if (![self isProcessRunning:@"lutool"]) {
+            if ([self runLUTool] == 0) {
+                logit(lcl_vInfo,@"AV Defs were updated.");
+                [self postAVDataToWebService:[self symantecAppInfo]];
+                logit(lcl_vInfo,@"AV Data Posted To WebService.");
+            } else {
+                logit(lcl_vError,@"AV Defs were not updated.");
+            }
+        } else {
+            logit(lcl_vWarning,@"LUTool is currently running. Not going to spawn another LUTool.");
+        }
+    } else {
+        logit(lcl_vInfo,@"Run the AV Defs update, defs are out of date.")
+        // Install the Software
+        NSString *_avDefsURL = [self getAvUpdateURL];
+        logit(lcl_vDebug,@"AV Defs URL: %@",_avDefsURL);
+        if (_avDefsURL) {
+            int installResult = -1;
+            installResult = [self downloadUnzipAndInstall:_avDefsURL];
+            if (installResult != 0) {
+                logit(lcl_vError,@"AV Defs were not updated. Please see the install.log file for reason.");
+            } else {
+                logit(lcl_vInfo,@"AV Defs were updated.");
+                [self postAVDataToWebService:[self symantecAppInfo]];
+                logit(lcl_vInfo,@"AV Data Posted To WebService.");
+            }
+        }
+    }
+}
+
+- (int)runLUTool
+{
+    NSString *appPath = @"/Library/Application Support/Symantec/LiveUpdate/LUTool";
+    
+    NSTask *task = [[NSTask alloc] init];
+    [task setLaunchPath: appPath];
+    
+    NSPipe *readPipe = [NSPipe pipe];
+    NSFileHandle *readHandle = [readPipe fileHandleForReading];
+    
+    [task setStandardOutput: readPipe];
+    [task setStandardError: readPipe];
+    [task launch];
+    
+    NSMutableData *data = [[NSMutableData alloc] init];
+    NSData *readData;
+    
+    while ((readData = [readHandle availableData]) && [readData length]) {
+        [data appendData: readData];
+    }
+    
+    NSString *strResult = [[NSString alloc] initWithData:data encoding:NSASCIIStringEncoding];
+    logit(lcl_vDebug,@"runAVDefsUpdate Output: %@",strResult);
+    
+    int taskTerminationStatus = 4;
+    
+    @try {
+        taskTerminationStatus = [task terminationStatus];
+    }
+    @catch (NSException *exception) {
+        logit(lcl_vError,@"%@",exception);
+        logit(lcl_vError,@"Setting result to LU error.");
+    }
+    
+    int result = -1;
+    switch (taskTerminationStatus)
+    {
+        case 0:
+            logit(lcl_vInfo,@"LU completed successfully with new update.");
+            result = 0;
+            break;
+        case 1:
+            logit(lcl_vInfo,@"LU found nothing new. It did successfully contact the LU server, but found nothing new to update.");
+            result = 0;
+            break;
+        case 4:
+            logit(lcl_vError,@"LU failed with error, such as network error.");
+            result = 1;
+            break;
+        default:
+            logit(lcl_vError,@"LU failed with error (%d).",[task terminationStatus]);
+            result = 1;
+            break;
+    }
+    
+    return result;
+}
+
+#pragma mark - McAfee
+- (NSDictionary *)mcafeeAppInfo
+{
+    /*
+     Get's Suite Version
+     
+     /usr/local/McAfee/fmp/bin/XMLReaderTool --file /usr/local/McAfee/fmp/config/VShieldService/FMConfig.xml --string /FMConfiguration/FMVersion
+     */
+    
+    /*
+     App Loc
+     /Applications/McAfee Endpoint Protection for Mac.app
+     */
+    
+    NSString *avApplication;
+    NSArray *avAppArray = [NSArray arrayWithObjects:
+                           @"/Applications/McAfee Endpoint Protection for Mac.app",
+                           nil];
+    // Find the
+    for (NSString *item in avAppArray) {
+        if ([fm fileExistsAtPath:item]) {
+            logit(lcl_vDebug,@"Found AV app, %@.",item);
+            avApplication = [NSString stringWithString:item];
+            break;
+        }
+    }
+    
+    if (avApplication == nil) {
+        logit(lcl_vError,@"Unable to find a AV product.");
+        return nil;
+    }
+    // Get App Bundle Version, App Version and Suite Vers are different
+    NSArray *task_args = @[@"--file",@"/usr/local/McAfee/fmp/config/VShieldService/FMConfig.xml",@"--string",@"/FMConfiguration/FMVersion"];
+    NSError *err = nil;
+    MPNSTask *mpnst = [[MPNSTask alloc] init];
+    NSString *app_ver = [mpnst runTask:@"/usr/local/McAfee/fmp/bin/XMLReaderTool" binArgs:task_args error:&err];
+    
+    NSString *_plistPath = [avApplication stringByAppendingPathComponent:@"Contents/Info.plist"];
+    NSDictionary *_avAppInfo = [NSDictionary dictionaryWithContentsOfFile:_plistPath];
+    NSMutableDictionary *_tmpAvDict = [[NSMutableDictionary alloc] init];
+    [_tmpAvDict setValue:[MPSystemInfo clientUUID] forKey:@"cuuid"];
+    [_tmpAvDict setValue:@"mcafee" forKey:@"av_type"];
+    [_tmpAvDict setValue:[_avAppInfo valueForKey:@"CFBundleExecutable"] forKey:@"app_name"];
+    [_tmpAvDict setValue:avApplication forKey:@"app_path"];
+    if (!err) {
+        [_tmpAvDict setValue:app_ver forKey:@"app_version"];
+    } else {
+        [_tmpAvDict setValue:[_avAppInfo valueForKey:@"CFBundleVersion"] forKey:@"app_version"];
+    }
+    [_tmpAvDict setValue:[self mcafeeEngineVersion] forKey:@"eng_version"];
+    [_tmpAvDict setValue:[self mcafeeDefsDate] forKey:@"defs_date"];
+    
+    [self setAvApp:avApplication];
+    [self setAvAppInfo:_tmpAvDict];
+    return _tmpAvDict;
+}
+
+- (NSString *)mcafeeDefsDate
+{
+    NSString *_defsDate = @"0";
+    NSString *_avDefsPath = @"/Library/Preferences/com.mcafee.ssm.antimalware.plist";
+    
+    if ([fm fileExistsAtPath:_avDefsPath]) {
+        logit(lcl_vDebug,@"Reading defs file, %@",_avDefsPath);
+        NSDictionary *defsPlist = [NSDictionary dictionaryWithContentsOfFile:_avDefsPath];
+        if (defsPlist) {
+            if ([defsPlist objectForKey:@"Update_DATVersion"]) {
+                _defsDate = [defsPlist objectForKey:@"Update_DATVersion"];
+                logit(lcl_vDebug,@"_defsDate: %@",_defsDate);
+            }
+        }
+    }
+
+    [self setAvDefsDate:[NSString stringWithString:_defsDate]];
+    return _defsDate;
+}
+
+- (NSString *)mcafeeEngineVersion
+{
+    NSString *_defsDate = @"0";
+    NSString *_avDefsPath = @"/Library/Preferences/com.mcafee.ssm.antimalware.plist";
+    
+    if ([fm fileExistsAtPath:_avDefsPath]) {
+        logit(lcl_vDebug,@"Reading defs file, %@",_avDefsPath);
+        NSDictionary *defsPlist = [NSDictionary dictionaryWithContentsOfFile:_avDefsPath];
+        if (defsPlist) {
+            if ([defsPlist objectForKey:@"Update_EngineVersion"]) {
+                _defsDate = [defsPlist objectForKey:@"Update_EngineVersion"];
+                logit(lcl_vDebug,@"Update_EngineVersion: %@",_defsDate);
+            }
+        }
+    }
+
+    return _defsDate;
+}
+
+#pragma mark - WS Post Results
+
+- (BOOL)postAVDataToWebService:(NSDictionary *)avData
+{
+    // Post AV to WebService
+    MPWebServices *mpws = [[MPWebServices alloc] init];
+    NSError *wsErr = nil;
+    [mpws postClientAVData:avData error:&wsErr];
+    if (wsErr) {
+        logit(lcl_vError,@"%@",wsErr.localizedDescription);
+        return NO;
+    }
+    return YES;
+}
+
+#pragma mark - Process List
+- (BOOL)isProcessRunning:(NSString *)processName
+{
+    BOOL result = NO;
+    NSArray *pArr = [self getProcessList];
+    for (NSDictionary *x in pArr) {
+        if ([[[x objectForKey:@"pname"] lowercaseString] isEqualToString:@"lutool"]) {
+            result = YES;
+            break;
+        }
+    }
+    
+    return result;
+}
+
+- (NSArray *)getProcessList
+{
+    NSMutableArray *ret = [NSMutableArray arrayWithCapacity:1];
+    ProcessSerialNumber psn = { kNoProcess, kNoProcess };
+    while (GetNextProcess(&psn) == noErr) {
+        CFDictionaryRef cfDict = ProcessInformationCopyDictionary(&psn,  kProcessDictionaryIncludeAllInformationMask);
+        if (cfDict) {
+            NSDictionary *dict = (__bridge NSDictionary *)cfDict;
+            [ret addObject:[NSDictionary dictionaryWithObjectsAndKeys:
+                            [NSString stringWithFormat:@"%@",[dict objectForKey:(id)kCFBundleNameKey]],@"pname",
+                            [NSString stringWithFormat:@"%@",[dict objectForKey:@"pid"]],@"pid",
+                            [NSString stringWithFormat:@"%d",(uid_t)getuid()],@"uid",
+                            nil]];
+            CFRelease(cfDict);
+        }
+    }
+    return (NSArray *)ret;
+}
+
 #pragma mark Collect Data
+
 -(NSDictionary *)getAvAppInfo
 {
     NSString *avApplication;
@@ -182,11 +632,17 @@
 	NSDictionary *_avAppInfo = [NSDictionary dictionaryWithContentsOfFile:[avApplication stringByAppendingPathComponent:@"Contents/Info.plist"]];
 	NSMutableDictionary *_tmpAvDict = [[NSMutableDictionary alloc] init];
 	[_tmpAvDict setValue:[MPSystemInfo clientUUID] forKey:@"cuuid"];
+    /*
     [_tmpAvDict setValue:[_avAppInfo valueForKey:@"CFBundleExecutable"] forKey:@"CFBundleExecutable"];
     [_tmpAvDict setValue:avApplication forKey:@"NSBundleResolvedPath"];
     [_tmpAvDict setValue:[_avAppInfo valueForKey:@"CFBundleVersion"] forKey:@"CFBundleVersion"];
     [_tmpAvDict setValue:[_avAppInfo valueForKey:@"CFBundleShortVersionString"] forKey:@"CFBundleShortVersionString"];
-
+     */
+    [_tmpAvDict setValue:[_avAppInfo valueForKey:@"CFBundleExecutable"] forKey:@"app_name"];
+    [_tmpAvDict setValue:avApplication forKey:@"app_path"];
+    [_tmpAvDict setValue:[_avAppInfo valueForKey:@"CFBundleVersion"] forKey:@"app_version"];
+    [_tmpAvDict setValue:[_avAppInfo valueForKey:@"CFBundleShortVersionString"] forKey:@"CFBundleShortVersionString"];
+    
     [self setAvApp:avApplication];
 	[self setAvAppInfo:_tmpAvDict];
 	return _tmpAvDict;
@@ -302,6 +758,8 @@
 #pragma mark Download & Update Methods
 -(NSString *)getLatestAVDefsDate
 {
+    // CEH
+    /*
 	NSString *result;
     MPWebServices *mpws = [[MPWebServices alloc] init];
     NSError *wsErr = nil;
@@ -316,10 +774,36 @@
 		return nil;
 	}
 	return result;
+     */
+    return nil;
+}
+
+- (NSString *)getLatestAVDefsDateForType:(NSString *)avType
+{
+    // CEH
+    /*
+     NSString *result;
+     MPWebServices *mpws = [[MPWebServices alloc] init];
+     NSError *wsErr = nil;
+     result = [mpws getLatestAVDefsDate:&wsErr];
+     if (wsErr) {
+     logit(lcl_vError,@"%@",wsErr.localizedDescription);
+     return nil;
+     }
+     
+     if ([result isEqualToString:@"NA"]) {
+     logit(lcl_vError,@"Did not recieve a vaild defs date.");
+     return nil;
+     }
+     return result;
+     */
+    return nil;
 }
 
 -(NSString *)getAvUpdateURL
 {
+    // CEH
+    /*
     NSString *result;
     MPWebServices *mpws = [[MPWebServices alloc] init];
     NSError *wsErr = nil;
@@ -336,6 +820,8 @@
     
     logit(lcl_vDebug,@"[getAvUpdateURL] result: %@",result);
 	return result;
+     */
+    return nil;
 }
 
 -(int)downloadUnzipAndInstall:(NSString *)pkgURL
@@ -390,29 +876,29 @@
 - (int)runAVDefsUpdate
 {
     NSString *appPath = @"/Library/Application Support/Symantec/LiveUpdate/LUTool";
-
+    
     NSTask *task = [[NSTask alloc] init];
     [task setLaunchPath: appPath];
-
+    
     NSPipe *readPipe = [NSPipe pipe];
     NSFileHandle *readHandle = [readPipe fileHandleForReading];
-
+    
     [task setStandardOutput: readPipe];
     [task setStandardError: readPipe];
     [task launch];
-
+    
     NSMutableData *data = [[NSMutableData alloc] init];
     NSData *readData;
-
+    
     while ((readData = [readHandle availableData]) && [readData length]) {
         [data appendData: readData];
     }
-
+    
     NSString *strResult = [[NSString alloc] initWithData:data encoding:NSASCIIStringEncoding];
     logit(lcl_vDebug,@"runAVDefsUpdate Output: %@",strResult);
-
+    
     int taskTerminationStatus = 4;
-
+    
     @try {
         taskTerminationStatus = [task terminationStatus];
     }
@@ -420,7 +906,7 @@
         logit(lcl_vError,@"%@",exception);
         logit(lcl_vError,@"Setting result to LU error.");
     }
-
+    
     int result = -1;
     switch (taskTerminationStatus)
     {
@@ -441,7 +927,7 @@
             result = 1;
             break;
     }
-
+    
     return result;
 }
 

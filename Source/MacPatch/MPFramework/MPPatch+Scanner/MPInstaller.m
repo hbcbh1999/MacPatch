@@ -198,8 +198,8 @@
 + (BOOL)isConsoleUserLoggedIn
 {
     BOOL result = YES;
-	// SCDynamicStoreRef store = SCDynamicStoreCreate(NULL, NULL, NULL, NULL);
-	SCDynamicStoreRef store = SCDynamicStoreCreate(NULL, CFSTR("macpatch"), NULL, NULL);
+	
+	SCDynamicStoreRef store = SCDynamicStoreCreate(NULL, (CFStringRef)@"LocalUserLoggedIn", NULL, NULL);
 	CFStringRef consoleUserName;
     consoleUserName = SCDynamicStoreCopyConsoleUser(store, NULL, NULL);
 	

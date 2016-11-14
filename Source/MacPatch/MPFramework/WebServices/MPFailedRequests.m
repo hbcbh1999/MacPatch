@@ -139,25 +139,30 @@
             qldebug(@"Params Method: %@",[params objectForKey:@"aMethod"]);
         }
         if ([[req objectForKey:@"wsMethod"] isEqualToString:@"postPatchScanResultsForType"]) {
-            [mpws postPatchScanResultsForType:(NSInteger)[params objectForKey:@"aPatchScanType"] results:[params objectForKey:@"resultsDictionary"] error:&err];
+            qlinfo(@"postPatchScanResultsForType is disabled");
+            //[mpws postPatchScanResultsForType:(NSInteger)[params objectForKey:@"aPatchScanType"] results:[params objectForKey:@"resultsDictionary"] error:&err];
 
         } else if ([[req objectForKey:@"wsMethod"] isEqualToString:@"postPatchInstallResultsToWebService"]) {
             [mpws postPatchInstallResultsToWebService:[params objectForKey:@"aPatch"] patchType:[params objectForKey:@"aPatchType"] error:&err];
 
         } else if ([[req objectForKey:@"wsMethod"] isEqualToString:@"postClientAVData"]) {
-            [mpws postClientAVData:[params objectForKey:@"aDict"] error:&err];
+            //CEH
+            //[mpws postClientAVData:[params objectForKey:@"aDict"] error:&err];
 
         } else if ([[req objectForKey:@"wsMethod"] isEqualToString:@"postDataMgrXML"]) {
-            [mpws postDataMgrXML:[params objectForKey:@"aDataMgrXML"] error:&err];
+            //CEH
+            //[mpws postDataMgrXML:[params objectForKey:@"aDataMgrXML"] error:&err];
 
-        } else if ([[req objectForKey:@"wsMethod"] isEqualToString:@"postDataMgrJSON"]) {
-            [mpws postDataMgrJSON:[params objectForKey:@"aDataMgrJSON"] error:&err];
+        } else if ([[req objectForKey:@"wsMethod"] isEqualToString:@"postDataMgrData"]) {
+            [mpws postDataMgrData:[params objectForKey:@"aDataMgrJSON"] error:&err];
 
         } else if ([[req objectForKey:@"wsMethod"] isEqualToString:@"postSAVDefsDataXML"]) {
-            [mpws postSAVDefsDataXML:[params objectForKey:@"aAVXML"] encoded:(BOOL)[params objectForKey:@"aEncoded"] error:&err];
+            //CEH
+            //[mpws postSAVDefsDataXML:[params objectForKey:@"aAVXML"] encoded:(BOOL)[params objectForKey:@"aEncoded"] error:&err];
 
         } else if ([[req objectForKey:@"wsMethod"] isEqualToString:@"postJSONDataForMethod"]) {
-            [mpws postJSONDataForMethod:[params objectForKey:@"aMethod"] data:[params objectForKey:@"aData"] error:&err];
+            //CEH
+            //[mpws postJSONDataForMethod:[params objectForKey:@"aMethod"] data:[params objectForKey:@"aData"] error:&err];
 
         } else if ([[req objectForKey:@"wsMethod"] isEqualToString:@"postSWInstallResults"]) {
             [mpws postSWInstallResults:[params objectForKey:@"aParams"] error:&err];

@@ -368,7 +368,6 @@ typedef NSUInteger MPInstallIconStatus;
                     {
                         [progressText setStringValue:[NSString stringWithFormat:@"Begin pre install script."]];
                         [progressText performSelectorOnMainThread:@selector(display) withObject:nil waitUntilDone:NO];
-                        //NSString *preInstScript = [[currPatchToInstallDict objectForKey:@"preinst"] decodeBase64WithNewLinesReturnString:NO];
                         NSString *preInstScript = [[currPatchToInstallDict objectForKey:@"preinst"] decodeBase64AsString];
                         qldebug(@"preInstScript=%@",preInstScript);
                         if ([self runScript:preInstScript] != 0 )
@@ -438,7 +437,6 @@ typedef NSUInteger MPInstallIconStatus;
                         [progressText setStringValue:[NSString stringWithFormat:@"Begin post install script."]];
                         [progressText performSelectorOnMainThread:@selector(display) withObject:nil waitUntilDone:NO];
                         
-                        //NSString *postInstScript = [[currPatchToInstallDict objectForKey:@"postinst"] decodeBase64WithNewLinesReturnString:NO];
                         NSString *postInstScript = [[currPatchToInstallDict objectForKey:@"postinst"] decodeBase64AsString];
                         qldebug(@"postInstScript=%@",postInstScript);
                         if ([self runScript:postInstScript] != 0 )
@@ -482,7 +480,6 @@ typedef NSUInteger MPInstallIconStatus;
                     qlinfo(@"%@ has install criteria assigned to it.",[patch objectForKey:@"patch"]);
                     
                     NSDictionary *criteriaDictPre, *criteriaDictPost;
-                    //NSData *scriptData;
                     NSString *scriptText;
                     
                     int i = 0;
@@ -494,9 +491,6 @@ typedef NSUInteger MPInstallIconStatus;
                         for (i=0;i<[[patch objectForKey:@"criteria_pre"] count];i++)
                         {
                             criteriaDictPre = [[patch objectForKey:@"criteria_pre"] objectAtIndex:i];
-                            
-                            //scriptData = [[criteriaDictPre objectForKey:@"data"] decodeBase64WithNewlines:NO];
-                            //scriptText = [[NSString alloc] initWithData:scriptData encoding:NSASCIIStringEncoding];
                             scriptText = [[criteriaDictPre objectForKey:@"data"] decodeBase64AsString];
                             
                             [progressText setStringValue:[NSString stringWithFormat:@"Run pre-install criteria."]];
@@ -528,10 +522,8 @@ typedef NSUInteger MPInstallIconStatus;
                         for (i=0;i<[[patch objectForKey:@"criteria_post"] count];i++)
                         {
                             criteriaDictPost = [[patch objectForKey:@"criteria_post"] objectAtIndex:i];
-                            
-                            //scriptData = [[criteriaDictPost objectForKey:@"data"] decodeBase64WithNewlines:NO];
-                            //scriptText = [[NSString alloc] initWithData:scriptData encoding:NSASCIIStringEncoding];
                             scriptText = [[criteriaDictPost objectForKey:@"data"] decodeBase64AsString];
+                            
                             [progressText setStringValue:[NSString stringWithFormat:@"Run post-install criteria."]];
                             [progressText performSelectorOnMainThread:@selector(display) withObject:nil waitUntilDone:NO];
                             s_res = [self runScript:scriptText];
@@ -735,7 +727,6 @@ typedef NSUInteger MPInstallIconStatus;
                             {
                                 [progressText setStringValue:[NSString stringWithFormat:@"Begin pre install script."]];
                                 [progressText performSelectorOnMainThread:@selector(display) withObject:nil waitUntilDone:NO];
-                                //NSString *preInstScript = [[currPatchToInstallDict objectForKey:@"preinst"] decodeBase64WithNewLinesReturnString:NO];
                                 NSString *preInstScript = [[currPatchToInstallDict objectForKey:@"preinst"] decodeBase64AsString];
                                 qldebug(@"preInstScript=%@",preInstScript);
                                 if ([self runScript:preInstScript] != 0 )
@@ -803,7 +794,6 @@ typedef NSUInteger MPInstallIconStatus;
                                 [progressText setStringValue:[NSString stringWithFormat:@"Begin post install script."]];
                                 [progressText performSelectorOnMainThread:@selector(display) withObject:nil waitUntilDone:NO];
                                 
-                                //NSString *postInstScript = [[currPatchToInstallDict objectForKey:@"postinst"] decodeBase64WithNewLinesReturnString:NO];
                                 NSString *postInstScript = [[currPatchToInstallDict objectForKey:@"postinst"] decodeBase64AsString];
                                 qldebug(@"postInstScript=%@",postInstScript);
                                 if ([self runScript:postInstScript] != 0 )
@@ -847,7 +837,6 @@ typedef NSUInteger MPInstallIconStatus;
                             qlinfo(@"%@ has install criteria assigned to it.",[patch objectForKey:@"patch"]);
                             
                             NSDictionary *criteriaDictPre, *criteriaDictPost;
-                            //NSData *scriptData;
                             NSString *scriptText;
                             
                             int i = 0;
@@ -859,11 +848,8 @@ typedef NSUInteger MPInstallIconStatus;
                                 for (i=0;i<[[patch objectForKey:@"criteria_pre"] count];i++)
                                 {
                                     criteriaDictPre = [[patch objectForKey:@"criteria_pre"] objectAtIndex:i];
-                                    
-                                    //scriptData = [[criteriaDictPre objectForKey:@"data"] decodeBase64WithNewlines:NO];
-                                    //scriptText = [[NSString alloc] initWithData:scriptData encoding:NSASCIIStringEncoding];
-                                    
                                     scriptText = [[criteriaDictPre objectForKey:@"data"] decodeBase64AsString];
+                                    
                                     [progressText setStringValue:[NSString stringWithFormat:@"Run pre-install criteria."]];
                                     [progressText performSelectorOnMainThread:@selector(display) withObject:nil waitUntilDone:NO];
                                     s_res = [self runScript:scriptText];
@@ -893,10 +879,8 @@ typedef NSUInteger MPInstallIconStatus;
                                 for (i=0;i<[[patch objectForKey:@"criteria_post"] count];i++)
                                 {
                                     criteriaDictPost = [[patch objectForKey:@"criteria_post"] objectAtIndex:i];
-                                    
-                                    //scriptData = [[criteriaDictPost objectForKey:@"data"] decodeBase64WithNewlines:NO];
-                                    //scriptText = [[NSString alloc] initWithData:scriptData encoding:NSASCIIStringEncoding];
                                     scriptText = [[criteriaDictPost objectForKey:@"data"] decodeBase64AsString];
+                                    
                                     [progressText setStringValue:[NSString stringWithFormat:@"Run post-install criteria."]];
                                     [progressText performSelectorOnMainThread:@selector(display) withObject:nil waitUntilDone:NO];
                                     s_res = [self runScript:scriptText];

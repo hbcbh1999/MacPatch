@@ -139,8 +139,80 @@ NSLock *lock;
             logit(lcl_vError,@"[NSException]: %@",e);
             logit(lcl_vError,@"No client checkin data will be posted.");
             return;
-        }	
-
+        }
+        
+        MPWebServices *mpws = [[MPWebServices alloc] init];
+        
+        NSError *err = nil;
+        BOOL postResult = NO;
+        NSString *uri;
+        NSData *reqData;
+        id postRes;
+        @try {
+            // Send Checkin Data
+            err = nil;
+            uri = [@"/api/v1/client/checkin" stringByAppendingPathComponent:[si g_cuuid]];
+            reqData = [mpws postRequestWithURIforREST:uri body:agentDict error:&err];
+            if (err) {
+                logit(lcl_vError,@"%@",[err localizedDescription]);
+            } else {
+                // Parse JSON result, if error code is not 0
+                err = nil;
+                postRes = [mpws returnRequestWithType:reqData resultType:@"string" error:&err];
+                logit(lcl_vDebug,@"%@",postRes);
+                if (err) {
+                    logit(lcl_vError,@"%@",[err localizedDescription]);
+                } else {
+                    postResult = YES;
+                }
+            }
+            
+            if (postResult) {
+                logit(lcl_vInfo,@"Running client base checkin, returned true.");
+            } else {
+                logit(lcl_vError,@"Running client base checkin, returned false.");
+            }
+        }
+        @catch (NSException * e) {
+            logit(lcl_vError,@"[NSException]: %@",e);
+        }
+        
+        // Read Client Plist Info, and post it...
+        @try {
+            MPDefaultsWatcher *mpd = [[MPDefaultsWatcher alloc] init];
+            NSMutableDictionary *mpDefaults = [[NSMutableDictionary alloc] initWithDictionary:[mpd readConfigPlist]];
+            [mpDefaults setObject:[si g_cuuid] forKey:@"cuuid"];
+            
+            logit(lcl_vDebug, @"Agent Plist: %@",mpDefaults);
+            
+            err = nil;
+            uri = [@"/api/v1/client/checkin/plist" stringByAppendingPathComponent:[si g_cuuid]];
+            reqData = [mpws postRequestWithURIforREST:uri body:mpDefaults error:&err];
+            if (err) {
+                logit(lcl_vError,@"%@",[err localizedDescription]);
+            } else {
+                // Parse JSON result, if error code is not 0
+                err = nil;
+                postRes = [mpws returnRequestWithType:reqData resultType:@"string" error:&err];
+                logit(lcl_vDebug,@"%@",postRes);
+                if (err) {
+                    logit(lcl_vError,@"%@",[err localizedDescription]);
+                } else {
+                    postResult = YES;
+                }
+            }
+            
+            if (postResult) {
+                logit(lcl_vInfo,@"Running client config checkin, returned true.");
+            } else {
+                logit(lcl_vError,@"Running client config checkin, returned false.");
+            }
+        }
+        @catch (NSException * e) {
+            logit(lcl_vError,@"[NSException]: %@",e);
+        }
+        
+        /*
         MPWebServices *mpws = [[MPWebServices alloc] init];
         NSError *err = nil;
         BOOL postResult = NO;
@@ -180,7 +252,7 @@ NSLock *lock;
         @catch (NSException * e) {
             logit(lcl_vError,@"[NSException]: %@",e);
         }
-        
+        */
     }
 }
 

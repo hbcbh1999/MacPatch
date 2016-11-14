@@ -45,9 +45,11 @@
 @property (nonatomic, assign) BOOL isNewerSEPSW;
 
 // Scan & Update
-- (void)scanDefs;
-- (void)scanAndUpdateDefs;
-- (void)avScanAndUpdate:(BOOL)runUpdate;
+- (void)scanDefs __deprecated __deprecated_msg("use scanAVData instead.");
+- (void)scanAVData;
+- (void)scanAndUpdateDefs __deprecated __deprecated_msg("use scanAVDataAndUpdate instead.");
+- (void)avScanAndUpdate:(BOOL)runUpdate __deprecated __deprecated_msg("use scanAVDataAndUpdate instead.");
+- (void)scanAVDataAndUpdate:(BOOL)runUpdate;
 
 // Collect
 - (NSDictionary *)getAvAppInfo;
@@ -55,7 +57,9 @@
 - (NSString *)parseNewDefsDateFormat:(NSString *)defsDate;
 
 // Download & Update
-- (NSString *)getLatestAVDefsDate;
+- (NSString *)getLatestAVDefsDate __deprecated __deprecated_msg("use scanAVData instead.");
+- (NSString *)getLatestAVDefsDateForType:(NSString *)avType;
+
 - (NSString *)getAvUpdateURL;
 - (int)downloadUnzipAndInstall:(NSString *)pkgURL;
 - (int)runAVDefsUpdate;

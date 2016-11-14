@@ -262,7 +262,7 @@ NSString *const kRefreshStatusIconNotification      = @"kRefreshStatusIconNotifi
                                          informativeTextWithFormat:@"Unable to connect to helper application. Please try logging out and logging back in to resolve the issue."];
                     
                     [[NSRunningApplication currentApplication] activateWithOptions:NSApplicationActivateIgnoringOtherApps];
-                    [alert runModal];
+                    [alert performSelectorOnMainThread:@selector(runModal) withObject:nil waitUntilDone:NO];
                 }
                 [self cleanup];
             } else {
@@ -301,7 +301,7 @@ NSString *const kRefreshStatusIconNotification      = @"kRefreshStatusIconNotifi
                                          informativeTextWithFormat:@"Unable to connect to helper application. Please try logging out and logging back in to resolve the issue."];
                     
                     [[NSRunningApplication currentApplication] activateWithOptions:NSApplicationActivateIgnoringOtherApps];
-                    [alert runModal];
+                    [alert performSelectorOnMainThread:@selector(runModal) withObject:nil waitUntilDone:NO];
                     
                     NSMutableDictionary *details = [NSMutableDictionary dictionary];
                     [details setValue:@"Unable to connect to helper application. Please try logging out and logging back in to resolve the issue." forKey:NSLocalizedDescriptionKey];
@@ -482,8 +482,8 @@ done:
             [alert setInformativeText:@"Client check-in was successful."];
             [alert setAlertStyle:NSInformationalAlertStyle];
         }
-        
-        [alert runModal];
+
+        [alert performSelectorOnMainThread:@selector(runModal) withObject:nil waitUntilDone:NO];
     }
 }
 
@@ -517,6 +517,78 @@ done:
     }
     
     
+    MPWebServices *mpws = [[MPWebServices alloc] init];
+    
+    NSError *err = nil;
+    BOOL postResult = NO;
+    NSString *uri;
+    NSData *reqData;
+    id postRes;
+    @try {
+        // Send Checkin Data
+        err = nil;
+        uri = [@"/api/v1/client/checkin" stringByAppendingPathComponent:_cuuid];
+        reqData = [mpws postRequestWithURIforREST:uri body:agentDict error:&err];
+        if (err) {
+            logit(lcl_vError,@"%@",[err localizedDescription]);
+        } else {
+            // Parse JSON result, if error code is not 0
+            err = nil;
+            postRes = [mpws returnRequestWithType:reqData resultType:@"string" error:&err];
+            logit(lcl_vDebug,@"%@",postRes);
+            if (err) {
+                logit(lcl_vError,@"%@",[err localizedDescription]);
+            } else {
+                postResult = YES;
+            }
+        }
+        
+        if (postResult) {
+            logit(lcl_vInfo,@"Running client base checkin, returned true.");
+        } else {
+            logit(lcl_vError,@"Running client base checkin, returned false.");
+        }
+    }
+    @catch (NSException * e) {
+        logit(lcl_vError,@"[NSException]: %@",e);
+    }
+    
+    // Read Client Plist Info, and post it...
+    @try
+    {
+        postResult = NO;
+        NSMutableDictionary *mpDefaults = [NSMutableDictionary dictionaryWithContentsOfFile:AGENT_PREFS_PLIST];
+        [mpDefaults setObject:_cuuid forKey:@"cuuid"];
+        logit(lcl_vDebug, @"Agent Plist: %@",mpDefaults);
+        
+        err = nil;
+        uri = [@"/api/v1/client/checkin/plist" stringByAppendingPathComponent:_cuuid];
+        reqData = [mpws postRequestWithURIforREST:uri body:mpDefaults error:&err];
+        if (err) {
+            logit(lcl_vError,@"%@",[err localizedDescription]);
+        } else {
+            // Parse JSON result, if error code is not 0
+            err = nil;
+            postRes = [mpws returnRequestWithType:reqData resultType:@"string" error:&err];
+            logit(lcl_vDebug,@"%@",postRes);
+            if (err) {
+                logit(lcl_vError,@"%@",[err localizedDescription]);
+            } else {
+                postResult = YES;
+            }
+        }
+        
+        if (postResult) {
+            logit(lcl_vInfo,@"Running client config checkin, returned true.");
+        } else {
+            logit(lcl_vError,@"Running client config checkin, returned false.");
+        }
+    }
+    @catch (NSException * e) {
+        logit(lcl_vError,@"[NSException]: %@",e);
+    }
+    
+    /*
     NSError *err = nil;
     BOOL postResult;
     MPWebServices *mpws = [[MPWebServices alloc] init];
@@ -548,7 +620,7 @@ done:
         logit(lcl_vError,@"Running client config checkin, returned false.");
         y++;
     }
-    
+    */
     [self showLastCheckInMethod];
     if (y==0) {
         return YES;
@@ -651,15 +723,25 @@ done:
         logit(lcl_vInfo, @"Running last agent check in date request.");
         NSError *wsErr = nil;
         MPWebServices *mpws = [[MPWebServices alloc] init];
-        NSDictionary *result = [mpws GetLastCheckIn:&wsErr];
-        if (wsErr) {
-            logit(lcl_vError,@"Web service returned the following error (%d).%@",(int)wsErr.code,wsErr.localizedDescription);
-            return;
-        }
+        NSData *reqData;
+        id result;
         
-        if ([result objectForKey:@"mdate"]) {
-            [checkInStatusMenuItem setTitle:[NSString stringWithFormat:@"Last Checkin: %@",[result objectForKey:@"mdate"]]];
-            [statusMenu update];
+        NSString *uri = [@"/api/v1/client/checkin/info" stringByAppendingPathComponent:[MPSystemInfo clientUUID]];
+        reqData = [mpws getRequestWithURIforREST:uri error:&wsErr];
+        if (wsErr) {
+            logit(lcl_vError,@"%@",[wsErr localizedDescription]);
+        } else {
+            // Parse JSON result, if error code is not 0
+            wsErr = nil;
+            result = [mpws returnRequestWithType:reqData resultType:@"json" error:&wsErr];
+            logit(lcl_vDebug,@"%@",result);
+            if (wsErr) {
+                logit(lcl_vError,@"%@",wsErr.localizedDescription);
+            }
+            if ([result objectForKey:@"mdate1"]) {
+                [checkInStatusMenuItem setTitle:[NSString stringWithFormat:@"Last Checkin: %@",[result objectForKey:@"mdate1"]]];
+                [statusMenu update];
+            }
         }
     }
 }

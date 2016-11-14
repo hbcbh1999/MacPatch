@@ -47,7 +47,6 @@
 /* Begin PBXFileReference section */
 		8F4825F21958A40F008FFDB4 /* MPWorkerProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPWorkerProtocol.h; sourceTree = "<group>"; };
 		8F5F91ED171C6342001C77D1 /* libxml2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxml2.dylib; path = usr/lib/libxml2.dylib; sourceTree = SDKROOT; };
-		8FD88E5B16DFBF8200A870A3 /* DataMgr.xsd */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = DataMgr.xsd; sourceTree = "<group>"; };
 		8FD88E5E16DFC11200A870A3 /* FMDatabase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMDatabase.h; sourceTree = "<group>"; };
 		8FD88E5F16DFC11200A870A3 /* FMDatabase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMDatabase.m; sourceTree = "<group>"; };
 		8FD88E6016DFC11200A870A3 /* FMDatabaseAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMDatabaseAdditions.h; sourceTree = "<group>"; };
@@ -185,7 +184,6 @@
 		8FE560FC16DE9A7A00BB7600 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				8FD88E5B16DFBF8200A870A3 /* DataMgr.xsd */,
 				8FE560FE16DE9A7A00BB7600 /* MPAgentExec.1 */,
 				8FE561A116DEB8C900BB7600 /* MPAgentExec-Info.plist */,
 				8FE560FD16DE9A7A00BB7600 /* MPAgentExec-Prefix.pch */,
@@ -267,7 +265,6 @@
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_IDENTITY = "Mac Developer";
 				COPY_PHASE_STRIP = NO;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -300,7 +297,6 @@
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_IDENTITY = "Mac Developer";
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -322,7 +318,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MPAgentExec/MPAgentExec-Prefix.pch";
 				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
-				HEADER_SEARCH_PATHS = "";
+				HEADER_SEARCH_PATHS = /usr/include/libxml2;
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				OTHER_LDFLAGS = (
@@ -348,7 +344,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MPAgentExec/MPAgentExec-Prefix.pch";
 				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
-				HEADER_SEARCH_PATHS = "";
+				HEADER_SEARCH_PATHS = /usr/include/libxml2;
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				OTHER_LDFLAGS = (

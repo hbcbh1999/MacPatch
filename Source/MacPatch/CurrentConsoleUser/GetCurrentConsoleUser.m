@@ -42,8 +42,8 @@ int main (int argc, char * argv[])
 		
 		SCDynamicStoreRef   store;
 		CFStringRef         consoleUserName;
-        // store = SCDynamicStoreCreate(NULL, NULL, NULL, NULL);
-		store = SCDynamicStoreCreate(NULL, CFSTR("macpatch"), NULL, NULL);
+
+		store = SCDynamicStoreCreate(NULL, (CFStringRef)@"GetCurrentConsoleUser", NULL, NULL);
 		consoleUserName = SCDynamicStoreCopyConsoleUser(store, NULL, NULL);
 		
 		NSString *nsString = (__bridge NSString*)consoleUserName;

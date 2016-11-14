@@ -13,6 +13,7 @@
 		8F2E697C19229A85001BF9D6 /* MPFailedRequests.m in Sources */ = {isa = PBXBuildFile; fileRef = 8F2E697A19229A85001BF9D6 /* MPFailedRequests.m */; };
 		8F315B9B19212DEB0031FF73 /* MPServerList.h in Headers */ = {isa = PBXBuildFile; fileRef = 8F315B9919212DEB0031FF73 /* MPServerList.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		8F315B9C19212DEB0031FF73 /* MPServerList.m in Sources */ = {isa = PBXBuildFile; fileRef = 8F315B9A19212DEB0031FF73 /* MPServerList.m */; };
+		8F3F4B771CEE5D050034D051 /* MPAntiVirus.h in Headers */ = {isa = PBXBuildFile; fileRef = 8F3F4B751CEE5D050034D051 /* MPAntiVirus.h */; };
 		8F47F0F718EDFD6D00158396 /* MPNetRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = 8F47F0EF18EDFD6D00158396 /* MPNetRequest.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		8F47F0F818EDFD6D00158396 /* MPNetRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 8F47F0F018EDFD6D00158396 /* MPNetRequest.m */; };
 		8F47F0F918EDFD6D00158396 /* MPNetServer.h in Headers */ = {isa = PBXBuildFile; fileRef = 8F47F0F118EDFD6D00158396 /* MPNetServer.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -111,8 +112,10 @@
 		8F7B8B4F1CB03B3200FB940F /* AFURLResponseSerialization.m in Sources */ = {isa = PBXBuildFile; fileRef = 8F7B8B3C1CB03B3200FB940F /* AFURLResponseSerialization.m */; };
 		8F7B8B501CB03B3200FB940F /* AFURLSessionManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 8F7B8B3D1CB03B3200FB940F /* AFURLSessionManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		8F7B8B511CB03B3200FB940F /* AFURLSessionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 8F7B8B3E1CB03B3200FB940F /* AFURLSessionManager.m */; };
-		8FAFBDB41CBEAF9D00597697 /* NSString+Base64.h in Headers */ = {isa = PBXBuildFile; fileRef = 8FAFBDB21CBEAF9D00597697 /* NSString+Base64.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		8FAFBDB51CBEAF9D00597697 /* NSString+Base64.m in Sources */ = {isa = PBXBuildFile; fileRef = 8FAFBDB31CBEAF9D00597697 /* NSString+Base64.m */; };
+		8FC1410F1CEFA35700153D5D /* MPResult.h in Headers */ = {isa = PBXBuildFile; fileRef = 8FC1410D1CEFA35700153D5D /* MPResult.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		8FC141101CEFA35700153D5D /* MPResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 8FC1410E1CEFA35700153D5D /* MPResult.m */; };
+		8FC444171D00921900EF328C /* NSString+Base64.h in Headers */ = {isa = PBXBuildFile; fileRef = 8FC444151D00921900EF328C /* NSString+Base64.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		8FC444181D00921900EF328C /* NSString+Base64.m in Sources */ = {isa = PBXBuildFile; fileRef = 8FC444161D00921900EF328C /* NSString+Base64.m */; };
 		8FC5C8B11BBEF11B00F18BD8 /* MPSUServerList.h in Headers */ = {isa = PBXBuildFile; fileRef = 8FC5C8AF1BBEF11B00F18BD8 /* MPSUServerList.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		8FC5C8B21BBEF11B00F18BD8 /* MPSUServerList.m in Sources */ = {isa = PBXBuildFile; fileRef = 8FC5C8B01BBEF11B00F18BD8 /* MPSUServerList.m */; };
 		8FE03DCC1B60020B005D39EE /* NSData+Base64.h in Headers */ = {isa = PBXBuildFile; fileRef = 8F4B1F2816DE639100E15A9E /* NSData+Base64.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -128,7 +131,7 @@
 		8FE560D216DE899B00BB7600 /* MPSWInstaller.m in Sources */ = {isa = PBXBuildFile; fileRef = 8FE560CE16DE899B00BB7600 /* MPSWInstaller.m */; };
 		8FE560D616DE932900BB7600 /* MPAgentController.h in Headers */ = {isa = PBXBuildFile; fileRef = 8FE560D316DE932900BB7600 /* MPAgentController.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		8FE560D816DE932900BB7600 /* MPAgentController.m in Sources */ = {isa = PBXBuildFile; fileRef = 8FE560D416DE932900BB7600 /* MPAgentController.m */; };
-		8FE6EEB81B9A035800E8F8E1 /* InventoryPlugin.h in Headers */ = {isa = PBXBuildFile; fileRef = 8FE6EEB71B9A035800E8F8E1 /* InventoryPlugin.h */; };
+		8FE6EEB81B9A035800E8F8E1 /* InventoryPlugin.h in Headers */ = {isa = PBXBuildFile; fileRef = 8FE6EEB71B9A035800E8F8E1 /* InventoryPlugin.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		8FEC938717CBFEFB00AA9C1C /* MPApplePatch.h in Headers */ = {isa = PBXBuildFile; fileRef = 8FEC938517CBFEFB00AA9C1C /* MPApplePatch.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		8FEC938817CBFEFB00AA9C1C /* MPApplePatch.m in Sources */ = {isa = PBXBuildFile; fileRef = 8FEC938617CBFEFB00AA9C1C /* MPApplePatch.m */; };
 		8FEC938B17CBFF0F00AA9C1C /* MPCustomPatch.h in Headers */ = {isa = PBXBuildFile; fileRef = 8FEC938917CBFF0F00AA9C1C /* MPCustomPatch.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -148,6 +151,8 @@
 		8F2E697A19229A85001BF9D6 /* MPFailedRequests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPFailedRequests.m; sourceTree = "<group>"; };
 		8F315B9919212DEB0031FF73 /* MPServerList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPServerList.h; sourceTree = "<group>"; };
 		8F315B9A19212DEB0031FF73 /* MPServerList.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPServerList.m; sourceTree = "<group>"; };
+		8F3F4B751CEE5D050034D051 /* MPAntiVirus.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPAntiVirus.h; sourceTree = "<group>"; };
+		8F3F4B761CEE5D050034D051 /* MPAntiVirus.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPAntiVirus.m; sourceTree = "<group>"; };
 		8F47F0EF18EDFD6D00158396 /* MPNetRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPNetRequest.h; sourceTree = "<group>"; };
 		8F47F0F018EDFD6D00158396 /* MPNetRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPNetRequest.m; sourceTree = "<group>"; };
 		8F47F0F118EDFD6D00158396 /* MPNetServer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPNetServer.h; sourceTree = "<group>"; };
@@ -224,12 +229,14 @@
 		8FAEF650145F187C006284B2 /* MPDataMgr.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPDataMgr.m; sourceTree = "<group>"; };
 		8FAEF65E145F1922006284B2 /* RegexKitLite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RegexKitLite.h; sourceTree = "<group>"; };
 		8FAEF65F145F1922006284B2 /* RegexKitLite.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RegexKitLite.m; sourceTree = "<group>"; };
-		8FAFBDB21CBEAF9D00597697 /* NSString+Base64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+Base64.h"; sourceTree = "<group>"; };
-		8FAFBDB31CBEAF9D00597697 /* NSString+Base64.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+Base64.m"; sourceTree = "<group>"; };
 		8FBB10B8152F6D7900A45934 /* NSMutableDictionary+Helper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSMutableDictionary+Helper.h"; sourceTree = "<group>"; };
 		8FBB10B9152F6D7900A45934 /* NSMutableDictionary+Helper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSMutableDictionary+Helper.m"; sourceTree = "<group>"; };
 		8FBB10BD152F712400A45934 /* NSDictionary+Helper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSDictionary+Helper.h"; sourceTree = "<group>"; };
 		8FBB10BE152F712400A45934 /* NSDictionary+Helper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSDictionary+Helper.m"; sourceTree = "<group>"; };
+		8FC1410D1CEFA35700153D5D /* MPResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPResult.h; sourceTree = "<group>"; };
+		8FC1410E1CEFA35700153D5D /* MPResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPResult.m; sourceTree = "<group>"; };
+		8FC444151D00921900EF328C /* NSString+Base64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+Base64.h"; sourceTree = "<group>"; };
+		8FC444161D00921900EF328C /* NSString+Base64.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+Base64.m"; sourceTree = "<group>"; };
 		8FC5C8AF1BBEF11B00F18BD8 /* MPSUServerList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPSUServerList.h; sourceTree = "<group>"; };
 		8FC5C8B01BBEF11B00F18BD8 /* MPSUServerList.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPSUServerList.m; sourceTree = "<group>"; };
 		8FCB774F140C2F0700D86586 /* lcl_config_components.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lcl_config_components.h; sourceTree = "<group>"; };
@@ -271,8 +278,6 @@
 		8FEC938A17CBFF0F00AA9C1C /* MPCustomPatch.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPCustomPatch.m; sourceTree = "<group>"; };
 		8FED886F146462DB00709F8E /* MPASUSCatalogs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPASUSCatalogs.h; sourceTree = "<group>"; };
 		8FED8870146462DB00709F8E /* MPASUSCatalogs.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPASUSCatalogs.m; sourceTree = "<group>"; };
-		8FF93F9C199A9205005A4EEB /* RSACrypto.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RSACrypto.h; sourceTree = "<group>"; };
-		8FF93F9D199A9205005A4EEB /* RSACrypto.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RSACrypto.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -334,6 +339,8 @@
 				8F94628016249D4E00969BCD /* MPNSTask.m */,
 				8FC5C8AF1BBEF11B00F18BD8 /* MPSUServerList.h */,
 				8FC5C8B01BBEF11B00F18BD8 /* MPSUServerList.m */,
+				8F3F4B751CEE5D050034D051 /* MPAntiVirus.h */,
+				8F3F4B761CEE5D050034D051 /* MPAntiVirus.m */,
 				8FE6B4811B4C7748000A0471 /* Crypto */,
 				8FAEF635145F1773006284B2 /* MPPatch+Scanner */,
 				8F4B1F3316DE64BF00E15A9E /* MacPatch+SWDist */,
@@ -360,6 +367,8 @@
 				8F47F10018EE000100158396 /* MPNetConfig.m */,
 				8F315B9919212DEB0031FF73 /* MPServerList.h */,
 				8F315B9A19212DEB0031FF73 /* MPServerList.m */,
+				8FC1410D1CEFA35700153D5D /* MPResult.h */,
+				8FC1410E1CEFA35700153D5D /* MPResult.m */,
 			);
 			name = Networking;
 			sourceTree = "<group>";
@@ -485,8 +494,8 @@
 			children = (
 				8F4B1F2816DE639100E15A9E /* NSData+Base64.h */,
 				8F4B1F2916DE639100E15A9E /* NSData+Base64.m */,
-				8FAFBDB21CBEAF9D00597697 /* NSString+Base64.h */,
-				8FAFBDB31CBEAF9D00597697 /* NSString+Base64.m */,
+				8FC444151D00921900EF328C /* NSString+Base64.h */,
+				8FC444161D00921900EF328C /* NSString+Base64.m */,
 			);
 			path = Base64;
 			sourceTree = "<group>";
@@ -560,8 +569,6 @@
 			children = (
 				8F7B15CC15068211005CEA32 /* MPCrypto.h */,
 				8F7B15CD15068211005CEA32 /* MPCrypto.m */,
-				8FF93F9C199A9205005A4EEB /* RSACrypto.h */,
-				8FF93F9D199A9205005A4EEB /* RSACrypto.m */,
 				8F50CB7C199D5DD0006AC537 /* MPKeychain.h */,
 				8F50CB7D199D5DD0006AC537 /* MPKeychain.m */,
 				8F00CD0317610F1D008CC39E /* MPCodeSign.h */,
@@ -639,7 +646,6 @@
 				8F4B1E4816DD1D8C00E15A9E /* MacPatch.h in Headers */,
 				8F4B1EA816DD267B00E15A9E /* lcl.h in Headers */,
 				8F4B1EBE16DD5FB400E15A9E /* NSString+Hash.h in Headers */,
-				8FE6EEB81B9A035800E8F8E1 /* InventoryPlugin.h in Headers */,
 				8F4B1EC416DD5FDD00E15A9E /* NSFileManager+Helper.h in Headers */,
 				8F4B1F2B16DE639100E15A9E /* NSDate+Helper.h in Headers */,
 				8F47F10118EE000100158396 /* MPNetConfig.h in Headers */,
@@ -660,15 +666,18 @@
 				8F7B8B451CB03B3200FB940F /* AFNetworking.h in Headers */,
 				8F7B8B4C1CB03B3200FB940F /* AFURLRequestSerialization.h in Headers */,
 				8F7B8B461CB03B3200FB940F /* AFNetworkReachabilityManager.h in Headers */,
-				8FE03DCC1B60020B005D39EE /* NSData+Base64.h in Headers */,
-				8FAFBDB41CBEAF9D00597697 /* NSString+Base64.h in Headers */,
 				8F2E697B19229A85001BF9D6 /* MPFailedRequests.h in Headers */,
+				8FE03DCC1B60020B005D39EE /* NSData+Base64.h in Headers */,
+				8FC444171D00921900EF328C /* NSString+Base64.h in Headers */,
+				8FC1410F1CEFA35700153D5D /* MPResult.h in Headers */,
 				8FEC938B17CBFF0F00AA9C1C /* MPCustomPatch.h in Headers */,
 				8FC5C8B11BBEF11B00F18BD8 /* MPSUServerList.h in Headers */,
 				8F50CB7E199D5DD0006AC537 /* MPKeychain.h in Headers */,
 				8FE560D016DE899B00BB7600 /* MPSWInstaller.h in Headers */,
 				8FE560D616DE932900BB7600 /* MPAgentController.h in Headers */,
+				8FE6EEB81B9A035800E8F8E1 /* InventoryPlugin.h in Headers */,
 				8F47F0FD18EDFD6D00158396 /* Reachability.h in Headers */,
+				8F3F4B771CEE5D050034D051 /* MPAntiVirus.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -775,6 +784,7 @@
 				8F4B1E0516DD1D6400E15A9E /* MPWebServices.m in Sources */,
 				8F4B1E0616DD1D6400E15A9E /* NSString+Helper.m in Sources */,
 				8F4B1E0716DD1D6400E15A9E /* NSFileManager+DirectoryLocations.m in Sources */,
+				8FC141101CEFA35700153D5D /* MPResult.m in Sources */,
 				8F4B1E0816DD1D6400E15A9E /* NSDictionary+Helper.m in Sources */,
 				8F4B1E0916DD1D6400E15A9E /* NSMutableDictionary+Helper.m in Sources */,
 				8F47F10218EE000100158396 /* MPNetConfig.m in Sources */,
@@ -789,6 +799,7 @@
 				8F7B8B4B1CB03B3200FB940F /* AFURLConnectionOperation.m in Sources */,
 				8F4B1F2D16DE639100E15A9E /* NSDate+Helper.m in Sources */,
 				8F4B1F3916DE64DA00E15A9E /* MPSWTasks.m in Sources */,
+				8FC444181D00921900EF328C /* NSString+Base64.m in Sources */,
 				8F7B8B4D1CB03B3200FB940F /* AFURLRequestSerialization.m in Sources */,
 				8FE560D216DE899B00BB7600 /* MPSWInstaller.m in Sources */,
 				8F2E697C19229A85001BF9D6 /* MPFailedRequests.m in Sources */,
@@ -797,7 +808,6 @@
 				8FEC938817CBFEFB00AA9C1C /* MPApplePatch.m in Sources */,
 				8FEC938C17CBFF0F00AA9C1C /* MPCustomPatch.m in Sources */,
 				8F7B8B441CB03B3200FB940F /* AFHTTPSessionManager.m in Sources */,
-				8FAFBDB51CBEAF9D00597697 /* NSString+Base64.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

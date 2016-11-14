@@ -33,6 +33,12 @@
 		8F530FFE1B42EEAC00B8D893 /* FMDatabaseAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 8F530FF81B42EEAC00B8D893 /* FMDatabaseAdditions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		8F530FFF1B42EEAC00B8D893 /* FMResultSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 8F530FFA1B42EEAC00B8D893 /* FMResultSet.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		8F5310011B42EEE400B8D893 /* libsqlite3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8F5310001B42EEE400B8D893 /* libsqlite3.dylib */; };
+		8F6D32461CD3C34E006B1094 /* MPOSUpgrade.m in Sources */ = {isa = PBXBuildFile; fileRef = 8F6D32451CD3C34E006B1094 /* MPOSUpgrade.m */; };
+		8F9C2B531DDA1D0E002A39D2 /* MPAppStore.m in Sources */ = {isa = PBXBuildFile; fileRef = 8F9C2B521DDA1D0E002A39D2 /* MPAppStore.m */; };
+		8F9C2B561DDA1D17002A39D2 /* CKSoftwareProduct+ASProduct.m in Sources */ = {isa = PBXBuildFile; fileRef = 8F9C2B551DDA1D17002A39D2 /* CKSoftwareProduct+ASProduct.m */; };
+		8F9C2B581DDA1D4A002A39D2 /* CommerceKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8F9C2B571DDA1D4A002A39D2 /* CommerceKit.framework */; };
+		8F9C2B5A1DDA1D6B002A39D2 /* StoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8F9C2B591DDA1D6B002A39D2 /* StoreFoundation.framework */; };
+		8F9C2B5D1DDA1E33002A39D2 /* AppStoreOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 8F9C2B5C1DDA1E33002A39D2 /* AppStoreOperation.m */; };
 		8FA6A8771B9621BF006A329B /* BatteryInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 8FA6A8601B9621BF006A329B /* BatteryInfo.m */; };
 		8FA6A8781B9621BF006A329B /* CHDisk.m in Sources */ = {isa = PBXBuildFile; fileRef = 8FA6A8621B9621BF006A329B /* CHDisk.m */; };
 		8FA6A8791B9621BF006A329B /* CHDiskInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 8FA6A8641B9621BF006A329B /* CHDiskInfo.m */; };
@@ -123,6 +129,16 @@
 		8F530FF91B42EEAC00B8D893 /* FMResultSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMResultSet.h; sourceTree = "<group>"; };
 		8F530FFA1B42EEAC00B8D893 /* FMResultSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMResultSet.m; sourceTree = "<group>"; };
 		8F5310001B42EEE400B8D893 /* libsqlite3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.dylib; path = usr/lib/libsqlite3.dylib; sourceTree = SDKROOT; };
+		8F6D32441CD3C34E006B1094 /* MPOSUpgrade.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPOSUpgrade.h; sourceTree = "<group>"; };
+		8F6D32451CD3C34E006B1094 /* MPOSUpgrade.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPOSUpgrade.m; sourceTree = "<group>"; };
+		8F9C2B511DDA1D0E002A39D2 /* MPAppStore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPAppStore.h; sourceTree = "<group>"; };
+		8F9C2B521DDA1D0E002A39D2 /* MPAppStore.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPAppStore.m; sourceTree = "<group>"; };
+		8F9C2B541DDA1D17002A39D2 /* CKSoftwareProduct+ASProduct.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CKSoftwareProduct+ASProduct.h"; sourceTree = "<group>"; };
+		8F9C2B551DDA1D17002A39D2 /* CKSoftwareProduct+ASProduct.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "CKSoftwareProduct+ASProduct.m"; sourceTree = "<group>"; };
+		8F9C2B571DDA1D4A002A39D2 /* CommerceKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CommerceKit.framework; path = ../../../../../../System/Library/PrivateFrameworks/CommerceKit.framework; sourceTree = "<group>"; };
+		8F9C2B591DDA1D6B002A39D2 /* StoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreFoundation.framework; path = ../../../../../../System/Library/PrivateFrameworks/StoreFoundation.framework; sourceTree = "<group>"; };
+		8F9C2B5B1DDA1E33002A39D2 /* AppStoreOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppStoreOperation.h; sourceTree = "<group>"; };
+		8F9C2B5C1DDA1E33002A39D2 /* AppStoreOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppStoreOperation.m; sourceTree = "<group>"; };
 		8FA6A85F1B9621BF006A329B /* BatteryInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BatteryInfo.h; sourceTree = "<group>"; };
 		8FA6A8601B9621BF006A329B /* BatteryInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BatteryInfo.m; sourceTree = "<group>"; };
 		8FA6A8611B9621BF006A329B /* CHDisk.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CHDisk.h; sourceTree = "<group>"; };
@@ -192,6 +208,8 @@
 				8FE560EA16DE97DD00BB7600 /* Security.framework in Frameworks */,
 				8FE560E816DE97CF00BB7600 /* SystemConfiguration.framework in Frameworks */,
 				8F4B1EED16DD77BD00E15A9E /* Foundation.framework in Frameworks */,
+				8F9C2B581DDA1D4A002A39D2 /* CommerceKit.framework in Frameworks */,
+				8F9C2B5A1DDA1D6B002A39D2 /* StoreFoundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -218,6 +236,8 @@
 		8F4B1EEB16DD77BD00E15A9E /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				8F9C2B591DDA1D6B002A39D2 /* StoreFoundation.framework */,
+				8F9C2B571DDA1D4A002A39D2 /* CommerceKit.framework */,
 				8F5310001B42EEE400B8D893 /* libsqlite3.dylib */,
 				8F530FF31B42ED7000B8D893 /* DirectoryService.framework */,
 				8F530FF11B42ED5D00B8D893 /* DiskArbitration.framework */,
@@ -252,6 +272,8 @@
 				8F4B1F0516DD77FF00E15A9E /* MPDefaultsWatcher.m */,
 				8FA6A8841B96230C006A329B /* MPInventoryPlugin.h */,
 				8FA6A8851B96230C006A329B /* MPInventoryPlugin.m */,
+				8F6D32441CD3C34E006B1094 /* MPOSUpgrade.h */,
+				8F6D32451CD3C34E006B1094 /* MPOSUpgrade.m */,
 				8F4B1F0916DE633200E15A9E /* MPTasks */,
 				8FE03DD21B601926005D39EE /* Classes */,
 				8F530FFC1B42EEAC00B8D893 /* Third Party Classes */,
@@ -307,6 +329,8 @@
 				8F2E697E1922C330001BF9D6 /* PostFailedWSRequests.m */,
 				8FC5C8AC1BBEEFC800F18BD8 /* GetASUSListOperation.h */,
 				8FC5C8AD1BBEEFC800F18BD8 /* GetASUSListOperation.m */,
+				8F9C2B5B1DDA1E33002A39D2 /* AppStoreOperation.h */,
+				8F9C2B5C1DDA1E33002A39D2 /* AppStoreOperation.m */,
 			);
 			name = Operations;
 			sourceTree = "<group>";
@@ -361,6 +385,10 @@
 				8FA6A8741B9621BF006A329B /* NSMetadataQuery+Synchronous.m */,
 				8FA6A8751B9621BF006A329B /* PowerProfile.h */,
 				8FA6A8761B9621BF006A329B /* PowerProfile.m */,
+				8F9C2B511DDA1D0E002A39D2 /* MPAppStore.h */,
+				8F9C2B521DDA1D0E002A39D2 /* MPAppStore.m */,
+				8F9C2B541DDA1D17002A39D2 /* CKSoftwareProduct+ASProduct.h */,
+				8F9C2B551DDA1D17002A39D2 /* CKSoftwareProduct+ASProduct.m */,
 			);
 			path = Inventory;
 			sourceTree = "<group>";
@@ -429,7 +457,7 @@
 		8F4B1EE116DD77BD00E15A9E /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0720;
+				LastUpgradeCheck = 0810;
 				ORGANIZATIONNAME = LLNL;
 			};
 			buildConfigurationList = 8F4B1EE416DD77BD00E15A9E /* Build configuration list for PBXProject "MPAgent" */;
@@ -461,10 +489,12 @@
 				8F530FFD1B42EEAC00B8D893 /* FMDatabase.m in Sources */,
 				8F4B1F0616DD77FF00E15A9E /* MPAgent.m in Sources */,
 				8FA6A8821B9621BF006A329B /* PowerProfile.m in Sources */,
+				8F6D32461CD3C34E006B1094 /* MPOSUpgrade.m in Sources */,
 				8FA6A87D1B9621BF006A329B /* MPInv.m in Sources */,
 				8FE03DD61B60195A005D39EE /* AntiVirus.m in Sources */,
 				8F530FFE1B42EEAC00B8D893 /* FMDatabaseAdditions.m in Sources */,
 				8F530FFF1B42EEAC00B8D893 /* FMResultSet.m in Sources */,
+				8F9C2B5D1DDA1E33002A39D2 /* AppStoreOperation.m in Sources */,
 				8F2E697F1922C330001BF9D6 /* PostFailedWSRequests.m in Sources */,
 				8FC5C8AE1BBEEFC800F18BD8 /* GetASUSListOperation.m in Sources */,
 				8FA6A8861B96230C006A329B /* MPInventoryPlugin.m in Sources */,
@@ -472,12 +502,14 @@
 				8FF93F9319959206005A4EEB /* MPAgentRegister.m in Sources */,
 				8F4B1F0716DD77FF00E15A9E /* MPAppController.m in Sources */,
 				8FA6A87C1B9621BF006A329B /* MPFileVaultInfo.m in Sources */,
+				8F9C2B531DDA1D0E002A39D2 /* MPAppStore.m in Sources */,
 				8FA6A87F1B9621BF006A329B /* MPUsersAndGroups.m in Sources */,
 				8FA6A8801B9621BF006A329B /* NSDirectoryServices.m in Sources */,
 				8F315B9819212A920031FF73 /* GetServerListOperation.m in Sources */,
 				8F4B1F0816DD77FF00E15A9E /* MPDefaultsWatcher.m in Sources */,
 				8F4B1F1716DE634600E15A9E /* ClientCheckInOperation.m in Sources */,
 				8F4B1F1816DE634600E15A9E /* AgentScanAndUpdateOperation.m in Sources */,
+				8F9C2B561DDA1D17002A39D2 /* CKSoftwareProduct+ASProduct.m in Sources */,
 				8FA6A87E1B9621BF006A329B /* MPServerEntry.m in Sources */,
 				8FA6A8771B9621BF006A329B /* BatteryInfo.m in Sources */,
 				8F4B1F1916DE634600E15A9E /* AntiVirusScanAndUpdateOperation.m in Sources */,
@@ -503,17 +535,22 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_IDENTITY = "Mac Developer";
 				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
@@ -522,7 +559,9 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				ONLY_ACTIVE_ARCH = YES;
@@ -544,19 +583,26 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_IDENTITY = "Mac Developer";
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				OTHER_LDFLAGS = (
@@ -577,12 +623,18 @@
 				ALWAYS_SEARCH_USER_PATHS = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN_INT_CONVERSION = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SYSTEM_LIBRARY_DIR)/PrivateFrameworks",
+				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MPAgent/MPAgent-Prefix.pch";
 				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					/usr/include/libxml2,
+					"$(SRCROOT)/MPAgent/PrivateHeaders/**",
 				);
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				OTHER_LDFLAGS = (
@@ -606,12 +658,18 @@
 				ALWAYS_SEARCH_USER_PATHS = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN_INT_CONVERSION = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SYSTEM_LIBRARY_DIR)/PrivateFrameworks",
+				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MPAgent/MPAgent-Prefix.pch";
 				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					/usr/include/libxml2,
+					"$(SRCROOT)/MPAgent/PrivateHeaders/**",
 				);
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				OTHER_LDFLAGS = (

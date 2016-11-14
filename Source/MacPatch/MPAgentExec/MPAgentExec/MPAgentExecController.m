@@ -163,7 +163,6 @@
     NSArray             *approvedApplePatches = nil;
     NSMutableArray      *customPatchesArray;
     NSArray             *approvedCustomPatches = nil;
-    //NSString            *_approvedPatchesFile = [NSString stringWithFormat:@"%@/Data/.approvedPatches.plist",MP_ROOT_CLIENT];
 	NSMutableArray      *approvedUpdatesArray = [[NSMutableArray alloc] init];
 	NSMutableDictionary *tmpDict;
 	NSDictionary        *customPatch, *approvedPatch;
@@ -236,40 +235,31 @@
                     for (int i=0; i<[applePatchesArray count]; i++) {
                         for (int x=0;x < [approvedApplePatches count]; x++) {
                             if ([[[approvedApplePatches objectAtIndex:x] objectForKey:@"name"] isEqualTo:[[applePatchesArray objectAtIndex:i] objectForKey:@"patch"]]) {
-                                @try {
-                                    logit(lcl_vInfo,@"Approved update %@",[[applePatchesArray objectAtIndex:i] objectForKey:@"patch"]);
-                                    logit(lcl_vDebug,@"Approved: %@",[approvedApplePatches objectAtIndex:x]);
-                                    tmpDict = [[NSMutableDictionary alloc] init];
-                                    [tmpDict setObject:[[applePatchesArray objectAtIndex:i] objectForKey:@"patch"] forKey:@"patch"];
-                                    [tmpDict setObject:[[applePatchesArray objectAtIndex:i] objectForKey:@"description"] forKey:@"description"];
-                                    [tmpDict setObject:[[applePatchesArray objectAtIndex:i] objectForKey:@"restart"] forKey:@"restart"];
-                                    [tmpDict setObject:[[applePatchesArray objectAtIndex:i] objectForKey:@"version"] forKey:@"version"];
-                                    
-                                    // Debug for trouble shooting
-                                    logit(lcl_vDebug,@"approvedApplePatches Object: %@",[approvedApplePatches objectAtIndex:x]);
-                                    
-                                    if ([[approvedApplePatches objectAtIndex:x] objectForKey:@"hasCriteria"]) {
-                                        
-                                        [tmpDict setObject:[[approvedApplePatches objectAtIndex:x] objectForKey:@"hasCriteria"] forKey:@"hasCriteria"];
-                                        if ([[[approvedApplePatches objectAtIndex:x] objectForKey:@"hasCriteria"] boolValue] == YES) {
-                                            if ([[approvedApplePatches objectAtIndex:x] objectForKey:@"criteria_pre"] && [[[approvedApplePatches objectAtIndex:x] objectForKey:@"criteria_pre"] count] > 0) {
-                                                [tmpDict setObject:[[approvedApplePatches objectAtIndex:x] objectForKey:@"criteria_pre"] forKey:@"criteria_pre"];
-                                            }
-                                            if ([[approvedApplePatches objectAtIndex:x] objectForKey:@"criteria_post"] && [[[approvedApplePatches objectAtIndex:x] objectForKey:@"criteria_post"] count] > 0) {
-                                                [tmpDict setObject:[[approvedApplePatches objectAtIndex:x] objectForKey:@"criteria_post"] forKey:@"criteria_post"];
-                                            }
+                                logit(lcl_vInfo,@"Approved update %@",[[applePatchesArray objectAtIndex:i] objectForKey:@"patch"]);
+                                logit(lcl_vDebug,@"Approved: %@",[approvedApplePatches objectAtIndex:x]);
+                                tmpDict = [[NSMutableDictionary alloc] init];
+                                [tmpDict setObject:[[applePatchesArray objectAtIndex:i] objectForKey:@"patch"] forKey:@"patch"];
+                                [tmpDict setObject:[[applePatchesArray objectAtIndex:i] objectForKey:@"description"] forKey:@"description"];
+                                [tmpDict setObject:[[applePatchesArray objectAtIndex:i] objectForKey:@"restart"] forKey:@"restart"];
+                                [tmpDict setObject:[[applePatchesArray objectAtIndex:i] objectForKey:@"version"] forKey:@"version"];
+
+                                if ([[approvedApplePatches objectAtIndex:x] objectForKey:@"hasCriteria"]) {
+
+                                    [tmpDict setObject:[[approvedApplePatches objectAtIndex:x] objectForKey:@"hasCriteria"] forKey:@"hasCriteria"];
+                                    if ([[[approvedApplePatches objectAtIndex:x] objectForKey:@"hasCriteria"] boolValue] == YES) {
+                                        if ([[approvedApplePatches objectAtIndex:x] objectForKey:@"criteria_pre"] && [[[approvedApplePatches objectAtIndex:x] objectForKey:@"criteria_pre"] count] > 0) {
+                                            [tmpDict setObject:[[approvedApplePatches objectAtIndex:x] objectForKey:@"criteria_pre"] forKey:@"criteria_pre"];
+                                        }
+                                        if ([[approvedApplePatches objectAtIndex:x] objectForKey:@"criteria_post"] && [[[approvedApplePatches objectAtIndex:x] objectForKey:@"criteria_post"] count] > 0) {
+                                            [tmpDict setObject:[[approvedApplePatches objectAtIndex:x] objectForKey:@"criteria_post"] forKey:@"criteria_post"];
                                         }
                                     }
-                                    [tmpDict setObject:@"Apple" forKey:@"type"];
-                                    [tmpDict setObject:[[approvedApplePatches objectAtIndex:i] objectForKey:@"patch_install_weight"] forKey:@"patch_install_weight"];
-                                    logit(lcl_vDebug,@"Apple Patch Dictionary Added: %@",tmpDict);
-                                    [approvedUpdatesArray addObject:tmpDict];
-                                    break;
-                                    
-                                } @catch (NSException *exception) {
-                                    logit(lcl_vError,@"%@",exception);
-                                    break;
                                 }
+                                [tmpDict setObject:@"Apple" forKey:@"type"];
+                                [tmpDict setObject:[[approvedApplePatches objectAtIndex:i] objectForKey:@"patch_install_weight"] forKey:@"patch_install_weight"];
+                                logit(lcl_vDebug,@"Apple Patch Dictionary Added: %@",tmpDict);
+                                [approvedUpdatesArray addObject:tmpDict];
+                                break;
                             }
                         }
                     }
@@ -646,7 +636,6 @@ done:
                 // Run PreInstall Script
                 if ([[currPatchToInstallDict objectForKey:@"preinst"] length] > 0 && [[currPatchToInstallDict objectForKey:@"preinst"] isEqualTo:@"NA"] == NO) {
                     logit(lcl_vInfo,@"Begin pre install script.");
-                    //NSString *preInstScript = [[currPatchToInstallDict objectForKey:@"preinst"] decodeBase64WithNewLinesReturnString:NO];
                     NSString *preInstScript = [[currPatchToInstallDict objectForKey:@"preinst"] decodeBase64AsString];
                     logit(lcl_vDebug,@"preInstScript=%@",preInstScript);
 
@@ -709,7 +698,6 @@ done:
                 // Run PostInstall Script
                 if ([[currPatchToInstallDict objectForKey:@"postinst"] length] > 0 && [[currPatchToInstallDict objectForKey:@"postinst"] isEqualTo:@"NA"] == NO) {
                     logit(lcl_vInfo,@"Begin post install script.");
-                    //NSString *postInstScript = [[currPatchToInstallDict objectForKey:@"postinst"] decodeBase64WithNewLinesReturnString:NO];
                     NSString *postInstScript = [[currPatchToInstallDict objectForKey:@"postinst"] decodeBase64AsString];
                     logit(lcl_vDebug,@"postInstScript=%@",postInstScript);
 
@@ -772,7 +760,6 @@ done:
                 logit(lcl_vInfo,@"%@ has install criteria assigned to it.",[patch objectForKey:@"patch"]);
 
                 NSDictionary *criteriaDictPre, *criteriaDictPost;
-                //NSData *scriptData;
                 NSString *scriptText;
 
                 int i = 0;
@@ -782,8 +769,6 @@ done:
                     for (i=0;i<[[patch objectForKey:@"criteria_pre"] count];i++)
                     {
                         criteriaDictPre = [[patch objectForKey:@"criteria_pre"] objectAtIndex:i];
-                        //scriptData = [[criteriaDictPre objectForKey:@"data"] decodeBase64WithNewlines:NO];
-                        //scriptText = [[NSString alloc] initWithData:scriptData encoding:NSASCIIStringEncoding];
                         scriptText = [[criteriaDictPre objectForKey:@"data"] decodeBase64AsString];
 
                         mpScript = [[MPScript alloc] init];
@@ -815,9 +800,6 @@ done:
                     for (i=0;i<[[patch objectForKey:@"criteria_post"] count];i++)
                     {
                         criteriaDictPost = [[patch objectForKey:@"criteria_post"] objectAtIndex:i];
-
-                        //scriptData = [[criteriaDictPost objectForKey:@"data"] decodeBase64WithNewlines:NO];
-                        //scriptText = [[NSString alloc] initWithData:scriptData encoding:NSASCIIStringEncoding];
                         scriptText = [[criteriaDictPost objectForKey:@"data"] decodeBase64AsString];
 
                         mpScript = [[MPScript alloc] init];
@@ -1150,7 +1132,6 @@ done:
                 // Run PreInstall Script
                 if ([[currPatchToInstallDict objectForKey:@"preinst"] length] > 0 && [[currPatchToInstallDict objectForKey:@"preinst"] isEqualTo:@"NA"] == NO) {
                     logit(lcl_vInfo,@"Begin pre install script.");
-                    //NSString *preInstScript = [[currPatchToInstallDict objectForKey:@"preinst"] decodeBase64WithNewLinesReturnString:NO];
                     NSString *preInstScript = [[currPatchToInstallDict objectForKey:@"preinst"] decodeBase64AsString];
                     logit(lcl_vDebug,@"preInstScript=%@",preInstScript);
 
@@ -1213,7 +1194,6 @@ done:
                 // Run PostInstall Script
                 if ([[currPatchToInstallDict objectForKey:@"postinst"] length] > 0 && [[currPatchToInstallDict objectForKey:@"postinst"] isEqualTo:@"NA"] == NO) {
                     logit(lcl_vInfo,@"Begin post install script.");
-                    //NSString *postInstScript = [[currPatchToInstallDict objectForKey:@"postinst"] decodeBase64WithNewLinesReturnString:NO];
                     NSString *postInstScript = [[currPatchToInstallDict objectForKey:@"postinst"] decodeBase64AsString];
                     logit(lcl_vDebug,@"postInstScript=%@",postInstScript);
 
@@ -1697,8 +1677,7 @@ done:
 {
 	BOOL result = YES;
 
-	//SCDynamicStoreRef store = SCDynamicStoreCreate(NULL, NULL, NULL, NULL);
-    SCDynamicStoreRef store = SCDynamicStoreCreate(NULL, CFSTR("macpatch"), NULL, NULL);
+	SCDynamicStoreRef store = SCDynamicStoreCreate(NULL, (CFStringRef)@"LocalUserLoggedIn", NULL, NULL);
 	CFStringRef consoleUserName;
     consoleUserName = SCDynamicStoreCopyConsoleUser(store, NULL, NULL);
 

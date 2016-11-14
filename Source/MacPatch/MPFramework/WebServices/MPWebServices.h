@@ -40,22 +40,48 @@
 - (NSDictionary *)getServerPubKey:(NSError **)err;
 - (BOOL)getIsValidPubKeyHash:(NSString *)aHash error:(NSError **)err;
 - (NSDictionary *)getRegisterAgent:(NSString *)aRegKey hostName:(NSString *)hostName clientKey:(NSString *)clientKey error:(NSError **)err;
-- (NSDictionary *)registerAgentUsingPayload:(NSDictionary *)regPayload regKey:(NSString *)aRegKey error:(NSError **)err;
 
+// New REST calls
+- (NSData *)getRequestWithURIforREST:(NSString *)aURI error:(NSError **)err;
+- (NSData *)postRequestWithURIforREST:(NSString *)aURI body:(id)aBody error:(NSError **)err;
+- (id)returnRequestWithType:(NSData *)requestData resultType:(NSString *)resultType error:(NSError **)err;
+
+#pragma mark Convience methods
+- (NSDictionary *)getPatchGroupContent:(NSError **)err;
+- (NSDictionary *)getMPServerList:(NSError **)err;
+- (NSDictionary *)getMPServerListVersion:(NSString *)aVersion listid:(NSString *)aListID error:(NSError **)err;
+- (BOOL)postDataMgrData:(NSString *)aDataMgrJSON error:(NSError **)err;
+- (NSArray *)getCustomPatchScanList:(NSError **)err;
+- (BOOL)postClientScanDataWithType:(NSArray *)scanData type:(NSInteger)aType error:(NSError **)err;
+- (NSDictionary *)getAgentUpdates:(NSString *)curAppVersion build:(NSString *)curBuildVersion error:(NSError **)err;
+- (NSDictionary *)getAgentUpdaterUpdates:(NSString *)curAppVersion error:(NSError **)err;
+- (NSDictionary *)getSUSServerList:(NSError **)err;
+- (NSDictionary *)getSUSServerListVersion:(NSString *)aVersion listid:(NSString *)aListID error:(NSError **)err;
+- (BOOL)clientHasInvDataInDB:(NSError **)err;
+- (int)postClientHasInvData:(NSError **)err;
+- (BOOL)postPatchInstallResultsToWebService:(NSString *)aPatch patchType:(NSString *)aPatchType error:(NSError **)err;
+- (NSArray *)getProfileIDDataForClient:(NSError **)err;
+- (id)getSWDistGroups:(NSError **)err;
+- (id)getSWDistGroupsWithState:(NSString *)aState error:(NSError **)err;
+- (id)getSWTasksForGroup:(NSString *)aGroupName error:(NSError **)err;
+- (int)postSWInstallResults:(NSDictionary *)aParams error:(NSError **)err;
+- (id)getSWTaskForID:(NSString *)aTaskID error:(NSError **)err;
+- (NSString *)getHashForPluginName:(NSString *)pName pluginBunleID:(NSString *)bundleID pluginVersion:(NSString *)pVer error:(NSError **)err;
+
+- (id)GetClientPatchStatusCount:(NSError **)err;
+
+- (BOOL)postClientAVData:(NSDictionary *)aDict error:(NSError **)err;
 
 // Methods
+/*
 - (NSDictionary *)getMPServerList:(NSError **)err;
 - (NSDictionary *)getMPServerListVersion:(NSString *)aVersion listid:(NSString *)aListID error:(NSError **)err;
 
 - (NSDictionary *)getSUSServerList:(NSError **)err;
 - (NSDictionary *)getSUSServerListVersion:(NSString *)aVersion listid:(NSString *)aListID error:(NSError **)err;
 
-- (NSDictionary *)getCatalogURLSForHostOS:(NSError **)err;
 - (NSDictionary *)getPatchGroupContent:(NSError **)err;
-- (BOOL)isPatchGroupHashValid:(NSError **)err;
-- (BOOL)isPatchGroupDataCurrent:(NSError **)err;
 
-- (BOOL)postPatchScanResultsForType:(NSInteger)aPatchScanType results:(NSDictionary *)resultsDictionary error:(NSError **)err;
 - (BOOL)postPatchInstallResultsToWebService:(NSString *)aPatch patchType:(NSString *)aPatchType error:(NSError **)err;
 
 - (NSArray *)getCustomPatchScanList:(NSError **)err;
@@ -67,8 +93,7 @@
 - (NSDictionary *)getAgentUpdaterUpdates:(NSString *)curAppVersion error:(NSError **)err;
 
 
-- (BOOL)postDataMgrXML:(NSString *)aDataMgrXML error:(NSError **)err;
-- (BOOL)postDataMgrJSON:(NSString *)aDataMgrJSON error:(NSError **)err;
+- (BOOL)postDataMgrData:(NSString *)aDataMgrJSON error:(NSError **)err;
 - (BOOL)postSAVDefsDataXML:(NSString *)aAVXML encoded:(BOOL)aEncoded error:(NSError **)err;
 
 - (BOOL)clientHasInvDataInDB:(NSError **)err;
@@ -80,7 +105,6 @@
 
 // ClientStatus
 - (id)GetClientPatchStatusCount:(NSError **)err;
-- (id)GetLastCheckIn:(NSError **)err;
 
 // SWDist
 - (id)getSWDistGroups:(NSError **)err;
@@ -95,5 +119,7 @@
 
 // Plugins
 - (NSString *)getHashForPluginName:(NSString *)pName pluginBunleID:(NSString *)bundleID pluginVersion:(NSString *)pVer error:(NSError **)err;
-
+// OSMigration
+- (NSString *)postOSMigrationStatus:(NSString *)aStatus label:(NSString *)Label migrationID:(NSString *)migrationID error:(NSError **)err;
+ */
 @end

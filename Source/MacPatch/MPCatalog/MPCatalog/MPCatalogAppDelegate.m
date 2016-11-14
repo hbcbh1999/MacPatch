@@ -990,6 +990,9 @@
                         
                         AFHTTPRequestOperation *operation = [[AFHTTPRequestOperation alloc] initWithRequest:request];
                         operation.outputStream = [NSOutputStream outputStreamToFileAtPath:dlPath append:NO];
+                        if (srv.allowSelfSigned) {
+                            operation.securityPolicy.allowInvalidCertificates = YES;
+                        }
                         
                         [operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
                             logit(lcl_vInfo,@"Successfully downloaded file to %@", dlPath);
@@ -997,6 +1000,7 @@
                             isCompleted = YES;
                         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
                             logit(lcl_vError,@"%@", error.localizedDescription);
+                            [statusTextStatus setStringValue:[NSString stringWithFormat:@"Error: %@",error.localizedDescription]];
                             downloadError = error;
                             isCompleted = YES;
                         }];
@@ -1227,7 +1231,6 @@
                     [statusTextStatus setStringValue:[NSString stringWithFormat:@"Uninstalling %@ ...",[d objectForKey:@"name"]]];
                     uninstallScriptEnc = [d valueForKeyPath:@"Software.sw_uninstall"];
                     if ([uninstallScriptEnc length] > 0) {
-                        //uninstallScript = [uninstallScriptEnc decodeBase64WithNewLinesReturnString:NO];
                         uninstallScript = [uninstallScriptEnc decodeBase64AsString];
                         logit(lcl_vDebug,@"Remove Script:\n%@",uninstallScript);
                         _result = [self removeSoftwareViaProxy:uninstallScript];   
@@ -1462,7 +1465,16 @@
             [self setSwDistCurrentTitle:[[swDistGroupsButton selectedItem] title]];
         }
         NSError *err = nil;
-        NSDictionary *_tasks = [sw getSWTasksForGroupFromServer:&err];
+        NSDictionary *_wsResult = [sw getSWTasksForGroupFromServer:&err];
+        NSDictionary *_tasks;
+        if (err) {
+            [statusTextStatus setStringValue:[NSString stringWithFormat:@"%@",[[err userInfo] objectForKey:@"NSLocalizedDescription"]]];
+            return;
+        }
+        if ([_wsResult objectForKey:@"result"]) {
+            _tasks = [_wsResult objectForKey:@"result"];
+        }
+        
         window.title = [NSString stringWithFormat:@"MP - Software Catalog (%@)",[sw groupName]];
         
         if (err) {
@@ -1611,6 +1623,7 @@
     }
     
     logit(lcl_vInfo,@"Approved/Installed Software tasks: %@",_SoftwareArray);
+    NSLog(@"%@",_SoftwareArray);
     
     dispatch_async(dispatch_get_main_queue(), ^{
         [arrayController removeObjects:[arrayController arrangedObjects]];

@@ -31,28 +31,15 @@
 #include <getopt.h>
 #include <unistd.h>
 
-#define APPVERSION	@"2.1.2.1"
+#define APPVERSION	@"3.0.0.0"
 #define APPNAME		@"MPAgentExec"
 
 void usage(void);
 
 int main (int argc, char * argv[])
 {
-    @autoreleasepool
-    {
-        /*
-        NSError *err = nil;
-        MPKeychain *mpk = [[MPKeychain alloc] init];
-        NSDictionary *x = [mpk dictionaryFromKeychainWithKey:[mpk serviceLabelForClient] error:&err];
-        if (err) {
-            NSLog(@"%@",err.localizedDescription);
-        } else {
-            NSLog(@"%@",x);
-        }
-        
-        return 0;
-        */
-        
+    @autoreleasepool {
+
         int a_Type = 0;
         BOOL echoToConsole = NO;
         BOOL verboseLogging = NO;
@@ -83,7 +70,6 @@ int main (int argc, char * argv[])
                 {"AllowServer"			,no_argument	    ,0, 'S'},
                 {"iload"				,no_argument	    ,0, 'i'},
                 {"FORCERUN"				,no_argument		,0, 'F'},
-                {"Audit"                ,no_argument		,0, 'A'},
                 {"cuuid"                ,no_argument		,0, 'c'},
                 // Software Dist
                 {"installSWUsingGRP"    ,required_argument	,0, 'g'},
@@ -98,7 +84,7 @@ int main (int argc, char * argv[])
             };
             // getopt_long stores the option index here.
             int option_index = 0;
-            c = getopt_long (argc, argv, "Dsuf:B:aUGCSiFAcg:d:P:eVvh", long_options, &option_index);
+            c = getopt_long (argc, argv, "Dsuf:B:aUGCSiFcg:d:P:eVvh", long_options, &option_index);
 
             // Detect the end of the options.
             if (c == -1) {
@@ -137,22 +123,6 @@ int main (int argc, char * argv[])
                         break;
                     case 'S':
                         _defaultsOverride = [NSDictionary dictionaryWithObject:@"1" forKey:@"AllowServer"];
-                        break;
-                    case 't':
-                    /*
-                        argType = [NSString stringWithUTF8String:optarg];
-                        a_Type = 6;
-                     */
-                        printf("Inventory has been moved to MPAgent.");
-                        return 0;
-                        break;
-                    case 'A':
-                    /*
-                        argType = @"Custom";
-                        a_Type = 6;
-                     */
-                        printf("Inventory has been moved to MPAgent.");
-                        return 0;
                         break;
                     case 'c':
                         printf("%s\n",[[MPSystemInfo clientUUID] UTF8String]);
@@ -310,7 +280,6 @@ void usage(void) {
     // Agent Updates
     printf(" -G \tScan for Agent updates and update if needed.\n");
 	printf(" -i \tScan & Update approved patches in iLoad output mode.\n");
-    printf(" -A \tCollect Audit data.\n\n");
     // Software Dist
     printf(" -g \t[Software Group Name] Install Software in group.\n");
     printf(" -d \tInstall software using TaskID\n");

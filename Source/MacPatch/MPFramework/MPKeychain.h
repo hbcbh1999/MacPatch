@@ -10,13 +10,11 @@
 
 @interface MPKeychain : NSObject
 {
-    SecKeychainRef  keychainItem;
-    SecAccessRef    accessRef;
-    NSString        *accessLabel;
-    NSError         *error;
+    SecKeychainRef keychainItem;
+    NSString *accessLabel;
+    NSError *error;
 }
 
-@property (nonatomic, assign) BOOL overWriteKeyChainData;
 @property (nonatomic, strong) NSString *accessLabel;
 @property (nonatomic, strong) NSError *error;
 
@@ -28,11 +26,6 @@
 - (OSStatus)addPasswordItemToKeychain:(NSString *)aPassword username:(NSString *)aUserName serviceName:(NSString *)aServiceName;
 - (OSStatus)addP12CertificateToKeychain:(NSString *)aCertPath certPassword:(NSString *)aPassword;
 
-// Dictionary Items
-- (OSStatus)addDictionaryToKeychainWithKey:(NSString *)aKey dictionary:(NSDictionary *)aDict error:(NSError **)err;
-- (OSStatus)addDictionaryToKeychainWithKeyReplaceIfExists:(NSString *)aKey dictionary:(NSDictionary *)aDict replace:(BOOL)aReplace error:(NSError **)err;
-- (NSDictionary *)dictionaryFromKeychainWithKey:(NSString *)aKey error:(NSError **)err;
-
 - (OSStatus)addCAToSystemKeychain:(NSData *)aCACert;
 
 // Get SecItems
@@ -40,11 +33,4 @@
 
 // Misc
 - (OSStatus)lockKeychain;
-- (BOOL)itemInKeychain:(NSString *)aKey status:(OSStatus)aStatus;
-
-- (NSString *)serviceLabelForServer;
-- (NSString *)serviceLabelForClient;
-
-- (NSError *)errorWithCode:(NSInteger)code message:(NSString *)message;
-- (NSError *)errorForOSStatus:(OSStatus)OSStatus;
 @end

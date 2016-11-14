@@ -289,9 +289,7 @@
                                     [mpt updateTaskRunAt:[taskDict objectForKey:@"id"]];
                                     mpt = nil;
                                     
-                                }
-                                else if ([[taskDict objectForKey:@"nextrun"] doubleValue] < [d timeIntervalSince1970])
-                                {
+                                } else if ([[taskDict objectForKey:@"nextrun"] doubleValue] < [d timeIntervalSince1970]) {
                                     // Reschedule, we missed out date
                                     // Schedule for 30 seconds out
                                     logit(lcl_vInfo,@"We missed our task (%@), rescheduled to run in 30 seconds.",[taskDict objectForKey:@"cmd"]);

@@ -43,7 +43,6 @@
 
 - (id)initWithGroupAndHash:(NSString *)aGroup hash:(NSString *)aHash;
 
-- (NSString *)getHashForGroup:(NSError **)err;
 - (id)getSWTasksForGroupFromServer:(NSError **)err;
 
 - (int)postInstallResults:(int)resultNo resultText:(NSString *)resultString task:(NSDictionary *)taskDict;

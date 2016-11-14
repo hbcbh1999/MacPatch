@@ -155,7 +155,15 @@
     // Sort the server types, Master and Proxy get added to the end of the array
     for (NSDictionary *d in [jData objectForKey:@"servers"])
     {
-        if ([[d objectForKey:@"serverType"] isEqualToString:@"0"] || [[d objectForKey:@"serverType"] isEqualToString:@"2"])
+        NSString *serverType = @"0";
+        if ([[d objectForKey:@"serverType"] isKindOfClass:[NSString class]]) {
+            serverType = [d objectForKey:@"serverType"];
+            //Handle string
+        } else if ([[d objectForKey:@"serverType"] isKindOfClass:[NSNumber class]]) {
+            serverType = [[d objectForKey:@"serverType"] stringValue];
+        }
+        
+        if ([serverType isEqualToString:@"0"] || [serverType isEqualToString:@"2"])
         {
             [_staticItems addObject:d];
         } else {

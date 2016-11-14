@@ -32,6 +32,28 @@
     #import "MacPatch.h"
     #import "MPAgent.h"
 
+    // App Store
+    #import <StoreFoundation/ISStoreAccount.h>
+
+    #import <CommerceKit/CKAccountStore.h>
+    #import <CommerceKit/CKDownloadQueue.h>
+    #import <CommerceKit/CKPurchaseController.h>
+    #import <CommerceKit/CKSoftwareMap.h>
+    #import <CommerceKit/CKUpdateController.h>
+
+    #import <StoreFoundation/CKUpdate.h>
+    #import <StoreFoundation/SSDownload.h>
+    #import <StoreFoundation/SSDownloadMetadata.h>
+    #import <StoreFoundation/SSDownloadPhase.h>
+    #import <StoreFoundation/SSDownloadStatus.h>
+    #import <StoreFoundation/SSPurchaseResponse.h>
+    #import <StoreFoundation/ISStoreClient.h>
+    #import <StoreFoundation/ISAuthenticationContext.h>
+    #import <StoreFoundation/ISServiceRemoteObject-Protocol.h>
+    #import <StoreFoundation/ISAccountService-Protocol.h>
+    #import <StoreFoundation/ISServiceProxy.h>
+
+    // Logging
     #define FileLevelLogComponent lcl_cMain
     #define log_err(_format, ...) \
     lcl_log(FileLevelLogComponent, lcl_vError, _format, ##__VA_ARGS__);

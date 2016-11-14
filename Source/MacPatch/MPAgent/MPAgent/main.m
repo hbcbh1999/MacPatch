@@ -28,58 +28,21 @@
 #import "MPAppController.h"
 #import "MPAgentRegister.h"
 #import "MPInv.h"
+#import "MPOSUpgrade.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h>
 #include <unistd.h>
-#include "MacPatch.h"
 
-#define APPVERSION	@"2.2.0.0"
+#define APPVERSION	@"3.0.0.0"
 #define APPNAME		@"MPAgent"
-
-#define NOREADKEYS     99996
-#define NOREGKEY       99997
-#define NOOPTPUB       99998
-#define NOOPTPUBSTR    99999
 
 void usage(void);
 
 int main (int argc, char * argv[])
 {
-	@autoreleasepool
-    {
-        /*
-        NSError *err = nil;
-        NSString *srvPubKeyPath = @"/Library/MacPatch/Client/Data/server_pub.pem";
-        //NSString *srvPubKeyData = [NSString stringWithContentsOfFile:srvPubKeyPath encoding:NSUTF8StringEncoding error:NULL];
-        MPAgentRegister *ar = [[MPAgentRegister alloc] init];
-        MPCrypto *mc = [[MPCrypto alloc] init];
-        
-        // First Add Server Public Key
-        printf("Adding server public key via string.\n");
-        if (![ar addServerPublicKeyFileToKeychain:srvPubKeyPath error:&err]) {
-            printf("Add server public key string returned false.\n");
-            if (err) {
-                NSLog(@"%@",err.localizedDescription);
-            }
-            exit(1);
-        }
-        
-        // Generate Registration Data
-        err = nil;
-        NSDictionary *d = [ar generateRegistrationPayload:&err];
-        if (err) {
-            NSLog(@"%@",err.localizedDescription);
-        } else {
-            NSLog(@"%@",d);
-        }
-        
-        // Post Reg data to Web Service
-        
-        exit(0);
-         */
-        
-        
+	@autoreleasepool {
+    
 		int a_Type = 99;
 		BOOL echoToConsole = NO;
 		BOOL debugLogging = NO;
@@ -87,10 +50,13 @@ int main (int argc, char * argv[])
 		BOOL verboseLogging = NO;
         BOOL doRegistration = NO;
         NSString *regKeyArg = @"999999999";
-        NSString *regSrvPubKeyStr = @"NA";
-        NSString *regSrvPubKeyPath = @"/tmp";
         // Inventory
         NSString *invArg = NULL;
+        // OS Migration
+        BOOL osMigration = NO;
+        NSString *osMigAction = NULL;
+        NSString *osMigLabel = @"";
+        NSString *osMigID = @"auto";
 		
 		// Setup argument processing
 		int c;
@@ -118,23 +84,20 @@ int main (int argc, char * argv[])
 				{"Verbose"			,no_argument		,0, 'V'},
 				{"version"			,no_argument		,0, 'v'},
 				{"help"				,no_argument		,0, 'h'},
-                
+                {"register"		    ,required_argument	,0, 'r'},
                 // Inventory, not documented yet
                 {"type"                 ,required_argument	,0, 't'},
                 {"Audit"                ,no_argument		,0, 'A'},
                 {"cuuid"                ,no_argument		,0, 'C'},
-                
-                // Registration
-                {"register"             ,required_argument	,0, 'r'},       // Requires Server Supplied Regkey
-                {"registerNoKey"        ,no_argument        ,0, NOREGKEY},  // Auto Register
-                {"serverPubKeyFile"     ,required_argument	,0, NOOPTPUB},
-                {"serverPubKeyString"   ,required_argument	,0, NOOPTPUBSTR},
-                {"readClientKeys"       ,no_argument        ,0, NOREADKEYS},
+                // OS Migration
+                {"OSUpgrade"            ,required_argument	,0, 'k'},
+                {"OSLabel"              ,required_argument	,0, 'l'},
+                {"OSUpgradeID"          ,required_argument	,0, 'm'},
 				{0, 0, 0, 0}
 			};
 			// getopt_long stores the option index here.
 			int option_index = 0;
-			c = getopt_long (argc, argv, "dqDTcsuiaUGSpwnzeVvhr:t:AC", long_options, &option_index);
+			c = getopt_long (argc, argv, "dqDTcsuiaUGSpwnzeVvhr:t:ACk:l:m:", long_options, &option_index);
 			
 			// Detect the end of the options.
 			if (c == -1)
@@ -142,28 +105,6 @@ int main (int argc, char * argv[])
 			
 			switch (c)
 			{
-                case NOOPTPUB:
-                    NSLog(@"%@",[NSString stringWithUTF8String:optarg]);
-                    regSrvPubKeyPath = [NSString stringWithUTF8String:optarg];
-                    a_Type = 997;
-                    break;
-                    
-                case NOOPTPUBSTR:
-                    NSLog(@"%@",[NSString stringWithUTF8String:optarg]);
-                    regSrvPubKeyStr = [NSString stringWithUTF8String:optarg];
-                    a_Type = 998;
-                    break;
-                    
-                case NOREGKEY:
-                    a_Type = 999;
-                    break;
-                    
-                case NOREADKEYS:
-#if DEBUG
-                    a_Type = 995;
-#endif
-                    break;
-                    
 				case 'd':
 					a_Type = 99;
 					break;
@@ -218,6 +159,23 @@ int main (int argc, char * argv[])
                 case 'C':
                     printf("%s\n",[[MPSystemInfo clientUUID] UTF8String]);
                     return 0;
+                case 'k':
+                    if ([[[NSString stringWithUTF8String:optarg] lowercaseString] isEqualTo:@"start"]) {
+                        osMigAction = @"start";
+                        osMigration = YES;
+                    } else if ([[[NSString stringWithUTF8String:optarg] lowercaseString] isEqualTo:@"stop"]) {
+                        osMigAction = @"stop";
+                        osMigration = YES;
+                    } else {
+                        osMigAction = @"ERR";
+                    }
+                    break;
+                case 'l':
+                    osMigLabel = [NSString stringWithUTF8String:optarg];
+                    break;
+                case 'm':
+                    osMigID = [NSString stringWithUTF8String:optarg];
+                    break;
 				case 'V':
 					verboseLogging = YES;
 					break;
@@ -234,7 +192,6 @@ int main (int argc, char * argv[])
 					printf("%s\n",[APPVERSION UTF8String]);
 					return 0;
                 case 'r':
-                    a_Type = 996;
                     doRegistration = YES;
 					regKeyArg = [NSString stringWithUTF8String:optarg];
 					break;
@@ -262,74 +219,6 @@ int main (int argc, char * argv[])
 			exit(0);
 #endif
 		}
-        
-        // Agent Registration
-        if (a_Type == 999 || a_Type == 998 || a_Type == 997 || a_Type == 996 || a_Type == 995)
-        {
-            printf("Running client registration.\n");
-            NSError *err = nil;
-            MPKeychain *mpk;
-            MPAgentRegister *mpar = [[MPAgentRegister alloc] init];
-            if (a_Type == 999) {
-                // Register using No Key
-                NSError *err = nil;
-                MPAgentRegister *mpar = [[MPAgentRegister alloc] init];
-                mpar.overWriteKeyChainData = YES;
-                NSDictionary *d = [mpar generateRegistrationPayload:&err];
-                if (err) {
-                    NSLog(@"%@",err.localizedDescription);
-                } else {
-                    NSLog(@"%@",d);
-                }
-                [mpar postRegistrationToServer:d];
-            } else if (a_Type == 998) {
-                // Server Pub Key String
-                printf("Adding server public key via string.\n");
-                if (![mpar addServerPublicKeyStringToKeychain:regSrvPubKeyStr error:&err]) {
-                    printf("Add server public key string returned false.\n");
-                    return 1;
-                }
-            } else if (a_Type == 997) {
-                // Server Pub Key File
-                printf("Adding server public key via file.\n");
-                if (![mpar addServerPublicKeyFileToKeychain:regSrvPubKeyPath error:&err]) {
-                    printf("Add server public key file returned false.\n");
-                    return 1;
-                }
-            } else if (a_Type == 996) {
-                // Register With Key
-                
-                
-            } else if (a_Type == 995) {
-                // Test Read Client Keys from Keychain
-                mpk = [[MPKeychain alloc] init];
-                NSDictionary *x = [mpk dictionaryFromKeychainWithKey:[mpk serviceLabelForClient] error:&err];
-                if (!err) {
-                    NSLog(@"%@",x);
-                }
-                NSDictionary *y = [mpk dictionaryFromKeychainWithKey:[mpk serviceLabelForServer] error:&err];
-                if (!err) {
-                    NSLog(@"%@",y);
-                }
-
-            } else {
-                // No Key
-                NSError *err = nil;
-                MPAgentRegister *mpar = [[MPAgentRegister alloc] init];
-                NSDictionary *d = [mpar generateRegistrationPayload:&err];
-                if (err) {
-                    NSLog(@"%@",err.localizedDescription);
-                } else {
-                    NSLog(@"%@",d);
-                }
-            }
-            if (err) {
-                printf("\n%s\n",[err.localizedDescription UTF8String]);
-                return 1;
-            }
-            
-            exit(0);
-        }
 
     
         [[MPAgent sharedInstance] setG_agentVer:APPVERSION];
@@ -380,9 +269,27 @@ int main (int argc, char * argv[])
             NSString *clientKey = [[NSProcessInfo processInfo] globallyUniqueString];
             MPAgentRegister *mpar = [[MPAgentRegister alloc] init];
             regResult = [mpar registerClient:clientKey];
-            // [mpar registerClient:regKeyArg hostName:[[MPAgent sharedInstance] g_hostName] clientKey:clientKey];
-            // Hello
+            //[mpar registerClient:regKeyArg hostName:[[MPAgent sharedInstance] g_hostName] clientKey:clientKey];
             NSLog(@"%d",regResult);
+        } else if (osMigration) {
+            NSString *uID;
+            MPOSUpgrade *mposu = [[MPOSUpgrade alloc] init];
+            if ([[osMigID lowercaseString] isEqualTo:@"auto"]) {
+                uID = [[NSUUID UUID] UUIDString];
+            } else {
+                uID = osMigID;
+            }
+            NSError *err = nil;
+            int res = [mposu postOSUpgradeStatus:osMigAction label:osMigLabel upgradeID:uID error:&err];
+            if (err) {
+                logit(lcl_vError,@"%@",err.localizedDescription);
+                fprintf(stderr, "%s\n", [err.localizedDescription UTF8String]);
+                exit(1);
+            }
+            if (res != 0) {
+                fprintf(stderr, "Post OS Upgrade status failed.\n");
+                exit(1);
+            }
         } else {
             MPAppController *mpac = [[MPAppController alloc] initWithArg:a_Type];
             [[NSRunLoop currentRunLoop] run];
@@ -392,7 +299,8 @@ int main (int argc, char * argv[])
     return 0;
 }
 
-void usage(void) {
+void usage(void)
+{
     
 	printf("%s: MacPatch Agent\n",[APPNAME UTF8String]);
 	printf("Version %s\n\n",[APPVERSION UTF8String]);
@@ -403,8 +311,10 @@ void usage(void) {
     printf(" -n \t --Servers \t\tRun server list verify/update.\n");
     printf(" -z \t --SUServers \t\tRun SUS server list verify/update.\n");
     printf(" -w \t --WebServicePost \tRe-post failed post attempts.\n\n");
-    printf("Registration \n\n");
-    
+    printf("OS Migration \n\n");
+    printf(" -k \t --OSUpgrade \tOS Migration/Upgrade action state (Start/Stop)\n");
+    printf(" -l \t --OSLabel \tOS Migration/Upgrade label\n");
+    printf(" -m \t --OSUpgradeID \tA Unique Migration/Upgrade ID (Optional Will Auto Gen by default)\n\n");
     printf("Inventory \n");
     printf("Option: -t [ALL] or [SPType]\n\n");
     printf(" -t\tInventory type, All is default.\n");

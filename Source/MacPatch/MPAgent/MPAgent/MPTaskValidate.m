@@ -37,6 +37,7 @@ NSString * const kMPCMD             = @"EVERY@21600";
 NSString * const kMPProfiles        = @"EVERY@1800";
 NSString * const kMPSrvList         = @"EVERY@600";
 NSString * const kMPSUSrvList       = @"EVERY@1800";
+NSString * const kMPAppStore        = @"EVERY@7200";
 NSString * const kStartDate			= @"2011-01-01";
 NSString * const kEndDate			= @"3000-01-01";
 
@@ -411,7 +412,6 @@ NSString * const kEndDate			= @"3000-01-01";
     return self;
 }
 
-
 - (int)validateTask:(NSDictionary *)aTask
 {
 	//	Return Codes
@@ -428,7 +428,8 @@ NSString * const kEndDate			= @"3000-01-01";
 		return 1;
 	}
     NSArray *approvedTasks = [NSArray arrayWithObjects:@"KMPCHECKIN",@"KMPAGENTCHECK",@"KMPVULSCAN",@"KMPVULUPDATE",@"KMPAVCHECK",@"KMPINVSCAN",
-                              @"KMPCMD",@"KMPSWDISTMAN",@"KMPAVINFO",@"KMPSRVLIST",@"KMPPROFILES",@"KMPWSPOST",@"KMPSUSRVLIST", nil];
+                              @"KMPCMD",@"KMPSWDISTMAN",@"KMPAVINFO",@"KMPSRVLIST",@"KMPPROFILES",@"KMPWSPOST",@"KMPSUSRVLIST",
+                              @"KMPAPPSTORE", nil];
 	
 	if (![[aTask allKeys] containsObject:@"startdate"]) return 1;
 	if (![[aTask allKeys] containsObject:@"enddate"]) return 1;
@@ -568,11 +569,19 @@ NSString * const kEndDate			= @"3000-01-01";
     } else if ([aCMDName isEqualToString:@"kMPAVInfo"]) {
 		[_tmp setObject:kMPAVInfo forKey:@"interval"];
 	} else if ([aCMDName isEqualToString:@"kMPInvScan"]) {
-		[_tmp setObject:kMPInvScan forKey:@"interval"];	
+		[_tmp setObject:kMPInvScan forKey:@"interval"];
+    } else if ([aCMDName isEqualToString:@"kMPSWDistMan"]) {
+        [_tmp setObject:kMPSWDistMan forKey:@"interval"];
+    } else if ([aCMDName isEqualToString:@"kMPCMD"]) {
+        [_tmp setObject:kMPCMD forKey:@"interval"];
+    } else if ([aCMDName isEqualToString:@"kMPProfiles"]) {
+        [_tmp setObject:kMPProfiles forKey:@"interval"];
     } else if ([aCMDName isEqualToString:@"kMPSrvList"]) {
-        [_tmp setObject:kMPInvScan forKey:@"interval"];
+        [_tmp setObject:kMPSrvList forKey:@"interval"];
     } else if ([aCMDName isEqualToString:@"kMPSUSrvList"]) {
-        [_tmp setObject:kMPInvScan forKey:@"interval"];
+        [_tmp setObject:kMPSUSrvList forKey:@"interval"];
+    } else if ([aCMDName isEqualToString:@"kMPAppStore"]) {
+        [_tmp setObject:kMPAppStore forKey:@"interval"];
     }
 	
 	[_tmp setObject:kStartDate forKey:@"startdate"];	

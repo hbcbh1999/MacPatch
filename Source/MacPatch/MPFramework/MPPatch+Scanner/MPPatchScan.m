@@ -87,8 +87,8 @@
 	for(i=0;i<[customPatches count];i++) {
 		tmpDict = [NSDictionary dictionaryWithDictionary:[customPatches objectAtIndex:i]];
 		qlinfo(@"*******************");
-		qlinfo(@"Scanning for %@(%@)",[tmpDict objectForKey:@"pname"],[tmpDict objectForKey:@"pversion"]);
-        [delegate patchScan:self didReciveStatusData:[NSString stringWithFormat:@"Scanning for %@(%@)",[tmpDict objectForKey:@"pname"],[tmpDict objectForKey:@"pversion"]]];
+		qlinfo(@"Scanning for %@(%@)",[tmpDict objectForKey:@"patch_name"],[tmpDict objectForKey:@"patch_ver"]);
+        [delegate patchScan:self didReciveStatusData:[NSString stringWithFormat:@"Scanning for %@(%@)",[tmpDict objectForKey:@"patch_name"],[tmpDict objectForKey:@"patch_ver"]]];
 		[self sendNotificationTo:@"ScanForNotification" userInfo:tmpDict];
 		
 		[NSThread sleepForTimeInterval:0.1];
@@ -98,15 +98,15 @@
 			patch = [[NSMutableDictionary alloc] init];
             @try {
 
-                [patch setObject:[tmpDict objectForKey:@"pname"] forKey:@"patch"];
-                [patch setObject:[tmpDict objectForKey:@"pversion"] forKey:@"version"];
+                [patch setObject:[tmpDict objectForKey:@"patch_name"] forKey:@"patch"];
+                [patch setObject:[tmpDict objectForKey:@"patch_ver"] forKey:@"version"];
                 [patch setObject:@"Third" forKey:@"type"];
-                [patch setObject:[NSString stringWithFormat:@"%@(%@)",[tmpDict objectForKey:@"pname"],[tmpDict objectForKey:@"pversion"]] forKey:@"description"];
+                [patch setObject:[NSString stringWithFormat:@"%@(%@)",[tmpDict objectForKey:@"patch_name"],[tmpDict objectForKey:@"patch_ver"]] forKey:@"description"];
                 [patch setObject:@"0" forKey:@"size"];
                 [patch setObject:@"Y" forKey:@"recommended"];
-                [patch setObject:[tmpDict objectForKey:@"reboot"] forKey:@"restart"];
+                [patch setObject:[tmpDict objectForKey:@"patch_reboot"] forKey:@"restart"];
                 [patch setObject:[tmpDict objectForKey:@"puuid"] forKey:@"patch_id"];
-                [patch setObject:[tmpDict objectForKey:@"bundleID"] forKey:@"bundleID"];
+                [patch setObject:[tmpDict objectForKey:@"bundle_id"] forKey:@"bundleID"];
                 [patchesNeeded addObject:patch];
             }
             @catch (NSException *exception) {

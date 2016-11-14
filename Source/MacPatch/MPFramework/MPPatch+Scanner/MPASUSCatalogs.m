@@ -132,8 +132,14 @@
     NSString *osMinor = [[osVers objectForKey:@"minor"] stringValue];
     if ([susDict objectForKey:@"servers"]) {
         if ([[susDict objectForKey:@"servers"] isKindOfClass:[NSArray class]]) {
-            for (NSDictionary *server in [susDict objectForKey:@"servers"]) {
-                if ([[[server objectForKey:@"os"] stringValue] isEqualToString:osMinor]) {
+            for (NSDictionary *server in [susDict objectForKey:@"servers"])
+            {
+                id _os_minor = [server objectForKey:@"os"];
+                if (![_os_minor isNSStringType]) {
+                    _os_minor = [[server objectForKey:@"os"] stringValue];
+                }
+
+                if ([[server objectForKey:@"os"] isEqualToString:osMinor]) {
                     if ([server objectForKey:@"servers"]) {
                         if ([[server objectForKey:@"servers"] isKindOfClass:[NSArray class]]) {
                             for (NSDictionary *item in [server objectForKey:@"servers"]) {

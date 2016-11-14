@@ -143,6 +143,7 @@
 		8FA64D9C1B307D26006E9CB7 /* MPLoginAgent */ = {
 			isa = PBXGroup;
 			children = (
+				8FA64DA11B307D26006E9CB7 /* main.m */,
 				8FA64D9D1B307D26006E9CB7 /* AppDelegate.h */,
 				8FA64D9E1B307D26006E9CB7 /* AppDelegate.m */,
 				8FC495061B309A1D001222A2 /* MPAuthView.h */,
@@ -172,7 +173,6 @@
 			children = (
 				8FE6B4A51B4C86F9000A0471 /* images */,
 				8FA64DA81B307D26006E9CB7 /* Info.plist */,
-				8FA64DA11B307D26006E9CB7 /* main.m */,
 				8FA64DB41B307D62006E9CB7 /* gov.llnl.MPLoginAgent.plist */,
 				8FC495231B31DAA2001222A2 /* MPLoginAgent_Prefix.pch */,
 			);
@@ -393,7 +393,6 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
-					"../openssl-xcode/openssl/include",
 				);
 				INFOPLIST_FILE = MPLoginAgent/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
@@ -422,7 +421,6 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
-					"../openssl-xcode/openssl/include",
 				);
 				INFOPLIST_FILE = MPLoginAgent/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";

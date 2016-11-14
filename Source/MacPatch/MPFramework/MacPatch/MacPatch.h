@@ -23,8 +23,6 @@
  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#define MASTER_PASSWORD "PASSWORD" // This is not used any where
-
 #import <Cocoa/Cocoa.h>
 #import "Constants.h"
 // Logging
@@ -44,6 +42,7 @@
 #import "MPNetRequest.h"
 #import "MPNetServer.h"
 #import "MPJsonResult.h"
+#import "MPResult.h"
 #import "Reachability.h"
 #import "MPServerList.h"
 #import "MPSUServerList.h"
@@ -76,6 +75,9 @@
 #import "MPApplePatch.h"
 #import "MPCustomPatch.h"
 
+// AntiVirus
+// #import "MPAntiVirus.h"
+
 // Software Distribution
 #import "MPSWTasks.h"
 #import "MPSWInstaller.h"
@@ -88,12 +90,9 @@
 // Crypto
 #import "MPCrypto.h"
 #import "MPCodeSign.h"
-//#import "RSACrypto.h"
 #import "MPKeychain.h"
 
 // Helpers
-//#import "NSString-Base64Extensions.h"
-//#import "NSData-Base64Extensions.h"
 #import "NSString+Helper.h"
 #import "NSString+Hash.h"
 #import "NSFileManager+Helper.h"

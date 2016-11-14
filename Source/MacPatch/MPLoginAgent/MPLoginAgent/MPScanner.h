@@ -38,7 +38,7 @@
 
 @end
 
-@interface MPScanner : NSObject <MPScannerDelegate, MPPatchScanDelegate>
+@interface MPScanner : NSObject <MPScannerDelegate>
 
 @property (nonatomic, assign) id  delegate;
 

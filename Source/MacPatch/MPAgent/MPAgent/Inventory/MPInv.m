@@ -46,6 +46,11 @@
 #define kTasksPlist             @"/Library/MacPatch/Client/.tasks/gov.llnl.mp.tasks.plist"
 #define kInvHashData            @"/Library/MacPatch/Client/Data/.gov.llnl.mp.inv.data.plist"
 
+/*
+#define LIBXML_SCHEMAS_ENABLED
+#include <libxml/xmlschemastypes.h>
+*/
+
 @interface MPInv ()
 
 - (NSString *)hashForArray:(NSArray *)aArray;
@@ -335,17 +340,9 @@
 - (BOOL)sendResultsToWebService:(NSString *)aDataMgrData
 {
 	BOOL result = NO;
-
-	// Encode to base64 and send to web service
-    NSString *b64String = [[aDataMgrData dataUsingEncoding:NSUTF8StringEncoding] base64Encoding];
-	if (!b64String) {
-		logit(lcl_vError,@"Unable to encode data.");
-		return result;
-	}
-
     MPWebServices *mpws = [[MPWebServices alloc] init];
     NSError *wsErr = nil;
-    result = [mpws postDataMgrJSON:b64String error:&wsErr];
+    result = [mpws postDataMgrData:aDataMgrData error:&wsErr];
     if (wsErr) {
         logit(lcl_vError,@"Results posted to webservice returned false.");
         logit(lcl_vError,@"%@",wsErr.localizedDescription);
@@ -353,7 +350,7 @@
         logit(lcl_vInfo,@"Results posted to webservice.");
         result = YES;
     }
-
+    
 	return result;
 }
 
@@ -651,6 +648,8 @@
 				} else {
 					title = [[[obj trim] componentsSeparatedByString:@":"] objectAtIndex:0];
 					title = [[[title trim] replaceAll:@" " replaceString:@"_"] trim];
+                    title = [[[title trim] replaceAll:@"(" replaceString:@"_"] trim];
+                    title = [[[title trim] replaceAll:@")" replaceString:@""] trim];
 					value = [[[[obj trim] componentsSeparatedByString:@":"] objectAtIndex:1] trim];
 				} // if, hardware overview
 				
@@ -1086,8 +1085,11 @@
 			[record setObject:@"1" forKey:@"Bound_To_Domain"];
 		}
 		NSString *adPlist = [NSString stringWithFormat:@"%@/%@",dirPath,[dirContents objectAtIndex:0]];
-		if (![fm fileExistsAtPath:adPlist])
-			goto done;
+        if (![fm fileExistsAtPath:adPlist]) {
+            logit(lcl_vDebug,@"%@",record);
+            result = [NSArray arrayWithObject:record];
+            return result;
+        }
 		NSDictionary *adInfo = [NSDictionary dictionaryWithContentsOfFile:adPlist];
         if (!adInfo) {
             NSHost *_host = [NSHost currentHost];
@@ -1180,15 +1182,18 @@
 			[record setObject:@"0" forKey:@"HasSLAM"];
 		}
          */
+        
+        logit(lcl_vDebug,@"%@",record);
+        result = [NSArray arrayWithObject:record];
+        return result;
 	}
 	@catch (NSException * e) {
 		logit(lcl_vError,@"%@",[e description]);
-	}	
+        return [NSArray new];
+	}
 
-done:	
-	logit(lcl_vDebug,@"%@",record);
-	result = [NSArray arrayWithObject:record];
-	return result;	
+    // Should not get here
+    return [NSArray new];
 }
 
 - (NSArray *)parseDirectoryServicesDataForPreLion
@@ -1495,10 +1500,13 @@ done:
             if ([pmDataRaw objectForKey:@"Custom Profile"])
             {
                 NSDictionary *customProfiles = [pmDataRaw objectForKey:@"Custom Profile"];
-                for (NSString *key in [customProfiles allKeys])
+                NSArray *keys = [customProfiles allKeys];
+                for (NSString *key in keys)
                 {
-                    profile = [[PowerProfile alloc] initWithProfileName:key];
-                    [_pwrDataProfiles addObject:[profile parseWithDictionary:[customProfiles objectForKey:key]]];
+                    if ([[customProfiles objectForKey:key] isKindOfClass:[NSDictionary class]]) {
+                        profile = [[PowerProfile alloc] initWithProfileName:key];
+                        [_pwrDataProfiles addObject:[profile parseWithDictionary:[customProfiles objectForKey:key]]];
+                    }
                 }
             }
         }

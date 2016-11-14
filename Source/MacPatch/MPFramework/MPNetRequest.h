@@ -104,6 +104,13 @@
 - (NSURLRequest *)buildDownloadRequest:(NSString *)url;
 - (NSURLRequest *)buildDownloadRequest:(NSString *)url error:(NSError **)error;
 
+// REST
+// New for Python Web Services
+- (NSURLRequest *)buildJSONGETRequest:(NSString *)aURI error:(NSError **)error;
+- (NSURLRequest *)buildJSONPOSTRequest:(NSString *)aURI body:(NSDictionary *)aBody error:(NSError **)error;
+- (NSURLRequest *)buildJSONRequest:(NSString *)httpMethod uri:(NSString *)aURI body:(NSDictionary *)aBody error:(NSError **)error;
+- (NSURLRequest *)buildJSONRequestString:(NSString *)httpMethod uri:(NSString *)aURI body:(NSString *)aBody error:(NSError **)error;
+
 - (NSData *)sendSynchronousRequest:(NSURLRequest *)request returningResponse:(NSURLResponse **)response error:(NSError **)error;
 - (NSString *)downloadFileRequest:(NSURLRequest *)request returningResponse:(NSURLResponse **)response error:(NSError **)error;
 

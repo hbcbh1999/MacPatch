@@ -228,4 +228,19 @@
 	return cleanString;
 }
 
+- (BOOL)isNSStringType
+{
+    if ([[self className] isMemberOfClass: [NSString class]]) {
+        return YES;
+    }
+    if ([[self class] isKindOfClass: [NSString class]]) {
+        return YES;
+    }
+    if ([[self classForCoder] isSubclassOfClass: [NSString class]]) {
+        return YES;
+    }
+    
+    return NO;
+}
+
 @end
