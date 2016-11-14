@@ -364,6 +364,36 @@
 			<key>startdate</key>
 			<string>2011-01-01</string>
 		</dict>
+		<dict>
+			<key>active</key>
+			<string>1</string>
+			<key>cmd</key>
+			<string>kMPAppStore</string>
+			<key>cmdalt</key>
+			<string>0</string>
+			<key>description</key>
+			<string>Collect Mac App Store Data</string>
+			<key>enddate</key>
+			<string>3000-01-01</string>
+			<key>id</key>
+			<string>13</string>
+			<key>idrev</key>
+			<string>1</string>
+			<key>idsig</key>
+			<string>0</string>
+			<key>interval</key>
+			<string>EVERY@7200</string>
+			<key>mode</key>
+			<string>0</string>
+			<key>name</key>
+			<string>Collect Mac App Store Data</string>
+			<key>parent</key>
+			<string>0</string>
+			<key>scope</key>
+			<string>Global</string>
+			<key>startdate</key>
+			<string>2016-01-01</string>
+		</dict>
 	</array>
 </dict>
 </plist>
