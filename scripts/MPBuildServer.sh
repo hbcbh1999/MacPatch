@@ -328,6 +328,11 @@ fi
 echo
 echo "* Upgrade/Install required python tools."
 echo "-----------------------------------------------------------------------"
+HAVEPIP=`which pip`
+if [ $? != 0 ] ; then
+	easy_install --quiet pip
+fi
+
 pip_mods=( "pip" "setuptools" "virtualenv" "pycrypto" "argparse" "biplist" "python-crontab" "python-dateutil" "requests" "six" "wheel" "mysql-connector-python-rf")
 for p in "${pip_mods[@]}"
 do
