@@ -667,6 +667,14 @@
                 // Add Plugins
                 NSString *pkgScriptPlugDir = [fullPathPKG stringByAppendingPathComponent:@"Scripts/Plugins"];
                 [self addPluginsToBasePackage:pkgScriptPlugDir pluginsPath:_pluginsPathField.stringValue];
+                
+                // Copy Correct Image (Removes the missing config message)
+                NSString *_srcImg = [fullPathPKG stringByAppendingPathComponent:@"Resources/Background.png"];
+                NSString *_toImg = [_tmpDir stringByAppendingPathComponent:@"MPClientInstall/Resources/Background.png"];
+                if ( [fm isReadableFileAtPath:[fullPathPKG stringByAppendingPathComponent:@"Resources/Background.png"]] ) {
+                    [fm removeItemAtPath:_toImg error:NULL];
+                    [fm copyItemAtPath:_srcImg toPath:_toImg error:NULL];
+                }
             } else {
                 t = @"Updater";
             }
