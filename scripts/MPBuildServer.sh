@@ -93,6 +93,10 @@ MP_SERVER_PKG_VER="1.4.0.0"
 CODESIGNIDENTITY="*"
 CODESIGNIDENTITYPLIST="/Library/Preferences/mp.build.server.plist"
 
+majorVer="0"
+minorVer="0"
+buildVer="0"
+
 if [[ $platform == 'linux' ]]; then
 	USELINUX=true
 	OWNERGRP="www-data:www-data"
@@ -113,6 +117,11 @@ elif [[ "$unamestr" == 'Darwin' ]]; then
 	if [ -f "$CODESIGNIDENTITYPLIST" ]; then
 		CODESIGNIDENTITYALT=`defaults read ${CODESIGNIDENTITYPLIST} name`
 	fi
+
+	systemVersion=`/usr/bin/sw_vers -productVersion`
+	majorVer=`echo $systemVersion | cut -d . -f 1,2  | sed 's/\.//g'`
+	minorVer=`echo $systemVersion | cut -d . -f 2`
+	buildVer=`echo $systemVersion | cut -d . -f 3`
 fi
 
 # Script Input Args ----------------------------------------------------------
@@ -353,13 +362,25 @@ do
 		if [[ ${p} == *"python-crontab"* ]]; then
 			continue
 		fi
-		pip install --egg --quiet --no-cache-dir --upgrade ${p}
+
+		if (( $minorVer >= 11 )); then
+			# Needed to install when SIP is active
+			pip install --egg --quiet --no-cache-dir --upgrade ${p} --user python
+		else
+			pip install --egg --quiet --no-cache-dir --upgrade ${p}
+		fi
+
 		if [ $? != 0 ] ; then
 			echo " Error installing ${p}"
 			sleep 2
 			echo
 			echo " - Trying ${p}, python module again."
-			pip install --quiet --upgrade --trusted-host pypi.python.org ${p}
+			if (( $minorVer >= 11 )); then
+				# Needed to install when SIP is active
+				pip install --quiet --upgrade --trusted-host pypi.python.org ${p} --user python
+			else
+				pip install --quiet --upgrade --trusted-host pypi.python.org ${p}
+			fi
 			if [ $? != 0 ] ; then
 				echo " Error installing ${p}"
 			fi
