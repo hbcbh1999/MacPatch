@@ -80,7 +80,6 @@
 						server = <cfqueryparam value="#Arguments.server#">,
 						port = <cfqueryparam value="#Arguments.port#">,
 						useSSL = <cfqueryparam value="#Arguments.useSSL#">,
-						useSSLAuth = <cfqueryparam value="#Arguments.useSSLAuth#">,
 						allowSelfSignedCert = <cfqueryparam value="#Arguments.allowSelfSignedCert#">,
 						isMaster = <cfqueryparam value="#Arguments.isMaster#">,
 						isProxy = <cfqueryparam value="#Arguments.isProxy#">,
@@ -98,8 +97,8 @@
 		<cfelseif oper EQ "add">
 			<cftry>
 	        	<cfquery name="addServer" datasource="#session.dbsource#">
-					Insert Into mp_servers (listid, server, port, usessl, usesslauth, isMaster, isProxy, active)
-					Values (<cfqueryparam value="1">,<cfqueryparam value="#Arguments.server#">,<cfqueryparam value="#Arguments.port#">,<cfqueryparam value="#Arguments.useSSL#">,<cfqueryparam value="#Arguments.useSSLAuth#">,
+					Insert Into mp_servers (listid, server, port, usessl, isMaster, isProxy, active)
+					Values (<cfqueryparam value="1">,<cfqueryparam value="#Arguments.server#">,<cfqueryparam value="#Arguments.port#">,<cfqueryparam value="#Arguments.useSSL#">,
 					<cfqueryparam value="#Arguments.isMaster#">,<cfqueryparam value="#Arguments.isProxy#">,<cfqueryparam value="#Arguments.active#">)
 				</cfquery>
                 <cfif #Arguments.active# EQ '1'>
