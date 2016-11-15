@@ -52,6 +52,8 @@
 
 @property (strong, nonatomic) NSCondition *condition;
 
+@property (nonatomic, strong) NSDictionary *appRules;
+
 @end
 
 // GCD Timer, replaces NSTimer code
@@ -110,6 +112,9 @@ NSString *const kRefreshStatusIconNotification      = @"kRefreshStatusIconNotifi
 
 // Client CheckIn Data
 @synthesize queue;
+
+// App Launching Filter Rules
+@synthesize appRules;
 
 #pragma mark UI Events
 -(void)awakeFromNib
@@ -176,6 +181,7 @@ NSString *const kRefreshStatusIconNotification      = @"kRefreshStatusIconNotifi
     [mpAppUsage cleanDB]; // Removes Entries Where App Version is NULL
     
     [dc addObserver:self selector:@selector(appLaunchNotificationReceived:) name:NSWorkspaceWillLaunchApplicationNotification object:[NSWorkspace sharedWorkspace]];
+    [dc addObserver:self selector:@selector(appLaunchForFilterNotification:) name:NSWorkspaceWillLaunchApplicationNotification object:[NSWorkspace sharedWorkspace]];
     
     // Start Last CheckIn Thread, update every 10 min
     [self showLastCheckIn];
@@ -187,6 +193,8 @@ NSString *const kRefreshStatusIconNotification      = @"kRefreshStatusIconNotifi
     [self runMPUserNotificationCenter];
     
     [self setOpenASUS:NO];
+    
+    appRules = @{@"allow":@[],@"deny":@[]};
 }
 
 - (void)applicationWillTerminate:(NSNotification *)note
@@ -1016,6 +1024,101 @@ done:
         }
     }
 }
+
+#pragma mark -
+#pragma mark App Launch Filter Rules
+- (void)appLaunchForFilterNotification:(NSNotification *)aNotification
+{
+    NSDictionary *note = [aNotification userInfo];
+    BOOL launchApp = NO;
+    
+    if ([self verifyAllow:note]) {
+        logit(lcl_vDebug,@"%@ is approved via allow list.",[note objectForKey:@"NSApplicationName"]);
+        launchApp = YES;
+    } else {
+        logit(lcl_vInfo,@"%@ not approved via allow list.",[note objectForKey:@"NSApplicationName"]);
+    }
+    
+    if (![self verifyDeny:note]) {
+        logit(lcl_vDebug,@"%@ is approved via deny list.",[note objectForKey:@"NSApplicationName"]);
+    } else {
+        logit(lcl_vInfo,@"%@ not approved via deny list.",[note objectForKey:@"NSApplicationName"]);
+        launchApp = NO;
+    }
+    
+    if (!launchApp) {
+        logit(lcl_vDebug,@"Killing application via pid (%d).",[note objectForKey:@"NSApplicationProcessIdentifier"]);
+        [self killApplication:[note objectForKey:@"NSApplicationProcessIdentifier"]];
+    }
+}
+
+- (BOOL)verifyAllow:(NSDictionary *)noteInfo
+{
+    /* Default the rule to allow all */
+    BOOL result = NO;
+    if ([[self.rules objectForKey:@"allow"] count] <= 0) {
+        result = YES;
+        return result;
+    }
+    
+    for (NSString *r in [self.rules objectForKey:@"allow"])
+    {
+        if ([[[noteInfo objectForKey:@"NSApplicationBundleIdentifier"] lowercaseString] isEqualToString:r.lowercaseString]) {
+            result = YES;
+            break;
+        } else if ([[[noteInfo objectForKey:@"NSApplicationBundleIdentifier"]lowercaseString] containsString:r.lowercaseString]) {
+            result = YES;
+            break;
+        } else if ([[[noteInfo objectForKey:@"NSApplicationName"] lowercaseString] isEqualToString:r.lowercaseString]) {
+            result = YES;
+            break;
+        } else if ([[[noteInfo objectForKey:@"NSApplicationName"] lowercaseString] containsString:r.lowercaseString]) {
+            result = YES;
+            break;
+        } else if ([[[noteInfo objectForKey:@"NSApplicationPath"] lowercaseString] isEqualToString:r.lowercaseString]) {
+            result = YES;
+            break;
+        } else if ([[[noteInfo objectForKey:@"NSApplicationPath"] lowercaseString] containsString:r.lowercaseString]) {
+            result = YES;
+            break;
+        }
+    }
+    return result;
+}
+
+- (BOOL)verifyDeny:(NSDictionary *)noteInfo
+{
+    /* Default the rule to deny none */
+    BOOL result = NO;
+    if ([[self.rules objectForKey:@"deny"] count] <= 0) {
+        return result;
+    }
+    
+    for (NSString *r in [self.rules objectForKey:@"deny"])
+    {
+        if ([[noteInfo objectForKey:@"NSApplicationBundleIdentifier"] isEqualToString:r]) {
+            result = YES;
+            break;
+        } else if ([[noteInfo objectForKey:@"NSApplicationBundleIdentifier"] containsString:r]) {
+            result = YES;
+            break;
+        } else if ([[noteInfo objectForKey:@"NSApplicationName"] isEqualToString:r]) {
+            result = YES;
+            break;
+        } else if ([[noteInfo objectForKey:@"NSApplicationName"] containsString:r]) {
+            result = YES;
+            break;
+        } else if ([[noteInfo objectForKey:@"NSApplicationPath"] isEqualToString:r]) {
+            result = YES;
+            break;
+        } else if ([[noteInfo objectForKey:@"NSApplicationPath"] containsString:r]) {
+            result = YES;
+            break;
+        }
+    }
+    return result;
+}
+
 
 #pragma mark -
 #pragma mark Softwareupdate
