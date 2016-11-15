@@ -1047,7 +1047,7 @@ done:
     }
     
     if (!launchApp) {
-        logit(lcl_vDebug,@"Killing application via pid (%d).",[note objectForKey:@"NSApplicationProcessIdentifier"]);
+        logit(lcl_vDebug,@"Killing application via pid (%@).",[note objectForKey:@"NSApplicationProcessIdentifier"]);
         [self killApplication:[note objectForKey:@"NSApplicationProcessIdentifier"]];
     }
 }
@@ -1056,12 +1056,12 @@ done:
 {
     /* Default the rule to allow all */
     BOOL result = NO;
-    if ([[self.rules objectForKey:@"allow"] count] <= 0) {
+    if ([[self.appRules objectForKey:@"allow"] count] <= 0) {
         result = YES;
         return result;
     }
     
-    for (NSString *r in [self.rules objectForKey:@"allow"])
+    for (NSString *r in [self.appRules objectForKey:@"allow"])
     {
         if ([[[noteInfo objectForKey:@"NSApplicationBundleIdentifier"] lowercaseString] isEqualToString:r.lowercaseString]) {
             result = YES;
@@ -1090,11 +1090,11 @@ done:
 {
     /* Default the rule to deny none */
     BOOL result = NO;
-    if ([[self.rules objectForKey:@"deny"] count] <= 0) {
+    if ([[self.appRules objectForKey:@"deny"] count] <= 0) {
         return result;
     }
     
-    for (NSString *r in [self.rules objectForKey:@"deny"])
+    for (NSString *r in [self.appRules objectForKey:@"deny"])
     {
         if ([[noteInfo objectForKey:@"NSApplicationBundleIdentifier"] isEqualToString:r]) {
             result = YES;
