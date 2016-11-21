@@ -3,6 +3,7 @@ import md5
 from datetime import datetime
 from mpapi import db
 from mpapi.mputil import return_data_for_root_key
+from mpapi.model import MpClientsRegistrationSettings
 from mpapi.model import AgentConfig, AgentConfigData
 from mpapi.model import MpPatchGroup, PatchGroupMembers
 from mpapi.model import MpAsusCatalogList
@@ -10,12 +11,30 @@ from mpapi.model import MpServer, MpServerList
 from mpapi.model import MpSoftwareGroup, MpSoftwareGroupPrivs
 
 def addDefaultData():
+	addRegConfig()
 	addClientConfig()
 	addDefaultPatchGroup()
 	addDefaultSWGroup()
 	addDefaultSUSGroup()
 	addDefaultServerConfig()
 	addDefaultServerList()
+
+# Agent Registration Settings ------------------------------------------------
+def hasRegConfig():
+	res = MpClientsRegistrationSettings.query.all()
+	if res is not None:
+		return True
+	else:
+		return False
+
+def addRegConfig():
+	# Check for config
+	if hasRegConfig():
+		return False
+
+	# Add Agent Config
+	db.session.add(MpClientsRegistrationSettings(autoreg="0", autoreg_key="999999999", client_parking="0"))
+	db.session.commit()
 
 # Agent Config ---------------------------------------------------------------
 def hasClientConfig():
