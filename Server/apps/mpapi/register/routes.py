@@ -126,16 +126,20 @@ class RegistrationStatus(MPResource):
         super(RegistrationStatus, self).__init__()
 
     @swagger.operation(notes='Get Client registration Status')
-    def get(self,cuuid):
+    def get(self,cuuid,keyHash='NA'):
 
         reg_query_object = MPAgentRegistration.query.filter_by(cuuid=cuuid).first()
 
         if reg_query_object is not None:
             rec = reg_query_object.asDict
-            if rec['enabled'] == 1:
-                return {"result": True, "errorno": 0, "errormsg": ""}, 200
+            if keyHash != 'NA':
+                if rec['enabled'] == 1 and verifyClientHash(rec['clientKey'],keyHash):
+                    return {"result": True, "errorno": 0, "errormsg": ""}, 200
             else:
-                return {"result": False, "errorno": 206, "errormsg": ""}, 206
+                if rec['enabled'] == 1:
+                    return {"result": True, "errorno": 0, "errormsg": ""}, 200
+
+            return {"result": False, "errorno": 206, "errormsg": ""}, 206
 
         return {"result": False, "errorno": 204, "errormsg": ""}, 204
 
@@ -160,4 +164,5 @@ def decodeClientKey(encodedKey):
 register_api.add_resource(Test,                 '/client/RegTest')
 register_api.add_resource(Registration,         '/client/register/<string:cuuid>',endpoint='noRegKey')
 register_api.add_resource(Registration,         '/client/register/<string:cuuid>/<string:regKey>',endpoint='yaRegKey')
-register_api.add_resource(RegistrationStatus,   '/client/register/status/<string:cuuid>')
+register_api.add_resource(RegistrationStatus,   '/client/register/status/<string:cuuid>', endpoint='noHash')
+register_api.add_resource(RegistrationStatus,   '/client/register/status/<string:cuuid>/<string:keyHash>', endpoint='yesHash')
