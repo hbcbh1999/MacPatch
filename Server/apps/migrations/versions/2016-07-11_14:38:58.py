@@ -152,8 +152,10 @@ def upgrade():
     sa.Column('cuuid', sa.String(length=50), nullable=False),
     sa.Column('enabled', sa.Integer(), server_default='0', nullable=True),
     sa.Column('clientKey', sa.String(length=100), server_default='NA', nullable=True),
-    sa.Column('pubKeyPem', sa.Text(), nullable=True),
-    sa.Column('pubKeyPemHash', sa.String(length=100), server_default='NA', nullable=True),
+    sa.Column('pubKeyPem', sa.MEDIUMTEXT(), nullable=True),
+    sa.Column('pubKeyPemHash', sa.MEDIUMTEXT(), nullable=True),
+    sa.Column('hostname', sa.String(length=255), nullable=False),
+    sa.Column('serialno', sa.String(length=255), nullable=False),
     sa.Column('reg_date', sa.DateTime(), server_default='1970-01-01 00:00:00', nullable=False),
     sa.PrimaryKeyConstraint('rid')
     )
@@ -318,6 +320,7 @@ def upgrade():
     sa.Column('rid', sa.Integer(), nullable=False, autoincrement=True),
     sa.Column('autoreg', sa.Integer(), server_default='0', nullable=True),
     sa.Column('autoreg_key', sa.Integer(), server_default='999999', nullable=True),
+    sa.Column('client_parking', sa.Integer(), server_default='0', nullable=True),
     sa.PrimaryKeyConstraint('rid')
     )
     op.create_table('mp_clients_wait_reg',
