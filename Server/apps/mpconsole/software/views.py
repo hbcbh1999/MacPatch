@@ -1,17 +1,17 @@
 from flask import render_template, jsonify, request, session
 from werkzeug.utils import secure_filename
-from datetime import *
 import os
 import json
 import base64
 import re
 import collections
-from datetime import datetime
 import uuid
+
+from datetime import datetime
 
 from . import software
 from .. import login_manager
-from ..models import *
+from .. model import *
 from .. import db
 
 ''' -------------------------------------------------

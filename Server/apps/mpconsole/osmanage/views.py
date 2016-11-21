@@ -9,7 +9,7 @@ import uuid
 
 from . import osmanage
 from .. import login_manager
-from ..models import ApplePatch
+from .. model import *
 from .. import db
 
 @osmanage.route('/profiles')

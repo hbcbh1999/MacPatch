@@ -10,10 +10,7 @@ from collections import OrderedDict
 
 from . import clients
 from .. import login_manager
-from ..models import (MpClient, MpClientGroups, MpClientGroupMembers,
-                      AdmUsers, MpClientGroupAdmins, MpClientTasks,
-                      MpSoftwareGroup, MpPatchGroup, MPGroupConfig, MpClientSettings,
-                      MpClientPatchesApple, MpClientPatchesThird)
+from .. model import *
 from .. import db
 
 @clients.route('/clients')

@@ -2,7 +2,7 @@ from flask import render_template, jsonify, request
 import json
 
 from . import console
-from ..models import *
+from .. model import *
 from .. import db
 
 @console.route('/admin')

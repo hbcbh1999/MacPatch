@@ -1,15 +1,15 @@
 from flask import render_template, jsonify, request
-from datetime import *
 import json
 import base64
 import re
 import collections
-from datetime import datetime
 import uuid
+
+from datetime import datetime
 
 from . import reports
 from .. import login_manager
-from ..models import ApplePatch
+from .. models import *
 from .. import db
 
 @reports.route('/new')

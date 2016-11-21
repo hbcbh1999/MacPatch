@@ -6,7 +6,7 @@ import ldap3
 
 from . import auth
 from .. import db
-from ..models import MPUser, User, AdmUsers
+from ..model import *
 from .forms import LoginForm
 
 from flask_ldap3_login.forms import LDAPLoginForm

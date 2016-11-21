@@ -5,7 +5,7 @@ from datetime import datetime
 
 from .  import dashboard
 from .. import login_manager
-from .. models import MPUser, MpClient
+from .. model import *
 from .. import db
 
 @dashboard.route('/dashboard')

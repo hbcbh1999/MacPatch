@@ -3,8 +3,7 @@ from flask_login import login_required, current_user
 
 from . import main
 from .. import login_manager
-#from ..models import User, Bookmark, Tag
-from ..models import MPUser, MpClient, User, AdmUsers
+from .. model import *
 
 
 @login_manager.user_loader
@@ -31,9 +30,3 @@ def page_not_found(e):
 @main.app_errorhandler(500)
 def internal_server_error(e):
     return render_template('500.html'), 500
-
-'''
-@main.app_context_processor
-def inject_tags():
-    return dict(all_tags=Tag.all)
-'''
