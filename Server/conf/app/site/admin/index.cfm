@@ -233,6 +233,6 @@
         	</cfif>
 		</div>
 	</div> 
-	<div class="ui-layout-south">MacPatch Version 3.0.0 Beta 2</div>
+	<div class="ui-layout-south">MacPatch Version 3.0.0 Beta 3</div>
 </body>
 </html>

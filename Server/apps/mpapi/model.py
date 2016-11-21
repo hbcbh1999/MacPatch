@@ -112,8 +112,10 @@ class MPAgentRegistration(CommonBase):
     cuuid = Column(String(50), nullable=False)
     enabled = Column(Integer, server_default='0')
     clientKey = Column(String(100), server_default='NA')
-    pubKeyPem = Column(Text)
-    pubKeyPemHash = Column(String(100), server_default='NA')
+    pubKeyPem = Column(MEDIUMTEXT())
+    pubKeyPemHash = Column(MEDIUMTEXT())
+    hostname = Column(String(255), nullable=False)
+    serialno = Column(String(255), nullable=False)
     reg_date = Column(DateTime, nullable=False, server_default='1970-01-01 00:00:00')
 
 # mp_clients_wait_reg
@@ -132,6 +134,7 @@ class MpClientsRegistrationSettings(CommonBase):
     rid = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
     autoreg = Column(Integer, nullable=True, server_default='0')
     autoreg_key = Column(Integer, nullable=True, server_default='999999')
+    client_parking = Column(Integer, nullable=True, server_default='0')
 
 # mp_client_reg_keys
 class MpClientRegKeys(CommonBase):
@@ -141,7 +144,6 @@ class MpClientRegKeys(CommonBase):
     cuuid = Column(String(50), nullable=False, unique=True)
     regKey = Column(String(255), nullable=False)
     active = Column(Integer, nullable=True, server_default='1')
-
     reg_date = Column(DateTime, nullable=True, server_default='1970-01-01 00:00:00')
 
 # mp_reg_keys

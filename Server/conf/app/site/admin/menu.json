@@ -14,8 +14,8 @@
     ]},
 	{"title": "Mac OS Profiles", "folder": true, "icon": "storage.png",
 	"children": [
-        {"title": "Profiles",		"icon": "text-list.png", "href": "/admin/inc/client_os_profiles.cfm"},
-        {"title": "Assignments",	"icon": "text-list.png", "href": "/admin/inc/client_os_profile_assignment.cfm"}
+        {"title": "Profiles",	 "icon": "text-list.png", "href": "/admin/inc/client_os_profiles.cfm"},
+        {"title": "Assignments", "icon": "text-list.png", "href": "/admin/inc/client_os_profile_assignment.cfm"}
     ]},
 	{"title": "Patch State", "folder": true, "icon": "storage.png",
 	"children": [
@@ -24,13 +24,14 @@
     ]},
 	{"title": "Clients", "folder": true, "icon": "storage.png", "lazy": true },
 	{"title": "Reports", "folder": true, "icon": "text-list.png", "lazy": true, "key": "mainReports" },
-	{"title": "Admin", "folder": true, "icon": "gear.png",
+	{"title": "Admin",   "folder": true, "icon": "gear.png",
 	"children": [
         {"title": "Client Agents", "expanded": false, "folder": true, "icon": "gear.png",
 		"children": [
-			{"title": "Deploy",      "icon": "text-list.png", "href": "/admin/inc/admin_client_agents.cfm"},
-			{"title": "Configure",   "icon": "text-list.png", "href": "/admin/inc/admin_client_agent_config.cfm"},
-            {"title": "Plugins",     "icon": "text-list.png", "href": "/admin/inc/admin_agent_plugins.cfm"}
+			{"title": "Deploy",       "icon": "deploy.png", 	"href": "/admin/inc/admin_client_agents.cfm"},
+			{"title": "Configure",    "icon": "settings.png", 	"href": "/admin/inc/admin_client_agent_config.cfm"},
+            {"title": "Plugins",      "icon": "extension.png",  "href": "/admin/inc/admin_agent_plugins.cfm"},
+            {"title": "Registration", "icon": "keys.png", 		"href": "/admin/inc/mp_agent_keys.cfm"}
 		]},
 		{"title": "Server", "folder": true, "icon": "gear.png",
 		"children": [

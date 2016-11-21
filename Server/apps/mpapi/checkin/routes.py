@@ -29,7 +29,7 @@ class AgentBase(MPResource):
             args = self.reqparse.parse_args()
             _body = request.get_json(silent=True)
 
-            if not isValidSignature(self.req_signature, cuuid, _body, self.req_ts):
+            if not isValidSignature(self.req_signature, cuuid, request.data, self.req_ts):
                 log_Error('[AgentBase][Post]: Failed to verify Signature for client (%s)' % (cuuid))
                 return {"result": '', "errorno": 424, "errormsg": 'Failed to verify Signature'}, 424
 
@@ -94,7 +94,7 @@ class AgentPlist(MPResource):
                 log_Error('[AgentPlist][Post]: Failed to verify ClientID (%s)' % (cuuid))
                 return {"result": '', "errorno": 424, "errormsg": 'Failed to verify ClientID'}, 424
 
-            if not isValidSignature(self.req_signature, cuuid, _body, self.req_ts):
+            if not isValidSignature(self.req_signature, cuuid, request.data, self.req_ts):
                 log_Error('[AgentPlist][Post]: Failed to verify Signature for client (%s)' % (cuuid))
                 return {"result": '', "errorno": 424, "errormsg": 'Failed to verify Signature'}, 424
 
@@ -154,7 +154,7 @@ class AgentStatus(MPResource):
                 log_Error('[AgentStatus][Get]: Failed to verify ClientID (%s)' % (cuuid))
                 return {"result": '', "errorno": 424, "errormsg": 'Failed to verify ClientID'}, 424
 
-            if not isValidSignature(self.req_signature, cuuid, _body, self.req_ts):
+            if not isValidSignature(self.req_signature, cuuid, request.data, self.req_ts):
                 log_Error('[AgentStatus][Get]: Failed to verify Signature for client (%s)' % (cuuid))
                 return {"result": '', "errorno": 424, "errormsg": 'Failed to verify Signature'}, 424
 

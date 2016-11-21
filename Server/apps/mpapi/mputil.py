@@ -14,6 +14,9 @@ import sys
 import json
 import os.path
 
+import hmac
+import base64
+
 from ldap3 import Server, Connection, ALL
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired
 
@@ -49,22 +52,31 @@ class MPResource(flask_restful.Resource):
 
 def isValidSignature(Signature, ClientID, Data, TimeStamp):
 
+    #print "Signature: " + Signature
+    #print "ClientID: " + ClientID
+    #print "TimeStamp: " + TimeStamp
+
     if current_app.config['REQUIRE_SIGNATURES'] == False:
         # REQUIRE_SIGNATURES is false, return true on signature
         # evaluation
         return True
 
-    client_obj = MpClient.query.filter_by(cuuid=ClientID).first()
+    qGet = MPAgentRegistration.query.filter_by(cuuid=ClientID).first()
+    if qGet is not None:
+        rec = qGet.asDict
+        cKey = rec['clientKey']
 
-    if client_obj:
-        cKey = client_obj.clientKey
-        xSig = '%s-%s-%s-%s' %(ClientID, hashlib.md5(cKey).hexdigest(), hashlib.md5(Data).hexdigest(), TimeStamp)
-        xSigHash = hashlib.sha1(xSig).hexdigest()
+        secret = bytes(cKey).encode('utf-8')
+        message_str = '%s-%s' %(str(Data), TimeStamp)
+        message = bytes(message_str).encode('utf-8')
+
+        xSigHash = hmac.new(secret, message, hashlib.sha256).hexdigest()
         if xSigHash.lower() == Signature.lower():
+            print "Verified"
             return True
         else:
+            print "Failed"
             return False
-
     else:
         return False
 

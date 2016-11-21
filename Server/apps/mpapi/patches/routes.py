@@ -202,7 +202,7 @@ class PatchScanData(MPResource):
                 log_Error('[PatchScanData][Post]: Failed to verify ClientID (%s)' % (cuuid))
                 return {"result": '', "errorno": 424, "errormsg": 'Failed to verify ClientID'}, 424
 
-            if not isValidSignature(self.req_signature, cuuid, _body, self.req_ts):
+            if not isValidSignature(self.req_signature, cuuid, request.data, self.req_ts):
                 log_Error('[PatchScanData][Get]: Failed to verify Signature for client (%s)' % (cuuid))
                 return {"result": '', "errorno": 424, "errormsg": 'Failed to verify Signature'}, 424
 
