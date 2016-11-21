@@ -459,6 +459,11 @@
 			attributes = {
 				LastUpgradeCheck = 0810;
 				ORGANIZATIONNAME = LLNL;
+				TargetAttributes = {
+					8F4B1EE816DD77BD00E15A9E = {
+						DevelopmentTeam = BLZUAP2L36;
+					};
+				};
 			};
 			buildConfigurationList = 8F4B1EE416DD77BD00E15A9E /* Build configuration list for PBXProject "MPAgent" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -623,6 +628,8 @@
 				ALWAYS_SEARCH_USER_PATHS = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN_INT_CONVERSION = NO;
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				DEVELOPMENT_TEAM = BLZUAP2L36;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SYSTEM_LIBRARY_DIR)/PrivateFrameworks",
@@ -658,6 +665,8 @@
 				ALWAYS_SEARCH_USER_PATHS = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN_INT_CONVERSION = NO;
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				DEVELOPMENT_TEAM = BLZUAP2L36;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SYSTEM_LIBRARY_DIR)/PrivateFrameworks",

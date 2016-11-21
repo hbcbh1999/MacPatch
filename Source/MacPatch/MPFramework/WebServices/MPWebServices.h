@@ -33,6 +33,8 @@
     NSDictionary *_defaults;
 }
 
+@property (nonatomic, strong) NSString *clientKey;
+
 -(id)initWithDefaults:(NSDictionary *)aDefaults;
 
 // Registration
@@ -40,6 +42,7 @@
 - (NSDictionary *)getServerPubKey:(NSError **)err;
 - (BOOL)getIsValidPubKeyHash:(NSString *)aHash error:(NSError **)err;
 - (NSDictionary *)getRegisterAgent:(NSString *)aRegKey hostName:(NSString *)hostName clientKey:(NSString *)clientKey error:(NSError **)err;
+- (NSDictionary *)registerAgentUsingPayload:(NSDictionary *)regPayload regKey:(NSString *)aRegKey error:(NSError **)err;
 
 // New REST calls
 - (NSData *)getRequestWithURIforREST:(NSString *)aURI error:(NSError **)err;
@@ -71,6 +74,10 @@
 - (id)GetClientPatchStatusCount:(NSError **)err;
 
 - (BOOL)postClientAVData:(NSDictionary *)aDict error:(NSError **)err;
+
+- (BOOL)getAgentRegStatus:(NSString *)keyHash error:(NSError **)err;
+- (BOOL)postAgentReister:(NSDictionary *)aDict regKey:(NSString *)aRegKey error:(NSError **)err;
+
 
 // Methods
 /*

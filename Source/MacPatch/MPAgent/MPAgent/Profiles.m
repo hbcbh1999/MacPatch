@@ -222,6 +222,7 @@ static NSString *kMPProfilesData = @"Data/gov.llnl.mp.custom.profiles.plist";
 {
     NSArray *result = nil;
     MPWebServices *mpws = [[MPWebServices alloc] init];
+    mpws.clientKey = [[MPAgent sharedInstance] g_clientKey];
     NSError *error = nil;
     result = [mpws getProfileIDDataForClient:&error];
     if (error)

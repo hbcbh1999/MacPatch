@@ -130,6 +130,7 @@
 {
     BOOL result = NO;
     MPWebServices *mpws = [[MPWebServices alloc] init];
+    mpws.clientKey = [si g_clientKey];
     NSError *wsErr = nil;
     result = [mpws postDataMgrData:aDataMgrData error:&wsErr];
     if (wsErr) {

@@ -224,6 +224,7 @@
     
     // Check for updates
     MPWebServices *mpws = [[MPWebServices alloc] init];
+    mpws.clientKey = [[MPAgent sharedInstance] g_clientKey];
     NSError *wsErr = nil;
     NSDictionary *result = [mpws getAgentUpdaterUpdates:verString error:&wsErr];
     if (wsErr) {

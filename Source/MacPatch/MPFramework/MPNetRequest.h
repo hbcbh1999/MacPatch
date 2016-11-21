@@ -91,6 +91,8 @@
 // TLS Auth
 @property (nonatomic, strong) NSString *tlsCert;
 @property (nonatomic, strong) NSString *tlsCertPass;
+// Signatures
+@property (nonatomic, strong) NSString *clientKey;
 
 - (id)initWithMPServer:(MPNetServer *)aServer;
 - (id)initWithMPServerArray:(NSArray *)aServerArray;

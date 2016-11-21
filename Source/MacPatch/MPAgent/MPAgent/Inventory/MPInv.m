@@ -83,6 +83,7 @@
     BOOL res = NO;
     NSError *err = nil;
     MPWebServices *mpws = [[MPWebServices alloc] init];
+    mpws.clientKey = [[MPAgent sharedInstance] g_clientKey];
     res = [mpws clientHasInvDataInDB:&err];
     if (err) {
         logit(lcl_vError,@"%@",err.localizedDescription);
@@ -97,6 +98,7 @@
     int res = -1;
     NSError *err = nil;
     MPWebServices *mpws = [[MPWebServices alloc] init];
+    mpws.clientKey = [[MPAgent sharedInstance] g_clientKey];
     res = [mpws postClientHasInvData:&err];
     if (err) {
         logit(lcl_vError,@"%@",err.localizedDescription);
@@ -341,6 +343,7 @@
 {
 	BOOL result = NO;
     MPWebServices *mpws = [[MPWebServices alloc] init];
+    mpws.clientKey = [[MPAgent sharedInstance] g_clientKey];
     NSError *wsErr = nil;
     result = [mpws postDataMgrData:aDataMgrData error:&wsErr];
     if (wsErr) {

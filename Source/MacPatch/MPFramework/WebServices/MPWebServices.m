@@ -50,6 +50,7 @@
 @synthesize _cuuid;
 @synthesize _osver;
 @synthesize _defaults;
+@synthesize clientKey;
 
 -(id)init
 {
@@ -58,7 +59,7 @@
     {
         [self set_cuuid:[MPSystemInfo clientUUID]];
         [self set_osver:[[MPSystemInfo osVersionOctets] objectForKey:@"minor"]];
-
+        [self setClientKey:@"NA"];
         MPDefaults *d = [[MPDefaults alloc] init];
         [self set_defaults:[d defaults]];
 	}
@@ -70,6 +71,7 @@
 	self = [super init];
 	if (self)
     {
+        [self setClientKey:@"NA"];
         [self set_cuuid:[MPSystemInfo clientUUID]];
         [self set_osver:[[MPSystemInfo osVersionOctets] objectForKey:@"minor"]];
         [self set_defaults:aDefaults];
@@ -99,6 +101,7 @@
     {
         qlinfo(@"Trying Server %@",srv.host);
         req = [[MPNetRequest alloc] initWithMPServer:srv];
+        req.clientKey = self.clientKey;
         [req setApiURI:aURI];
         error = nil;
         urlReq = [req buildGetRequestForWebServiceMethod:aMethod formData:aParams error:&error];
@@ -155,6 +158,7 @@
     {
         qlinfo(@"Trying Server %@",srv.host);
         req = [[MPNetRequest alloc] initWithMPServer:srv];
+        req.clientKey = self.clientKey;
         [req setApiURI:WS_CLIENT_FILE];
         error = nil;
         urlReq = [req buildRequestForWebServiceMethod:aMethod formData:aParams error:&error];
@@ -213,6 +217,7 @@
     {
         qlinfo(@"Trying Server %@",srv.host);
         req = [[MPNetRequest alloc] initWithMPServer:srv];
+        req.clientKey = self.clientKey;
         error = nil;
         urlReq =  [req buildJSONGETRequest:aURI error:&error];
         if (error) {
@@ -268,6 +273,7 @@
     {
         qlinfo(@"Trying Server %@",srv.host);
         req = [[MPNetRequest alloc] initWithMPServer:srv];
+        req.clientKey = self.clientKey;
         error = nil;
         if ([aBody isKindOfClass:[NSDictionary class]]) {
             urlReq =  [req buildJSONPOSTRequest:aURI body:aBody error:&error];
@@ -363,6 +369,51 @@
 
 - (NSDictionary *)getRegisterAgent:(NSString *)aRegKey hostName:(NSString *)hostName clientKey:(NSString *)clientKey error:(NSError **)err
 {
+    return nil;
+}
+
+- (NSDictionary *)registerAgentUsingPayload:(NSDictionary *)regPayload regKey:(NSString *)aRegKey error:(NSError **)err
+{
+    // Request
+    NSError *error = nil;
+    NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
+    [params setObject:self._cuuid forKey:@"clientID"];
+    [params setObject:aRegKey forKey:@"registrationKey"];
+    [params setObject:[regPayload objectForKey:@"cKey"] forKey:@"clientKey"];
+    [params setObject:[regPayload objectForKey:@"CPubKeyPem"] forKey:@"clientPubKeyPem"];
+    [params setObject:[regPayload objectForKey:@"CPubKeyDer"] forKey:@"clientPubKeyDer"];
+    [params setObject:[regPayload objectForKey:@"ClientHash"] forKey:@"clientPubKeyHash"];
+    
+    NSData *res = [self requestWithURIAndMethodAndParams:WS_CLIENT_REG method:@"registerClient" params:(NSDictionary *)params error:&error];
+    if (error)
+    {
+        if (err != NULL) {
+            *err = error;
+        } else {
+            qlerror(@"%@",error.localizedDescription);
+        }
+        return nil;
+    }
+    
+    // Parse Main JSON Result
+    // MPJsonResult does all of the error checking on the result
+    MPJsonResult *jres = [[MPJsonResult alloc] init];
+    [jres setJsonData:res];
+    error = nil;
+    id result = [jres returnResult:&error];
+    qldebug(@"JSON Result: %@",result);
+    if (error)
+    {
+        if (err != NULL) {
+            *err = error;
+        } else {
+            qlerror(@"%@",error.localizedDescription);
+        }
+        return nil;
+    }
+    
+    return result;
+    
     return nil;
 }
 
@@ -1423,6 +1474,62 @@
         }
         return @"NA";
     }
+    
+    return result;
+}
+
+- (BOOL)postAgentReister:(NSDictionary *)aDict regKey:(NSString *)aRegKey error:(NSError **)err
+{
+    NSError *error = nil;
+    NSString *bodyStr;
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:aDict options:0 error:&error];
+    if (error) {
+        if (err != NULL) *err = error;
+        qlerror(@"%@",error.localizedDescription);
+        return NO;
+    } else {
+        bodyStr = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+        qldebug(@"Install data as JSON: %@", bodyStr);
+    }
+    
+    id result = nil;
+    NSString *aURI;
+    if (!aRegKey) {
+        aURI = [NSString stringWithFormat:@"/api/v1/client/register/%@",[MPSystemInfo clientUUID]];
+    } else {
+        aURI = [NSString stringWithFormat:@"/api/v1/client/register/%@/%@",[MPSystemInfo clientUUID],aRegKey];
+    }
+    qldebug(@"aURI: %@",aURI);
+    
+    result = [self restPostRequestforURI:aURI body:bodyStr resultType:@"string" error:&error];
+    if (err != NULL) *err = error;
+    if ([result isEqualToString:@""] && !error) {
+        qlinfo(@"Data was successfully posted.");
+        return YES;
+    } else {
+        qlinfo(@"Install data failed to post.");
+        qldebug(@"Install data: %@",aDict);
+        return NO;
+    }
+    
+    // Should not get here
+    return NO;
+}
+
+- (BOOL)getAgentRegStatus:(NSString *)keyHash error:(NSError **)err
+{
+    BOOL result = NO;
+    NSError *error = nil;
+    NSString *aURI;
+    if (!keyHash) {
+        aURI = [NSString stringWithFormat:@"/api/v1/client/register/status/%@",[MPSystemInfo clientUUID]];
+    } else {
+        aURI = [NSString stringWithFormat:@"/api/v1/client/register/status/%@/%@",[MPSystemInfo clientUUID],keyHash];
+    }
+    
+    qldebug(@"aURI: %@",aURI);
+    result = [self restGetRequestforURI:aURI resultType:@"string" error:&error];
+    if (err != NULL) *err = error;
     
     return result;
 }

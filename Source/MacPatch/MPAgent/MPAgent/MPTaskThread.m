@@ -142,6 +142,7 @@ NSLock *lock;
         }
         
         MPWebServices *mpws = [[MPWebServices alloc] init];
+        mpws.clientKey = [[MPAgent sharedInstance] g_clientKey];
         
         NSError *err = nil;
         BOOL postResult = NO;
@@ -211,48 +212,6 @@ NSLock *lock;
         @catch (NSException * e) {
             logit(lcl_vError,@"[NSException]: %@",e);
         }
-        
-        /*
-        MPWebServices *mpws = [[MPWebServices alloc] init];
-        NSError *err = nil;
-        BOOL postResult = NO;
-        @try {
-            err = nil;
-            postResult = [mpws postJSONDataForMethod:@"client_checkin_base" data:agentDict error:&err];
-            if (err) {
-                logit(lcl_vError,@"%@",[err localizedDescription]);
-            }	
-            if (postResult) {
-                logit(lcl_vInfo,@"Running client base checkin, returned true.");
-            } else {
-                logit(lcl_vError,@"Running client base checkin, returned false.");
-            }
-        }
-        @catch (NSException * e) {
-            logit(lcl_vError,@"[NSException]: %@",e);
-        }
-
-        // Read Client Plist Info, and post it...
-        @try {
-            MPDefaultsWatcher *mpd = [[MPDefaultsWatcher alloc] init];
-            NSMutableDictionary *mpDefaults = [[NSMutableDictionary alloc] initWithDictionary:[mpd readConfigPlist]];
-            [mpDefaults setObject:[si g_cuuid] forKey:@"cuuid"];
-
-            err = nil;
-            postResult = [mpws postJSONDataForMethod:@"client_checkin_plist" data:mpDefaults error:&err];
-            if (err) {
-                logit(lcl_vError,@"%@",[err localizedDescription]);
-            }	
-            if (postResult) {
-                logit(lcl_vInfo,@"Running client config checkin, returned true.");
-            } else {
-                logit(lcl_vError,@"Running client config checkin, returned false.");
-            }
-        }
-        @catch (NSException * e) {
-            logit(lcl_vError,@"[NSException]: %@",e);
-        }
-        */
     }
 }
 

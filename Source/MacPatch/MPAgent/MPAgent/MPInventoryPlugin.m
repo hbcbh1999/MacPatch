@@ -90,6 +90,7 @@
     BOOL result = NO;
     
     MPWebServices *mpws = [[MPWebServices alloc] init];
+    mpws.clientKey = [[MPAgent sharedInstance] g_clientKey];
     NSError *err = nil;
     NSString *wsHash = [mpws getHashForPluginName:pluginName pluginBunleID:pluginBundleID pluginVersion:pluginVersion error:&err];
     if (err) {

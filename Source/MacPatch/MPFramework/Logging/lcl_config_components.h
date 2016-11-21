@@ -30,6 +30,7 @@ _lcl_component(MPJsonResult,        "MPJsonResult",         "MPJsonResult")
 _lcl_component(MPDirectoryServices, "MPDirectoryServices",  "MPDirectoryServices")
 _lcl_component(MPInventoryPlugin,   "MPInventoryPlugin",    "MPInventoryPlugin")
 _lcl_component(MPResult,            "MPResult",             "MPResult")
+_lcl_component(MPAgentRegister,     "MPAgentRegister",      "MPAgentRegister")
 
 
 

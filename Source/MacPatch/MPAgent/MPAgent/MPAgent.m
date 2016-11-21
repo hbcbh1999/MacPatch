@@ -25,6 +25,7 @@
 
 #import "MPAgent.h"
 #import <IOKit/IOKitLib.h>
+#import "MacPatch.h"
 
 static MPAgent *_instance;
 
@@ -42,6 +43,7 @@ static MPAgent *_instance;
 @synthesize g_AppHashes;
 @synthesize g_agentPid;
 @synthesize g_hostName;
+@synthesize g_clientKey;
 
 // SWDist
 @synthesize g_SWDistTasks;
@@ -67,6 +69,7 @@ static MPAgent *_instance;
             [_instance setG_agentPid:NULL];
             [_instance setG_SWDistTasksHash:@"NA"];
             [_instance setG_SWDistTasksJSONHash:@"NA"];
+            [_instance setG_clientKey:[_instance getClientKey]];
             NSString *localHostName = (__bridge NSString *)SCDynamicStoreCopyLocalHostName(NULL);
             [_instance setG_hostName:localHostName];
         }
@@ -162,6 +165,24 @@ static MPAgent *_instance;
 	}
 	
 	return results;
+}
+
+- (NSString *)getClientKey
+{
+    NSError *err = nil;
+    MPKeychain *mpkc = [[MPKeychain alloc] init];
+    NSDictionary *clientData = [mpkc dictionaryFromKeychainWithKey:[mpkc serviceLabelForClient] error:&err];
+    if (err) {
+        logit(lcl_vError,@"getClientKey: %@",err.localizedDescription);
+        return @"NA";
+    }
+    
+    if ([clientData objectForKey:@"cKey"]) {
+        return [clientData objectForKey:@"cKey"];
+    } else {
+        logit(lcl_vError,@"Client Key does not exist. Signatures will fail to verify.");
+        return @"NA";
+    }
 }
 
 @end

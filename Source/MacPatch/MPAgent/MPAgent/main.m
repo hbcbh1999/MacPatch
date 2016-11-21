@@ -34,7 +34,7 @@
 #include <getopt.h>
 #include <unistd.h>
 
-#define APPVERSION	@"3.0.0.0"
+#define APPVERSION	@"3.0.0.1"
 #define APPNAME		@"MPAgent"
 
 void usage(void);
@@ -43,20 +43,23 @@ int main (int argc, char * argv[])
 {
 	@autoreleasepool {
     
-		int a_Type = 99;
-		BOOL echoToConsole = NO;
-		BOOL debugLogging = NO;
-		BOOL traceLogging = NO;
-		BOOL verboseLogging = NO;
-        BOOL doRegistration = NO;
-        NSString *regKeyArg = @"999999999";
+		int a_Type              = 99;
+		BOOL echoToConsole      = NO;
+		BOOL debugLogging       = NO;
+		BOOL traceLogging       = NO;
+		BOOL verboseLogging     = NO;
+        // Registration
+        BOOL doRegistration     = NO;
+        BOOL readRegInfo        = NO;
+        NSString *regKeyArg     = @"999999999";
+        
         // Inventory
-        NSString *invArg = NULL;
+        NSString *invArg        = NULL;
         // OS Migration
-        BOOL osMigration = NO;
-        NSString *osMigAction = NULL;
-        NSString *osMigLabel = @"";
-        NSString *osMigID = @"auto";
+        BOOL osMigration        = NO;
+        NSString *osMigAction   = NULL;
+        NSString *osMigLabel    = @"";
+        NSString *osMigID       = @"auto";
 		
 		// Setup argument processing
 		int c;
@@ -84,7 +87,8 @@ int main (int argc, char * argv[])
 				{"Verbose"			,no_argument		,0, 'V'},
 				{"version"			,no_argument		,0, 'v'},
 				{"help"				,no_argument		,0, 'h'},
-                {"register"		    ,required_argument	,0, 'r'},
+                {"register"		    ,optional_argument	,0, 'r'},
+                {"regInfo"		    ,no_argument        ,0, 'R'},
                 // Inventory, not documented yet
                 {"type"                 ,required_argument	,0, 't'},
                 {"Audit"                ,no_argument		,0, 'A'},
@@ -97,7 +101,7 @@ int main (int argc, char * argv[])
 			};
 			// getopt_long stores the option index here.
 			int option_index = 0;
-			c = getopt_long (argc, argv, "dqDTcsuiaUGSpwnzeVvhr:t:ACk:l:m:", long_options, &option_index);
+			c = getopt_long (argc, argv, "dqDTcsuiaUGSpwnzeVvhr::Rt:ACk:l:m:", long_options, &option_index);
 			
 			// Detect the end of the options.
 			if (c == -1)
@@ -193,8 +197,13 @@ int main (int argc, char * argv[])
 					return 0;
                 case 'r':
                     doRegistration = YES;
-					regKeyArg = [NSString stringWithUTF8String:optarg];
+                    if (optarg) {
+                        regKeyArg = [NSString stringWithUTF8String:optarg];
+                    }
 					break;
+                case 'R':
+                    readRegInfo = YES;
+                    break;
 				case 'h':
 				case '?':
 				default:
@@ -251,7 +260,8 @@ int main (int argc, char * argv[])
 		}
         
         // Process Inventory
-        if (invArg !=NULL) {
+        if (invArg !=NULL)
+        {
             int x = 0;
             MPInv *inv = [[MPInv alloc] init];
             if ([invArg isEqual:@"Custom"]) {
@@ -264,14 +274,41 @@ int main (int argc, char * argv[])
             return x;
         }
         
-        if (doRegistration) {
+        // Client Registration
+        if (doRegistration)
+        {
             int regResult = -1;
-            NSString *clientKey = [[NSProcessInfo processInfo] globallyUniqueString];
             MPAgentRegister *mpar = [[MPAgentRegister alloc] init];
-            regResult = [mpar registerClient:clientKey];
-            //[mpar registerClient:regKeyArg hostName:[[MPAgent sharedInstance] g_hostName] clientKey:clientKey];
-            NSLog(@"%d",regResult);
+        
+            if (![regKeyArg isEqualToString:@"999999999"]) {
+                regResult = [mpar registerClient:regKeyArg];
+            } else {
+                regResult = [mpar registerClient:nil];
+            }
+            
+            if (regResult == 0) {
+                printf("\nAgent has been registered.\n");
+            } else {
+                fprintf(stderr, "Post OS Upgrade status failed.\n");
+                exit(1);
+            }
+            
+            exit(0);
+            
+        // Verify Registration
+        } else if (readRegInfo) {
+            
+            MPAgentRegister *mpar = [[MPAgentRegister alloc] init];
+            if ([mpar clientIsRegistered]) {
+                printf("\nAgent is registered.\n");
+            } else {
+                printf("Warning: Agent is not registered.\n");
+            }
+            exit(0);
+        
+        // Post OS Migration Info
         } else if (osMigration) {
+            
             NSString *uID;
             MPOSUpgrade *mposu = [[MPOSUpgrade alloc] init];
             if ([[osMigID lowercaseString] isEqualTo:@"auto"]) {
@@ -290,6 +327,9 @@ int main (int argc, char * argv[])
                 fprintf(stderr, "Post OS Upgrade status failed.\n");
                 exit(1);
             }
+            
+            exit(0);
+            
         } else {
             MPAppController *mpac = [[MPAppController alloc] initWithArg:a_Type];
             [[NSRunLoop currentRunLoop] run];
@@ -311,6 +351,9 @@ void usage(void)
     printf(" -n \t --Servers \t\tRun server list verify/update.\n");
     printf(" -z \t --SUServers \t\tRun SUS server list verify/update.\n");
     printf(" -w \t --WebServicePost \tRe-post failed post attempts.\n\n");
+    printf("Agent Registration \n\n");
+    printf(" -r \t --register \tRegister Agent [ RegKey (Optional) ] based on configuration.\n");
+    printf(" -R \t --regInfo \tDisplays if client is registered.\n\n");
     printf("OS Migration \n\n");
     printf(" -k \t --OSUpgrade \tOS Migration/Upgrade action state (Start/Stop)\n");
     printf(" -l \t --OSLabel \tOS Migration/Upgrade label\n");
