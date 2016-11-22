@@ -1,6 +1,6 @@
 <cfcomponent output="false" extends="jqGrid">
 
-	<cfset this.logName = "admin_sus_servers" />
+	<cfset this.logName = "mp_agent_keys" />
 
 	<cffunction name="getConfig" access="remote" returnformat="json">
 		<cfargument name="page" required="no" default="1" hint="Page user is on">
@@ -63,10 +63,23 @@
 
 		<cfif oper EQ "edit">
 			<cfset strMsgType = "Edit">
-			<cfset strMsg = "Notice, MP edit.">
             <cfset strMsg = "Reg Key Editted">
 			<!--- Take the data, update your record. Simple. --->
 			<cftry>
+				<cfoutput>
+				<cfsavecontent variable="foo">
+					UPDATE
+						mp_clients_reg_conf
+					SET
+						autoreg = "#Arguments.autoreg#",
+						autoreg_key = "#Arguments.autoreg_key#",
+						client_parking = "#Arguments.client_parking#"
+					WHERE
+						rid = #Val(Arguments.id)#
+				</cfsavecontent>
+				</cfoutput>
+				<cflog file="agentKeys" THREAD="no" application="no" text="#foo#">
+
 				<cfquery name="editKey" datasource="#session.dbsource#">
 					UPDATE
 						mp_clients_reg_conf
@@ -81,7 +94,7 @@
                 <cfcatch type="any">
                     <!--- Error, return message --->
                     <cfset strMsgType = "Error">
-                    <cfset strMsg = "Error occured when editting reg key. An Error report has been submitted to support.">
+                    <cfset strMsg = "Error occured when editting reg key. An Error report has been submitted to support. #foo#">
                 </cfcatch>
 			</cftry>
 		<cfelseif oper EQ "add">
