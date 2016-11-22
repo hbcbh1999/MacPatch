@@ -25,7 +25,7 @@
             "admin": {
                 "enabled": true,
                 "name":"mpadmin",
-                "pass":"Apple2e"
+                "pass":"*mpadmin*"
             }    
         },
         "ldap": 
@@ -48,12 +48,12 @@
                 "dsName":"mpds",
                 "dbHost":"127.0.0.1",
                 "dbPort":"3306",
-                "dbName":"MacPatchDBv2",
+                "dbName":"MacPatchDB",
                 "hoststringPre":"jdbc:mysql:",
                 "hoststringURI":"?cacheResultSetMetadata=false&amp;autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull",
                 "drivername":"com.mysql.jdbc.Driver",
                 "username":"mpdbadm",
-                "password":"Apple2e123",
+                "password":"password",
                 "maxconnections":500,
                 "logintimeout":30,
                 "connectiontimeout":30,
@@ -64,12 +64,12 @@
                 "dsName":"mpdsro",
                 "dbHost":"127.0.0.1",
                 "dbPort":"3306",
-                "dbName":"MacPatchDBv2",
+                "dbName":"MacPatchDB",
                 "hoststringPre":"jdbc:mysql:",
                 "hoststringURI":"?cacheResultSetMetadata=false&amp;autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull",
                 "drivername":"com.mysql.jdbc.Driver",
                 "username":"mpdbro",
-                "password":"Apple2e123",
+                "password":"password",
                 "maxconnections":100,
                 "logintimeout":30,
                 "connectiontimeout":30,
