@@ -22,7 +22,7 @@ def addDefaultData():
 # Agent Registration Settings ------------------------------------------------
 def hasRegConfig():
 	res = MpClientsRegistrationSettings.query.all()
-	if res is not None:
+	if res is not None and len(res) >= 1:
 		return True
 	else:
 		return False
