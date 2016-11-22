@@ -28,7 +28,8 @@
 #import "NSString+Helper.h"
 #import "WebRequest.h"
 
-#define MPADM_URI @"Service/MPAdminService.cfc"
+#define MPADM_URI       @"Service/MPAdminService.cfc"
+#define MP_BASE_URI     @"/api/v1"
 
 #undef  ql_component
 #define ql_component lcl_cMain
@@ -42,8 +43,6 @@
 - (void)extractPKG:(NSString *)aPath;
 - (void)writePlistForPackage:(NSString *)aPlist;
 - (void)showAlertForMissingIdentity;
-
-- (int)writeServerKeyToPackage:(NSString *)aServerKey error:(NSError **)err;
 
 - (NSString *)encodeURLString:(NSString *)aString;
 
@@ -117,6 +116,7 @@
     [center addObserver:self selector:@selector(hostTextDidChange:) name:NSControlTextDidChangeNotification object:serverAddress];
     [center addObserver:self selector:@selector(uploadDisabledPref:) name:@"uploadPrefsStatus" object:nil];
     [center addObserver:self selector:@selector(loggingPref:) name:@"loggingPrefsStatus" object:nil];
+    [center addObserver:self selector:@selector(webServicesType:) name:@"webServicesStatus" object:nil];
     [[NSNotificationCenter defaultCenter] postNotificationName:@"uploadPrefsStatus" object:self];
 }
 
@@ -195,6 +195,12 @@
     [d synchronize];
 }
 
+- (IBAction)showLogInConsole:(id)sender
+{
+    NSString *_logFile = [NSHomeDirectory() stringByAppendingPathComponent:@"Library/Logs/MPAgentUploader.log"];
+    [[NSWorkspace sharedWorkspace] openFile:_logFile withApplication:@"Console"];
+}
+
 #pragma mark - sheet
 
 -(IBAction)cancelAuthSheet:(id)sender
@@ -204,6 +210,16 @@
 }
 
 -(IBAction)makeAuthRequest:(id)sender
+{
+    NSUserDefaults *d = [NSUserDefaults standardUserDefaults];
+    if ([[d objectForKey:@"MP_REST_WS"] integerValue] == 1) {
+        [self authRequestREST];
+    } else {
+        [self authRequest];
+    }
+}
+
+-(void)authRequest
 {
     [authProgressWheel setUsesThreadedAnimation:YES];
     [authProgressWheel startAnimation:authProgressWheel];
@@ -260,7 +276,7 @@
     }
     
     [NSApp endSheet:authSheet];
-    [authSheet orderOut:sender];
+    [authSheet orderOut:self];
     [authProgressWheel stopAnimation:authProgressWheel];
     [self.authStatus setStringValue:@" "];
 }
@@ -322,6 +338,20 @@
         }
     } else {
         lcl_configure_by_name("*", lcl_vInfo);
+    }
+}
+
+- (void)webServicesType:(NSNotification *)aNotification
+{
+    NSUserDefaults *d = [NSUserDefaults standardUserDefaults];
+    if ([d objectForKey:@"MP_REST_WS"]) {
+        if ([[d objectForKey:@"MP_REST_WS"] integerValue] == 1)
+        {
+            qlinfo(@"Prefs changed, now using MacPatch 3.x REST web services.");
+            
+        } else {
+            qlinfo(@"Prefs changed, now using MacPatch 2.x web services.");
+        }
     }
 }
 
@@ -389,15 +419,20 @@
     {
         [NSApp beginSheet:authSheet modalForWindow:(NSWindow *)_window modalDelegate:self didEndSelector:@selector(beginUploadPackage) contextInfo:nil];
     } else {
-        [NSThread detachNewThreadSelector:@selector(uploadPackageThread) toTarget:self withObject:nil];
+        [NSThread detachNewThreadSelector:@selector(beginUploadPackage) toTarget:self withObject:nil];
     }
 }
 
 - (void)beginUploadPackage
 {
+    NSUserDefaults *d = [NSUserDefaults standardUserDefaults];
     if (_authToken)
     {
-        [NSThread detachNewThreadSelector:@selector(uploadPackageThread) toTarget:self withObject:nil];
+        if ([[d objectForKey:@"MP_REST_WS"] integerValue] == 1) {
+            [NSThread detachNewThreadSelector:@selector(uploadPackageRESTThread) toTarget:self withObject:nil];
+        } else {
+            [NSThread detachNewThreadSelector:@selector(uploadPackageThread) toTarget:self withObject:nil];
+        }
     }
 }
 
@@ -443,6 +478,7 @@
         [agentConfigImage setImage:[NSImage imageNamed:NSImageNameRemoveTemplate]];
         [agentConfigImage performSelectorOnMainThread:@selector(needsDisplay) withObject:nil waitUntilDone:YES];
         __block NSString *result = nil;
+        // NSURLSession *session = [NSURLSession sharedSession];
         NSString *_url = [NSString stringWithFormat:@"%@://%@:%@/%@?method=AgentConfig&token=%@&user=%@",_ssl,_host,_port,MPADM_URI,[self encodeURLString:_authToken],authUserName.stringValue];
         
         NSMutableURLRequest *request =[[NSMutableURLRequest alloc] init];
@@ -466,31 +502,17 @@
         NSError *bErr = nil;
         NSDictionary *json = [NSJSONSerialization JSONObjectWithData:responseData options:0 error:&bErr];
         if (bErr) {
-            qlerror(@"%@",bErr.localizedDescription);
             [agentConfigImage setImage:[NSImage imageNamed:@"NoIcon"]];
             [uploadButton setEnabled:YES];
             [progressBar stopAnimation:progressBar];
             return;
         }
-        
-        // Get Server Pub Key
-        bErr = nil;
-        NSString *srvPubKey = [self getServerPubKey:&bErr];
-        if (bErr) {
-            qlerror(@"%@",bErr.localizedDescription);
-            [agentConfigImage setImage:[NSImage imageNamed:@"NoIcon"]];
-            [uploadButton setEnabled:YES];
-            [progressBar stopAnimation:progressBar];
-            return;
-        }
-        
         [agentConfigImage setImage:[NSImage imageNamed:@"YesIcon"]];
         result = [json objectForKey:@"result"];
         
         bErr = nil;
         NSString *_reqID = [self getRequestID:authUserName.stringValue error:&bErr];
         if (bErr) {
-            qlerror(@"%@",bErr.localizedDescription);
             [agentConfigImage setImage:[NSImage imageNamed:@"NoIcon"]];
             [uploadButton setEnabled:YES];
             [progressBar stopAnimation:progressBar];
@@ -505,26 +527,13 @@
         [writeConfigImage performSelectorOnMainThread:@selector(needsDisplay) withObject:nil waitUntilDone:YES];
         pkgs1 = [self writePlistForPackage:result error:&bErr];
         if (bErr) {
-            qlerror(@"%@",bErr.localizedDescription);
-            self.writeConfStatus.stringValue = @"Error writing agent config to packages";
             [writeConfigImage setImage:[NSImage imageNamed:@"NoIcon"]];
             [uploadButton setEnabled:YES];
             [progressBar stopAnimation:progressBar];
             return;
+        } else {
+            [writeConfigImage setImage:[NSImage imageNamed:@"YesIcon"]];
         }
-        
-        // Write Server Pub Key
-        bErr = nil;
-        [self writeServerKeyToPackage:srvPubKey error:&bErr];
-        if (bErr) {
-            qlerror(@"%@",bErr.localizedDescription);
-            self.writeConfStatus.stringValue = @"Error writing server publick key to packages";
-            [writeConfigImage setImage:[NSImage imageNamed:@"NoIcon"]];
-            [uploadButton setEnabled:YES];
-            [progressBar stopAnimation:progressBar];
-            return;
-        }
-        [writeConfigImage setImage:[NSImage imageNamed:@"YesIcon"]];
         
         NSArray *pkgs2;
         bErr = nil;
@@ -532,7 +541,6 @@
         [flattenPackagesImage performSelectorOnMainThread:@selector(needsDisplay) withObject:nil waitUntilDone:YES];
         pkgs2 = [self flattenPackages:pkgs1 error:&bErr];
         if (bErr) {
-            qlerror(@"%@",bErr.localizedDescription);
             [flattenPackagesImage setImage:[NSImage imageNamed:@"NoIcon"]];
             [uploadButton setEnabled:YES];
             [progressBar stopAnimation:progressBar];
@@ -547,7 +555,6 @@
         [compressPackgesImage performSelectorOnMainThread:@selector(needsDisplay) withObject:nil waitUntilDone:YES];
         pkgs3 = [self compressPackages:pkgs2 error:&bErr];
         if (bErr) {
-            qlerror(@"%@",bErr.localizedDescription);
             [compressPackgesImage setImage:[NSImage imageNamed:@"NoIcon"]];
             [uploadButton setEnabled:YES];
             [progressBar stopAnimation:progressBar];
@@ -667,14 +674,6 @@
                 // Add Plugins
                 NSString *pkgScriptPlugDir = [fullPathPKG stringByAppendingPathComponent:@"Scripts/Plugins"];
                 [self addPluginsToBasePackage:pkgScriptPlugDir pluginsPath:_pluginsPathField.stringValue];
-                
-                // Copy Correct Image (Removes the missing config message)
-                NSString *_srcImg = [fullPathPKG stringByAppendingPathComponent:@"Resources/Background.png"];
-                NSString *_toImg = [_tmpDir stringByAppendingPathComponent:@"MPClientInstall/Resources/Background.png"];
-                if ( [fm isReadableFileAtPath:[fullPathPKG stringByAppendingPathComponent:@"Resources/Background.png"]] ) {
-                    [fm removeItemAtPath:_toImg error:NULL];
-                    [fm copyItemAtPath:_srcImg toPath:_toImg error:NULL];
-                }
             } else {
                 t = @"Updater";
             }
@@ -687,43 +686,6 @@
     [pkgs addObject:[_tmpDir stringByAppendingPathComponent:@"MPClientInstall"]];
     
     return (NSArray *)pkgs;
-}
-
-- (int)writeServerKeyToPackage:(NSString *)aServerKey error:(NSError **)err
-{
-    int result = 0;
-    
-    NSArray *dirFiles = [fm contentsOfDirectoryAtPath:[_tmpDir stringByAppendingPathComponent:@"MPClientInstall"] error:nil];
-    NSArray *pkgFiles = [dirFiles filteredArrayUsingPredicate:[NSPredicate  predicateWithFormat:@"self ENDSWITH '.pkg'"]];
-    NSString *fullPathPKG;
-    
-    for (NSString *pkg in pkgFiles)
-    {
-        fullPathPKG = [[_tmpDir stringByAppendingPathComponent:@"MPClientInstall"] stringByAppendingPathComponent:pkg];
-        
-        if ([fm fileExistsAtPath:[fullPathPKG stringByAppendingPathComponent:@"Scripts"]])
-        {
-            NSError *writeFileError = nil;
-            NSString *t;
-            if ([[pkg lastPathComponent] isEqualToString:@"Base.pkg"]) {
-                t = @"Agent";
-                NSString *pkgScriptDir = [fullPathPKG stringByAppendingPathComponent:@"Scripts"];
-                NSString *srvPubKeyFile = [pkgScriptDir stringByAppendingPathComponent:@"server_pub.key"];
-                [aServerKey writeToFile:srvPubKeyFile atomically:NO encoding:NSUTF8StringEncoding error:&writeFileError];
-            } else {
-                t = @"Updater";
-                NSString *pkgScriptDir = [fullPathPKG stringByAppendingPathComponent:@"Scripts"];
-                NSString *srvPubKeyFile = [pkgScriptDir stringByAppendingPathComponent:@"server_pub.key"];
-                [aServerKey writeToFile:srvPubKeyFile atomically:NO encoding:NSUTF8StringEncoding error:&writeFileError];
-            }
-            if (err != NULL) *err = writeFileError;
-            if (writeFileError) {
-                result = 1;
-            }
-        }
-    }
-    
-    return result;
 }
 
 - (void)addPluginsToBasePackage:(NSString *)pkgPath pluginsPath:(NSString *)aPluginsPath
@@ -1068,8 +1030,14 @@
     return encodedString;
 }
 
-- (NSString *)getServerPubKey:(NSError **)err
+# pragma mark - REST Methods - MacPatch 3.x
+
+-(void)authRequestREST
 {
+    [authProgressWheel setUsesThreadedAnimation:YES];
+    [authProgressWheel startAnimation:authProgressWheel];
+    [self.authStatus setStringValue:@"Authenticating..."];
+    
     NSString *_host = serverAddress.stringValue;
     NSString *_port = serverPort.stringValue;
     NSString *_ssl = @"https";
@@ -1079,36 +1047,338 @@
         _ssl = @"https";
     }
     
-    NSString *result = nil;
-    NSString *host_url = [NSString stringWithFormat:@"%@://%@:%@",_ssl,_host,_port];
-    NSString *_url = [NSString stringWithFormat:@"%@/%@?method=ServerPubKey&token=%@&user=%@",host_url,MPADM_URI,[self encodeURLString:_authToken],authUserName.stringValue];
+    //-- Convert string into URL
+    NSString *urlString = [NSString stringWithFormat:@"%@://%@:%@%@/auth/token",_ssl,_host,_port,MP_BASE_URI];
+    NSDictionary *authDict = @{@"authUser":authUserName.stringValue,@"authPass":authUserPass.stringValue};
     
     NSMutableURLRequest *request =[[NSMutableURLRequest alloc] init];
-    [request setURL:[NSURL URLWithString:_url]];
-    [request setHTTPMethod:@"GET"];
-    //-- Getting response form server
+    [request setURL:[NSURL URLWithString:urlString]];
+    [request setHTTPMethod:@"POST"];
+    
+    NSData *requestData = [NSJSONSerialization dataWithJSONObject:authDict options:0 error:nil];
+    [request setHTTPBody: requestData];
+    [request setValue:[NSString stringWithFormat:@"%d", (int)[requestData length]] forHTTPHeaderField:@"Content-Length"];
+    [request setValue:@"application/json; charset=utf-8" forHTTPHeaderField:@"Content-Type"];
+    
+    
     NSError *error = nil;
     NSURLResponse *response;
     WebRequest *req = [[WebRequest alloc] init];
     NSData *responseData = [req sendSynchronousRequest:request returningResponse:&response error:&error];
     if (error)
     {
-        if (err != NULL) *err = error;
         qlerror(@"%@",error.localizedDescription);
-        return nil;
+        [self.authStatus setStringValue:error.localizedDescription];
+        [self.authStatus setToolTip:error.localizedDescription];
+        [self.authStatus performSelectorOnMainThread:@selector(needsDisplay) withObject:nil waitUntilDone:YES];
+        [authProgressWheel stopAnimation:authProgressWheel];
+        return;
     }
     
+    //-- JSON Parsing with response data
     error = nil;
-    NSDictionary *json = [NSJSONSerialization JSONObjectWithData:responseData options:0 error:&error];
-    if (error) {
-        if (err != NULL) *err = error;
-        qlerror(@"%@",error.localizedDescription);
-        return nil;
+    NSDictionary *result = [NSJSONSerialization JSONObjectWithData:responseData options:NSJSONReadingMutableContainers error:&error];
+    qldebug(@"[makeAuthRequest]: %@",result);
+    if ([result objectForKey:@"result"]) {
+        if ([result objectForKey:@"errorno"]) {
+            if ([[result objectForKey:@"errorno"] intValue] == 0)
+            {
+                if ([[result objectForKey:@"result"] objectForKey:@"token"]) {
+                    [self setAuthToken:[[result objectForKey:@"result"] objectForKey:@"token"]];
+                } else {
+                    [authStatus setStringValue:@"Error: token string not found."];
+                    [authStatus setToolTip:@"Error: token string not found."];
+                    [authStatus performSelectorOnMainThread:@selector(needsDisplay) withObject:nil waitUntilDone:YES];
+                }
+            }
+            else
+            {
+                [authStatus setStringValue:[result objectForKey:@"errormsg"]];
+                [authStatus setToolTip:[result objectForKey:@"errormsg"]];
+                [authStatus performSelectorOnMainThread:@selector(needsDisplay) withObject:nil waitUntilDone:YES];
+                [authProgressWheel stopAnimation:authProgressWheel];
+                return;
+            }
+        }
     }
     
-    result = [json objectForKey:@"result"];
-    qldebug(@"Server Pub Key: %@",result);
-    return result;
+    [NSApp endSheet:authSheet];
+    [authSheet orderOut:self];
+    [authProgressWheel stopAnimation:authProgressWheel];
+    [self.authStatus setStringValue:@" "];
+}
+
+- (void)postFilesREST:(NSArray *)aFiles
+{
+    NSString *aid = [[NSUUID UUID] UUIDString];
+    
+    NSString *_host = serverAddress.stringValue;
+    NSString *_port = serverPort.stringValue;
+    NSString *_ssl = @"https";
+    if (useSSL.state == NSOffState) {
+        _ssl = @"http";
+    } else {
+        _ssl = @"https";
+    }
+    
+    NSDictionary *_basePKGData;
+    NSDictionary *_updtPKGData;
+    
+    //-- Convert string into URL
+    NSString *uri = @"api/v1/agent/upload";
+    NSString *urlString = [NSString stringWithFormat:@"%@://%@:%@/%@/%@/%@",_ssl,_host,_port,uri,aid,_authToken];
+    NSMutableURLRequest *request =[[NSMutableURLRequest alloc] init];
+    [request setURL:[NSURL URLWithString:urlString]];
+    [request setHTTPMethod:@"POST"];
+    
+    NSString *boundary = @"14737809831466499882746641449";
+    NSString *contentType = [NSString stringWithFormat:@"multipart/form-data; boundary=%@",boundary];
+    [request addValue:contentType forHTTPHeaderField: @"Content-Type"];
+    
+    //-- Append data into posr url using following method
+    NSMutableData *body = [NSMutableData data];
+    
+    for (NSString *_pkg in aFiles)
+    {
+        NSString *frmName;
+        NSString *_pkgFileName = [_pkg lastPathComponent];
+        if ([_pkgFileName isEqualToString:@"Base.pkg.zip"]) {
+            frmName = @"fBase";
+            _basePKGData = [self agentPKGData:_pkg];
+        } else if ([_pkgFileName isEqualToString:@"Updater.pkg.zip"])
+        {
+            frmName = @"fUpdate";
+            _updtPKGData = [self agentPKGData:_pkg];
+        } else if ([_pkgFileName isEqualToString:@"MPClientInstall.pkg.zip"])
+        {
+            frmName = @"fComplete";
+        }
+        [body appendData:[[NSString stringWithFormat:@"\r\n--%@\r\n",boundary] dataUsingEncoding:NSUTF8StringEncoding]];
+        [body appendData:[[NSString stringWithFormat:@"Content-Disposition:form-data; name=\"%@\"; filename=\"%@\"\r\n",frmName,[_pkg lastPathComponent]] dataUsingEncoding:NSUTF8StringEncoding]];
+        [body appendData:[@"Content-Type: application/octet-stream\r\n\r\n" dataUsingEncoding:NSUTF8StringEncoding]];
+        [body appendData:[NSData dataWithContentsOfFile:_pkg]];
+    }
+    
+    
+    //-- Package(s) data
+    NSDictionary *_pkgData = @{ @"app": _basePKGData, @"update": _updtPKGData};
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:_pkgData options:NSJSONWritingPrettyPrinted error:nil];
+    
+    [body appendData:[[NSString stringWithFormat:@"\r\n--%@\r\n",boundary] dataUsingEncoding:NSUTF8StringEncoding]];
+    [body appendData:[@"Content-Disposition: form-data; name=\"data\"\r\n\r\n" dataUsingEncoding:NSUTF8StringEncoding]];
+    [body appendData:jsonData];
+    
+    //-- Sending data into server through URL
+    [body appendData:[[NSString stringWithFormat:@"\r\n--%@--\r\n",boundary] dataUsingEncoding:NSUTF8StringEncoding]];
+    [request setHTTPBody:body];
+    
+    
+    NSError *error = nil;
+    NSURLResponse *response;
+    WebRequest *req = [[WebRequest alloc] init];
+    NSData *responseData = [req sendSynchronousRequest:request returningResponse:&response error:&error];
+    if (error)
+    {
+        if (error) {
+            qlerror(@"%@",error.localizedDescription);
+        }
+        
+        [postPackagesImage setImage:[NSImage imageNamed:@"NoIcon"]];
+        return;
+    }
+    
+    //-- JSON Parsing with response data
+    NSDictionary *result = [NSJSONSerialization JSONObjectWithData:responseData options:NSJSONReadingMutableContainers error:nil];
+    qlinfo(@"[postFiles]: %@",result);
+    if ([result objectForKey:@"errorno"]) {
+        if ([[result objectForKey:@"errorno"] intValue] != 0) {
+            [postPkgStatus setStringValue:[result objectForKey:@"errormsg"]];
+            [postPackagesImage setImage:[NSImage imageNamed:@"NoIcon"]];
+            return;
+        } else {
+            [postPackagesImage setImage:[NSImage imageNamed:@"YesIcon"]];
+            return;
+        }
+    }
+    
+    [postPackagesImage setImage:[NSImage imageNamed:@"NoIcon"]];
+}
+
+- (void)uploadPackageRESTThread
+{
+    @autoreleasepool
+    {
+        NSUserDefaults *d = [NSUserDefaults standardUserDefaults];
+        
+        if (signPKG.state == NSOnState) {
+            if ([identityName.stringValue length] <= 0) {
+                NSAlert *alert = [[NSAlert alloc] init];
+                [alert setAlertStyle:NSWarningAlertStyle];
+                [alert setMessageText:@"Missing Identity"];
+                [alert setInformativeText:@"You have choosen to sign the packages but did not enter an identity name. Please enter an identity name and try again."];
+                [alert addButtonWithTitle:@"OK"];
+                [alert performSelectorOnMainThread:@selector(runModal) withObject:nil waitUntilDone:NO];
+                return;
+            }
+        }
+        
+        [self resetInterface];
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"uploadPrefsStatus" object:self];
+        
+        NSString *_host = serverAddress.stringValue;
+        NSString *_port = serverPort.stringValue;
+        NSString *_ssl = @"https";
+        if (useSSL.state == NSOffState) {
+            _ssl = @"http";
+        } else {
+            _ssl = @"https";
+        }
+        
+        [uploadButton setEnabled:NO];
+        [progressBar setUsesThreadedAnimation:YES];
+        [progressBar setIndeterminate:YES];
+        [progressBar startAnimation:progressBar];
+        
+        [extractImage setImage:[NSImage imageNamed:NSImageNameRemoveTemplate]];
+        [extractImage performSelectorOnMainThread:@selector(needsDisplay) withObject:nil waitUntilDone:YES];
+        [self extractPKG:_packagePathField.stringValue];
+        
+        [agentConfigImage setImage:[NSImage imageNamed:NSImageNameRemoveTemplate]];
+        [agentConfigImage performSelectorOnMainThread:@selector(needsDisplay) withObject:nil waitUntilDone:YES];
+        __block NSString *result = nil;
+        
+        NSString *_url = [NSString stringWithFormat:@"%@://%@:%@%@/agent/config/%@",_ssl,_host,_port,MP_BASE_URI, _authToken];
+        NSLog(@"%@",_url);
+        NSMutableURLRequest *request =[[NSMutableURLRequest alloc] init];
+        [request setURL:[NSURL URLWithString:_url]];
+        [request setHTTPMethod:@"GET"];
+        //-- Getting response form server
+        NSError *error = nil;
+        NSURLResponse *response;
+        WebRequest *req = [[WebRequest alloc] init];
+        NSData *responseData = [req sendSynchronousRequest:request returningResponse:&response error:&error];
+        if (error)
+        {
+            qlerror(@"%@",error.localizedDescription);
+            [progressBar stopAnimation:progressBar];
+            [agentConfigImage setImage:[NSImage imageNamed:@"NoIcon"]];
+            [uploadButton setEnabled:YES];
+            [progressBar stopAnimation:progressBar];
+            return;
+        }
+        
+        //int httpcode = (int)[(NSHTTPURLResponse *)response statusCode];
+        if (req.httpStatusCode == 424)
+        {
+            _authToken = nil;
+            [self uploadPackage:nil];
+            return;
+        }
+        
+        NSError *bErr = nil;
+        NSDictionary *json = [NSJSONSerialization JSONObjectWithData:responseData options:0 error:&bErr];
+        if (bErr) {
+            [agentConfigImage setImage:[NSImage imageNamed:@"NoIcon"]];
+            [uploadButton setEnabled:YES];
+            [progressBar stopAnimation:progressBar];
+            return;
+        }
+        [agentConfigImage setImage:[NSImage imageNamed:@"YesIcon"]];
+        result = [[json objectForKey:@"result"] objectForKey:@"plist"];
+        
+        
+        NSArray *pkgs1;
+        
+        bErr = nil;
+        [writeConfigImage setImage:[NSImage imageNamed:NSImageNameRemoveTemplate]];
+        [writeConfigImage performSelectorOnMainThread:@selector(needsDisplay) withObject:nil waitUntilDone:YES];
+        pkgs1 = [self writePlistForPackage:result error:&bErr];
+        if (bErr) {
+            [writeConfigImage setImage:[NSImage imageNamed:@"NoIcon"]];
+            [uploadButton setEnabled:YES];
+            [progressBar stopAnimation:progressBar];
+            return;
+        } else {
+            [writeConfigImage setImage:[NSImage imageNamed:@"YesIcon"]];
+        }
+        
+        NSArray *pkgs2;
+        bErr = nil;
+        [flattenPackagesImage setImage:[NSImage imageNamed:NSImageNameRemoveTemplate]];
+        [flattenPackagesImage performSelectorOnMainThread:@selector(needsDisplay) withObject:nil waitUntilDone:YES];
+        pkgs2 = [self flattenPackages:pkgs1 error:&bErr];
+        if (bErr) {
+            [flattenPackagesImage setImage:[NSImage imageNamed:@"NoIcon"]];
+            [uploadButton setEnabled:YES];
+            [progressBar stopAnimation:progressBar];
+            return;
+        } else {
+            [flattenPackagesImage setImage:[NSImage imageNamed:@"YesIcon"]];
+        }
+        
+        NSArray *pkgs3;
+        bErr = nil;
+        [compressPackgesImage setImage:[NSImage imageNamed:NSImageNameRemoveTemplate]];
+        [compressPackgesImage performSelectorOnMainThread:@selector(needsDisplay) withObject:nil waitUntilDone:YES];
+        pkgs3 = [self compressPackages:pkgs2 error:&bErr];
+        if (bErr) {
+            [compressPackgesImage setImage:[NSImage imageNamed:@"NoIcon"]];
+            [uploadButton setEnabled:YES];
+            [progressBar stopAnimation:progressBar];
+            return;
+        } else {
+            [compressPackgesImage setImage:[NSImage imageNamed:@"YesIcon"]];
+        }
+        
+        d = [NSUserDefaults standardUserDefaults];
+        if ([d objectForKey:@"dDoNotUpload"]) {
+            if ([[d objectForKey:@"dDoNotUpload"] integerValue] == 1)
+            {
+                NSString *p = [[pkgs3 objectAtIndex:0] stringByDeletingLastPathComponent];
+                [[NSWorkspace sharedWorkspace] openFile:p];
+                [progressBar stopAnimation:progressBar];
+                [uploadButton setEnabled:YES];
+                return;
+            }
+        }
+        
+        [postPackagesImage setImage:[NSImage imageNamed:NSImageNameRemoveTemplate]];
+        [postPackagesImage performSelectorOnMainThread:@selector(needsDisplay) withObject:nil waitUntilDone:YES];
+        [self postFilesREST:(NSArray *)pkgs3];
+        
+        [progressBar stopAnimation:progressBar];
+        [uploadButton setEnabled:YES];
+    }
+}
+
+- (NSDictionary *)agentPKGData:(NSString *)package
+{
+    // Used By the postFilesREST method
+    //
+    
+    MPCrypto *mpc = [[MPCrypto alloc] init];
+    NSMutableDictionary *d;
+    NSString *pkgName;
+    NSDictionary *confDict;
+    
+    pkgName = [[package lastPathComponent] stringByDeletingPathExtension];
+    d = [[NSMutableDictionary alloc] init];
+    
+    [d setObject:pkgName forKey:@"pkg_name"];
+    if ([pkgName isEqualToString:@"Base.pkg"]) {
+        [d setObject:@"app" forKey:@"type"];
+        confDict = [NSDictionary dictionaryWithDictionary:_agentDict];
+    } else if ([pkgName isEqualToString:@"Updater.pkg"]) {
+        [d setObject:@"update" forKey:@"type"];
+        confDict = [NSDictionary dictionaryWithDictionary:_updaterDict];
+    }
+    [d setObject:[confDict objectForKey:@"agent_ver"] forKey:@"agent_ver"];
+    [d setObject:[confDict objectForKey:@"ver"] forKey:@"version"];
+    [d setObject:[confDict objectForKey:@"build"] forKey:@"build"];
+    [d setObject:[mpc sha1HashForFile:package] forKey:@"pkg_hash"];
+    [d setObject:[confDict objectForKey:@"osver"] forKey:@"osver"];
+    
+    return (NSDictionary *)d;
 }
 
 @end

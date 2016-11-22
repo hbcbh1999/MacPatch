@@ -34,6 +34,7 @@
 @property (nonatomic, strong, readwrite) NSData *responseData;
 @property (nonatomic, strong, readwrite) NSError *error;
 @property (nonatomic, assign, readwrite) BOOL connectionDidFinishLoading;
+@property (nonatomic, assign, readwrite) int httpStatusCode;
 
 @property (nonatomic) NSStringEncoding encoding;
 @property (nonatomic, strong) NSURLConnection *connection;
@@ -41,6 +42,7 @@
 @property (nonatomic, strong) NSCondition *condition;
 @property (nonatomic, strong) NSURLResponse *response;
 @property (nonatomic, strong) NSString *host;
+
 
 @property (nonatomic, assign) SecTrustRef serverTrust;
 @property (nonatomic, assign) BOOL useUnTrustedCert;
@@ -60,6 +62,7 @@
 @synthesize condition                   = _condition;
 @synthesize serverTrust                 = _serverTrust;
 @synthesize useUnTrustedCert            = _useUnTrustedCert;
+@synthesize httpStatusCode              = _httpStatusCode;
 
 
 - (id)init
@@ -79,6 +82,7 @@
 
 - (NSData *)sendSynchronousRequest:(NSURLRequest *)request returningResponse:(NSURLResponse **)aResponse error:(NSError **)error
 {
+    self.httpStatusCode = 0;
     self.host = [[request URL] host];
     self.connection = [[NSURLConnection alloc] initWithRequest:request delegate:self startImmediately:NO];
     [self.connection setDelegateQueue:[[NSOperationQueue alloc] init]];
@@ -129,13 +133,18 @@
 
 - (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
 {
+    if ([response isKindOfClass: [NSHTTPURLResponse class]]) {
+        NSHTTPURLResponse* httpResponse = (NSHTTPURLResponse*)response;
+        _httpStatusCode = (int)[httpResponse statusCode];
+    }
+    
 	// every response could mean a redirect
 	_receivedData = nil;
 
 	// need to record the received encoding
 	// http://stackoverflow.com/questions/1409537/nsdata-to-nsstring-converstion-problem
-	CFStringEncoding cfEncoding = CFStringConvertIANACharSetNameToEncoding((CFStringRef)[response textEncodingName]);
-	_encoding = CFStringConvertEncodingToNSStringEncoding(cfEncoding);
+	//CFStringEncoding cfEncoding = CFStringConvertIANACharSetNameToEncoding((CFStringRef)[response textEncodingName]);
+	//_encoding = CFStringConvertEncodingToNSStringEncoding(cfEncoding);
 }
 
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data

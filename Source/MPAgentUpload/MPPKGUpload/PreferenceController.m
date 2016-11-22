@@ -63,5 +63,10 @@
     [[NSNotificationCenter defaultCenter] postNotificationName:@"loggingPrefsStatus" object:self];
 }
 
+- (IBAction)toggleWebServices:(id)sender
+{
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"webServicesStatus" object:self];
+}
+
 
 @end

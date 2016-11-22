@@ -31,6 +31,7 @@
 @property (nonatomic, assign, readonly) BOOL isRunnng;
 @property (nonatomic, strong, readonly) NSData *responseData;
 @property (nonatomic, assign, readonly) BOOL connectionDidFinishLoading;
+@property (nonatomic, assign, readonly) int httpStatusCode;
 
 - (id)init;
 - (NSData *)sendSynchronousRequest:(NSURLRequest *)request returningResponse:(NSURLResponse **)aResponse error:(NSError **)error;
