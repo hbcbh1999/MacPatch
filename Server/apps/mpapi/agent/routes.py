@@ -7,6 +7,7 @@ from distutils.version import StrictVersion, LooseVersion
 import sys
 import uuid
 import plistlib
+import hashlib
 from ast import literal_eval
 
 from . import *
@@ -205,7 +206,9 @@ class MP_UploadAgentPackage(MPResource):
             r = request
             fData = literal_eval(r.form['data'])
             fBase = r.files['fBase']
+            fBaseHash = ""
             fUpdate = r.files['fUpdate']
+            fUpdateHash = ""
             fAgent = r.files['fComplete']
             if not fBase or not fUpdate or not fAgent:
                 log_Error('Failed to verify uploaded files. User: %s' % (_user))
@@ -234,6 +237,12 @@ class MP_UploadAgentPackage(MPResource):
                     os.remove(agent_file)
 
                 f.save(agent_file)
+                if f.filename == "fBase":
+                    fBaseHash = fileHashSHA1(agent_file)
+                elif f.filename == "fUpdate":
+                    fUpdateHash = fileHashSHA1(agent_file)
+
+
 
             # Save Agent Data to database
             log_Debug('Create Base Agent Data Record')
@@ -246,7 +255,7 @@ class MP_UploadAgentPackage(MPResource):
             setattr(agentObjApp, 'build', fData['app']['build'])
             setattr(agentObjApp, 'pkg_name', fData['app']['pkg_name'])
             setattr(agentObjApp, 'pkg_url', os.path.join('/mp-content/clients/updates', agent_id,fBase.filename))
-            setattr(agentObjApp, 'pkg_hash', fData['app']['pkg_hash'])
+            setattr(agentObjApp, 'pkg_hash', fBaseHash)
             setattr(agentObjApp, 'cdate', datetime.now())
             setattr(agentObjApp, 'mdate', datetime.now())
             log_Debug('Add Base Agent Data Record')
@@ -262,7 +271,7 @@ class MP_UploadAgentPackage(MPResource):
             setattr(agentObjUpdt, 'build', fData['update']['build'])
             setattr(agentObjUpdt, 'pkg_name', fData['update']['pkg_name'])
             setattr(agentObjUpdt, 'pkg_url', os.path.join('/mp-content/clients/updates', agent_id,fUpdate.filename))
-            setattr(agentObjUpdt, 'pkg_hash', fData['update']['pkg_hash'])
+            setattr(agentObjUpdt, 'pkg_hash', fUpdateHash)
             setattr(agentObjUpdt, 'cdate', datetime.now())
             setattr(agentObjUpdt, 'mdate', datetime.now())
             log_Debug('Add Updater Agent Data Record')
@@ -642,6 +651,19 @@ class GenAgentConfig():
             log_Error("[serverDataOfType]: Type not accepted.")
             return None
 
+
+def fileHashSHA1(file):
+    BUF_SIZE = 65536  # lets read stuff in 64kb chunks!
+    sha1 = hashlib.sha1()
+
+    with open(file, 'rb') as f:
+        while True:
+            data = f.read(BUF_SIZE)
+            if not data:
+                break
+            sha1.update(data)
+
+    return sha1.hexdigest()
 
 # Add Routes Resources
 agent_api.add_resource(MP_AgentUpdate,         '/agent/update/<string:cuuid>/<string:agentver>/<string:agentbuild>')
