@@ -157,7 +157,6 @@ p.solid {border-style: solid;}
     </cfoutput>
 </cfif>
 
-
 <cfquery datasource="#session.dbsource#" name="qGetModelNumbers" maxrows="10">
 	SELECT
 	hw.mpa_Model_Identifier AS ModelType, Count(hw.mpa_Model_Identifier) As Count
@@ -180,7 +179,6 @@ p.solid {border-style: solid;}
     </cfif>
     Group By needsReboot
 </cfquery>
-
 
 <cfquery datasource="#session.dbsource#" name="qGetClientPatchStatus" cachedwithin="#CreateTimeSpan(0, 0, 0, 15)#">
     Select 	patch, Count(*) As Clients  
@@ -232,11 +230,30 @@ p.solid {border-style: solid;}
 <cfset myColorListArr = myArrayColorList>
 <cfset CreateObject("java","java.util.Collections").Shuffle(myColorListArr) />
 <cfset myColorList = ArrayToList(myColorListArr,",")>
+
+<cfset objFile = createObject("java","java.io.File").init("/")>
+<cfset disk = structNew()>
+<cfset disk.freeSpace = NumberFormat(objFile.getFreeSpace()/1000000000.00,"0.00") & " GB">
+<cfset disk.totalSpace = NumberFormat(objFile.getTotalSpace()/1000000000.00,"0.00") & " GB">
+
 </cfsilent>
 <body>
 <table align="left">
 	<tr>
-        <td colspan="2"><div class="headerLabel">Total Clients - <cfoutput>#qGetTotalClient.Total#</cfoutput></div></td>
+        <td>
+            <table align="center" width="960px">
+                <cfoutput>
+                <tr>
+                    <td>
+                        <h3>Total Clients - #qGetTotalClient.Total#</h3>
+                    </td>
+                    <td>
+                        Server Disk Size: #disk.totalSpace#<br>Server Free Space: #disk.freeSpace#
+                    </td>
+                </tr>
+                </cfoutput>
+            </table>  
+        </td>
     </tr>   
 	<tr>
 		<td>
