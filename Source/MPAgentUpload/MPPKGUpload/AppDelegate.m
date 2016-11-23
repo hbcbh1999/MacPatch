@@ -675,6 +675,13 @@
                 // Add Plugins
                 NSString *pkgScriptPlugDir = [fullPathPKG stringByAppendingPathComponent:@"Scripts/Plugins"];
                 [self addPluginsToBasePackage:pkgScriptPlugDir pluginsPath:_pluginsPathField.stringValue];
+                if ([fm fileExistsAtPath:[fullPathPKG stringByAppendingPathComponent:@"Resources/Background_done.png"]]) {
+                    [fm removeItemAtPath:[fullPathPKG stringByAppendingPathComponent:@"Resources/Background_done.png"] error:NULL];
+                    [fm moveItemAtPath:[fullPathPKG stringByAppendingPathComponent:@"Resources/Background_done.png"]
+                                toPath:[fullPathPKG stringByAppendingPathComponent:@"Resources/Background.png"]
+                                 error:NULL];
+                }
+                
             } else {
                 t = @"Updater";
             }

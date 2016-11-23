@@ -13,7 +13,7 @@
 #import "MPCrypto.h"
 
 #define AUTO_REG_KEY    @"999999999"
-#define SRV_PUB_KEY     @"/Library/Application Support/MacPatch/.keys/ServerPub.pem";
+#define SRV_PUB_KEY     @"/Library/Application Support/MacPatch/.keys/ServerPub.pem"
 
 #undef  ql_component
 #define ql_component lcl_cMPAgentRegister

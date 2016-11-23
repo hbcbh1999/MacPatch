@@ -1,8 +1,9 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="10117" systemVersion="15G31" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="11542" systemVersion="16C48b" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="10117"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11542"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication">
@@ -23,7 +24,7 @@
             <windowCollectionBehavior key="collectionBehavior" fullScreenPrimary="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="808" y="802" width="797" height="678"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="2560" height="1577"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="2560" height="1418"/>
             <view key="contentView" canDrawConcurrently="YES" id="EiT-Mj-1SZ">
                 <rect key="frame" x="0.0" y="0.0" width="797" height="678"/>
                 <autoresizingMask key="autoresizingMask"/>
@@ -44,7 +45,7 @@
                     <constraint firstItem="fD7-DC-PMu" firstAttribute="centerX" secondItem="EiT-Mj-1SZ" secondAttribute="centerX" id="KHU-2q-qeC"/>
                 </constraints>
             </view>
-            <point key="canvasLocation" x="497.5" y="387"/>
+            <point key="canvasLocation" x="186" y="177"/>
         </window>
         <viewController id="3a1-sp-R54" customClass="ScanAndPatchVC"/>
     </objects>
