@@ -54,8 +54,8 @@ if os.geteuid() != 0:
 # ----------------------------------------------------------------------------
 # Variables
 # ----------------------------------------------------------------------------
+MP_BASE	 	 = "/opt/MacPatch"
 MP_SRV_BASE	 = "/opt/MacPatch/Server"
-MP_CONTENT	 = "/opt/MacPatch/Content"
 MP_SRV_ETC	 = MP_SRV_BASE+"/etc"
 MP_CONF_FILE = MP_SRV_BASE+"/etc/siteconfig.json"
 MP_SRVC_FILE = MP_SRV_BASE+"/etc/.mpservices.json"
@@ -67,7 +67,7 @@ else:
 
 
 MP_SRV_CONF 	= MP_SRV_BASE+"/conf"
-MP_SRV_CONT 	= MP_SRV_BASE+"/Content/Web"
+MP_SRV_CONT 	= MP_BASE+"/Content/Web"
 MP_INV_DIR		= MP_SRV_BASE+"/InvData"
 MP_SRV_KEYS		= MP_SRV_ETC +"/keys"
 
@@ -175,7 +175,7 @@ def repairPermissions():
 	
 		os.chmod("/opt/MacPatch", 0775)
 		os.chmod(MP_SRV_BASE+"/logs", 0775)
-		os.system("chmod -R 0775 "+ MP_CONTENT +"/Web")
+		os.system("chmod -R 0775 "+ MP_SRV_CONT)
 		
 		if os_type == "Darwin":
 			os.system("chown root:wheel "+MP_SRV_BASE+"/conf/launchd/*")
