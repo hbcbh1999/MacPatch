@@ -1,3 +1,4 @@
+from werkzeug import secure_filename
 from flask import Flask, request, abort
 import flask_restful
 from flask_restful import reqparse
@@ -204,6 +205,9 @@ class MP_UploadAgentPackage(MPResource):
                     return {"result": '', "errorno": 424, "errormsg": 'Failed to verify user rights'}, 424
 
             r = request
+            _files = r.files
+            _filesName = ['fBase', 'fUpdate', 'fComplete']
+
             fData = literal_eval(r.form['data'])
             fBase = r.files['fBase']
             fBaseHash = ""
@@ -231,18 +235,23 @@ class MP_UploadAgentPackage(MPResource):
                 os.makedirs(upload_dir)
 
             for f in _files:
-                agent_file = os.path.join(upload_dir, f.filename)
-                if os.path.exists(agent_file):
-                    print "Removing existing agent file " + agent_file
-                    os.remove(agent_file)
+                log_Debug('Saving: %s' % (f.filename))
+                filename = secure_filename(f.filename)
+                _pkg_file_path = os.path.join(upload_dir, filename)
 
-                f.save(agent_file)
-                if f.filename == "fBase":
-                    fBaseHash = fileHashSHA1(agent_file)
-                elif f.filename == "fUpdate":
-                    fUpdateHash = fileHashSHA1(agent_file)
+                if os.path.exists(_pkg_file_path):
+                    log_Debug('Removing existing agent file (%s)' % (_pkg_file_path))
+                    os.remove(_pkg_file_path)
+
+                f.save(_pkg_file_path)
+                if "Base.pkg" in f.filename:
+                    fBaseHash = fileHashSHA1(_pkg_file_path)
+                elif "Updater.pkg" in f.filename:
+                    fUpdateHash = fileHashSHA1(_pkg_file_path)
 
 
+            log_Debug('fBaseHash: %s' % (fBaseHash))
+            log_Debug('fUpdateHash: %s' % (fUpdateHash))
 
             # Save Agent Data to database
             log_Debug('Create Base Agent Data Record')
