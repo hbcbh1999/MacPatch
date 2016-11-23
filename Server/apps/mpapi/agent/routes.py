@@ -169,9 +169,17 @@ class MP_ConfigData(MPResource):
                 log_Error("Error getting agent config.")
                 return {"result": {}, "errorno": 425, "errormsg": "Error getting agent config."}, 425
 
+            _srv_pub_key = "NA"
+            _srv_pub_key_hash = "NA"
+            res = MpSiteKeys.query.filter(MpSiteKeys.active==1).first()
+            if res is not None:
+                _srv_pub_key = res.pubKey
+                _srv_pub_key_hash = res.pubKeyHash
+
             configPlist = plistlib.writePlistToString(config)
             log_Debug("Agent Config Result: %s" % (configPlist))
-            return {"result": {'plist': configPlist}, "errorno": 0, "errormsg": ""}, 200
+            resData = {'plist': configPlist, 'pubKey':_srv_pub_key, 'pubKeyHash':_srv_pub_key_hash}
+            return {"result": resData, "errorno": 0, "errormsg": ""}, 200
 
         except IntegrityError, exc:
             log_Error('[MP_ConfigData][Get][IntegrityError] Message: %s' % (exc.message))

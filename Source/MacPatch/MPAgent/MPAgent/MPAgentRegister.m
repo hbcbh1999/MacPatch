@@ -12,7 +12,8 @@
 #import "MPAgent.h"
 #import "MPCrypto.h"
 
-#define AUTO_REG_KEY @"999999999"
+#define AUTO_REG_KEY    @"999999999"
+#define SRV_PUB_KEY     @"/Library/Application Support/MacPatch/.keys/ServerPub.pem";
 
 #undef  ql_component
 #define ql_component lcl_cMPAgentRegister
@@ -77,8 +78,7 @@
 {
     BOOL result = FALSE;
     NSError *err = nil;
-    //NSString *res = [mpws getRegisterAgent:aRegKey hostName:hostName clientKey:clientKey error:&err];
-    //NSLog(@"%@",res);
+    
     MPKeychain *mpk = [[MPKeychain alloc] init];
     mpk.overWriteKeyChainData = self.overWriteKeyChainData;
     
@@ -105,17 +105,6 @@
     }
     NSLog(@"clientData: %@",clientData);
     
-    /*
-     err = nil;
-     MPCrypto *mpc = [[MPCrypto alloc] init];
-     SecKeyRef srvPubKeyRef = [mpc getKeyRef:pubKey];
-     NSString *encodedKey = [mpc encryptStringUsingKey:cKey key:srvPubKeyRef error:&err];
-     if (err) {
-     NSLog(@"%@",err.localizedDescription);
-     return FALSE;
-     }
-     */
-    
     return result;
 }
 
@@ -133,10 +122,8 @@
 {
     int res = 0;
     NSError *err = nil;
-    //NSString *res = [mpws getRegisterAgent:aRegKey hostName:hostName clientKey:clientKey error:&err];
-    //NSLog(@"%@",res);
-    NSString *srvPubKey = @"/Library/Application Support/MacPatch/ServerPub.pem";
-    if (![self addServerPublicKeyFileToKeychain:srvPubKey error:&err]) {
+    
+    if (![self addServerPublicKeyFileToKeychain:SRV_PUB_KEY error:&err]) {
         qlerror(@"Error adding server public key to keychain.");
         if (err) {
             qlerror(@"%@",err.localizedDescription);

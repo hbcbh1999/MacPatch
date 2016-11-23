@@ -113,6 +113,13 @@ if [ -d "${SRC}/Plugins" ]; then
 	/usr/bin/find "${SRC}"/Plugins -name '*.bundle' -exec /bin/cp -r {} /Library/MacPatch/Client/lib/PlugIns/ \;
 fi
 
+# ******************************************************************
+# Add Server Public Key ********************************************
+#
+if [ -f "${SRC}/ServerPub.pem" ]; then
+	mkdir -p "/Library/Application Support/MacPatch/.keys"
+	cp "${SRC}/ServerPub.pem" "/Library/Application Support/MacPatch/.keys/ServerPub.pem"
+fi
 
 # ******************************************************************
 # Run Client Check-in

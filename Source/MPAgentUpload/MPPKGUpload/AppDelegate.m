@@ -27,6 +27,7 @@
 #import "MPCrypto.h"
 #import "NSString+Helper.h"
 #import "WebRequest.h"
+#import <CommonCrypto/CommonDigest.h>
 
 #define MPADM_URI       @"Service/MPAdminService.cfc"
 #define MP_BASE_URI     @"/api/v1"
@@ -1286,6 +1287,10 @@
         [agentConfigImage setImage:[NSImage imageNamed:@"YesIcon"]];
         result = [[json objectForKey:@"result"] objectForKey:@"plist"];
         
+        // Write the Servers Pub key to base.pkg
+        [self writeServerPubKey:[[json objectForKey:@"result"] objectForKey:@"pubKey"]
+                           hash:[[json objectForKey:@"result"] objectForKey:@"pubKeyHash"]];
+        
         
         NSArray *pkgs1;
         
@@ -1379,6 +1384,51 @@
     [d setObject:[confDict objectForKey:@"osver"] forKey:@"osver"];
     
     return (NSDictionary *)d;
+}
+
+- (BOOL)writeServerPubKey:(NSString *)aKey hash:(NSString *)aKeyHash
+{
+    NSArray *dirFiles = [fm contentsOfDirectoryAtPath:[_tmpDir stringByAppendingPathComponent:@"MPClientInstall"] error:nil];
+    NSArray *pkgFiles = [dirFiles filteredArrayUsingPredicate:[NSPredicate  predicateWithFormat:@"self ENDSWITH '.pkg'"]];
+    NSString *fullPathSrvKey;
+    NSString *fullPathPKG;
+    for (NSString *pkg in pkgFiles)
+    {
+        fullPathPKG = [[_tmpDir stringByAppendingPathComponent:@"MPClientInstall"] stringByAppendingPathComponent:pkg];
+        if ([[pkg lastPathComponent] isEqualToString:@"Base.pkg"]) {
+            if ([fm fileExistsAtPath:[fullPathPKG stringByAppendingPathComponent:@"Scripts"]])
+            {
+                fullPathSrvKey = [fullPathPKG stringByAppendingPathComponent:@"Scripts/ServerPub.pem"];
+                [aKey writeToFile:fullPathSrvKey atomically:NO encoding:NSUTF8StringEncoding error:NULL];
+                if ([[[self md5Hash:fullPathSrvKey] lowercaseString] isEqualToString:aKeyHash.lowercaseString] ) {
+                    return YES;
+                } else {
+                    return NO;
+                }
+            }
+        }
+    }
+    
+    return NO;
+}
+
+- (NSString*)md5Hash:(NSString *)filePath
+{
+    // Create pointer to the string as UTF8
+    const char *ptr = [filePath UTF8String];
+    
+    // Create byte array of unsigned chars
+    unsigned char md5Buffer[CC_MD5_DIGEST_LENGTH];
+    
+    // Create 16 byte MD5 hash value, store in buffer
+    CC_MD5(ptr, strlen(ptr), md5Buffer);
+    
+    // Convert MD5 value in the buffer to NSString of hex values
+    NSMutableString *output = [NSMutableString stringWithCapacity:CC_MD5_DIGEST_LENGTH * 2];
+    for(int i = 0; i < CC_MD5_DIGEST_LENGTH; i++)
+        [output appendFormat:@"%02x",md5Buffer[i]];
+    
+    return output;
 }
 
 @end
