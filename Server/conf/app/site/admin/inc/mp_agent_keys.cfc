@@ -66,20 +66,6 @@
             <cfset strMsg = "Reg Key Editted">
 			<!--- Take the data, update your record. Simple. --->
 			<cftry>
-				<cfoutput>
-				<cfsavecontent variable="foo">
-					UPDATE
-						mp_clients_reg_conf
-					SET
-						autoreg = "#Arguments.autoreg#",
-						autoreg_key = "#Arguments.autoreg_key#",
-						client_parking = "#Arguments.client_parking#"
-					WHERE
-						rid = #Val(Arguments.id)#
-				</cfsavecontent>
-				</cfoutput>
-				<cflog file="agentKeys" THREAD="no" application="no" text="#foo#">
-
 				<cfquery name="editKey" datasource="#session.dbsource#">
 					UPDATE
 						mp_clients_reg_conf
@@ -90,11 +76,10 @@
 					WHERE
 						rid = #Val(Arguments.id)#
 				</cfquery>
-				
                 <cfcatch type="any">
                     <!--- Error, return message --->
                     <cfset strMsgType = "Error">
-                    <cfset strMsg = "Error occured when editting reg key. An Error report has been submitted to support. #foo#">
+                    <cfset strMsg = "Error occured when editting reg key. An Error report has been submitted to support.">
                 </cfcatch>
 			</cftry>
 		<cfelseif oper EQ "add">
