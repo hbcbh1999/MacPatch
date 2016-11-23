@@ -244,10 +244,10 @@ p.solid {border-style: solid;}
             <table align="center" width="960px">
                 <cfoutput>
                 <tr>
-                    <td>
+                    <td align="left">
                         <h3>Total Clients - #qGetTotalClient.Total#</h3>
                     </td>
-                    <td>
+                    <td align="right">
                         Server Disk Size: #disk.totalSpace#<br>Server Free Space: #disk.freeSpace#
                     </td>
                 </tr>
