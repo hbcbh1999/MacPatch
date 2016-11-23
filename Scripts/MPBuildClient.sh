@@ -130,6 +130,8 @@ productbuild --distribution ${BUILDROOT}/Combined/Distribution \
 --package-path ${BUILDROOT}/Combined/Packages \
 ${BUILDROOT}/Combined/MPClientInstall.pkg
 
+open ${BUILDROOT}/Combined/Resources
+
 # Expand the newly created package so we can add the nessasary files
 pkgutil --expand ${BUILDROOT}/Combined/MPClientInstall.pkg ${BUILDROOT}/Combined/.MPClientInstall
 
@@ -139,6 +141,7 @@ mv ${BUILDROOT}/Combined/MPClientInstall.pkg ${BUILDROOT}/Combined/.MPClientInst
 # Copy MacPatch Package Info file for the web service
 cp ${BUILDROOT}/Combined/Resources/mpInfo.ini ${BUILDROOT}/Combined/.MPClientInstall/Resources/mpInfo.ini
 cp ${BUILDROOT}/Combined/Resources/mpInfo.plist ${BUILDROOT}/Combined/.MPClientInstall/Resources/mpInfo.plist
+cp ${BUILDROOT}/Combined/Resources/Background_done.png ${BUILDROOT}/Combined/.MPClientInstall/Resources/Background_done.png
 
 # Re-compress expanded package
 pkgutil --flatten ${BUILDROOT}/Combined/.MPClientInstall ${BUILDROOT}/Combined/MPClientInstall.pkg
