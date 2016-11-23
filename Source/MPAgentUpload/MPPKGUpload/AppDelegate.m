@@ -28,6 +28,7 @@
 #import "NSString+Helper.h"
 #import "WebRequest.h"
 #import <CommonCrypto/CommonDigest.h>
+#include <stdlib.h>
 
 #define MPADM_URI       @"Service/MPAdminService.cfc"
 #define MP_BASE_URI     @"/api/v1"
@@ -535,6 +536,7 @@
         } else {
             [writeConfigImage setImage:[NSImage imageNamed:@"YesIcon"]];
         }
+        [writeConfigImage performSelectorOnMainThread:@selector(needsDisplay) withObject:nil waitUntilDone:YES];
         
         NSArray *pkgs2;
         bErr = nil;
@@ -549,6 +551,7 @@
         } else {
             [flattenPackagesImage setImage:[NSImage imageNamed:@"YesIcon"]];
         }
+        [flattenPackagesImage performSelectorOnMainThread:@selector(needsDisplay) withObject:nil waitUntilDone:YES];
         
         NSArray *pkgs3;
         bErr = nil;
@@ -563,6 +566,7 @@
         } else {
             [compressPackgesImage setImage:[NSImage imageNamed:@"YesIcon"]];
         }
+        [compressPackgesImage performSelectorOnMainThread:@selector(needsDisplay) withObject:nil waitUntilDone:YES];
         
         d = [NSUserDefaults standardUserDefaults];
         if ([d objectForKey:@"dDoNotUpload"]) {
@@ -597,14 +601,13 @@
     // Unzip it
     NSArray *tArgs = [NSArray arrayWithObjects:@"-x",@"-k",aPath,_tmpDir, nil];
     [NSTask launchedTaskWithLaunchPath:@"/usr/bin/ditto" arguments:tArgs];
-    
-    [NSThread sleepForTimeInterval:2.0];
+    [NSThread sleepForTimeInterval:5.0];
     
     NSString *pkgName = [[_tmpDir stringByAppendingPathComponent:[aPath lastPathComponent]] stringByDeletingPathExtension];
     NSString *pkgExName = [_tmpDir stringByAppendingPathComponent:@"MPClientInstall"];
     NSArray *tArgs2 = [NSArray arrayWithObjects:@"--expand", pkgName, pkgExName, nil];
     [NSTask launchedTaskWithLaunchPath:@"/usr/sbin/pkgutil" arguments:tArgs2];
-    [NSThread sleepForTimeInterval:2.0];
+    [NSThread sleepForTimeInterval:5.0];
     
     [extractImage setImage:[NSImage imageNamed:@"YesIcon"]];
 }
@@ -631,24 +634,58 @@
     }
     
     // Flatten the PKG
-    NSArray *tArgs2 = [NSArray arrayWithObjects:@"--flatten", aPKG, pkgExName, nil];
-    [NSTask launchedTaskWithLaunchPath:@"/usr/sbin/pkgutil" arguments:tArgs2];
+    NSArray *tArgs2 = [NSArray arrayWithObjects:@"/usr/sbin/pkgutil", @"--flatten", aPKG, pkgExName, nil];
+    NSString *nscmd1 = [tArgs2 componentsJoinedByString:@" "];
+    qldebug(@"%@",nscmd1);
+    const char *cmd1 = [nscmd1 UTF8String];
+    int res1 = system(cmd1);
+    if (res1 != 0) {
+        qlerror(@"Error trying to flatten %@",aPKG);
+    } else {
+        qlinfo(@"Flatten %@ succeeded.",aPKG);
+    }
     [NSThread sleepForTimeInterval:1.0];
+
     
     // If Sign, then sign each pkg
     if (signIt == YES) {
         NSString *signedPkgName = [pkgExName stringByReplacingOccurrencesOfString:@"toSign_" withString:@""];
-        NSArray *sArgs = [NSArray arrayWithObjects:@"--sign", identityName.stringValue, pkgExName, signedPkgName, nil];
-        [NSTask launchedTaskWithLaunchPath:@"/usr/bin/productsign" arguments:sArgs];
+        NSString *_identity = [NSString stringWithFormat:@"\"%@\"",identityName.stringValue];
+        NSArray *sArgs = [NSArray arrayWithObjects:@"/usr/bin/productsign", @"--sign", _identity, pkgExName, signedPkgName, nil];
+        NSString *nscmd2 = [sArgs componentsJoinedByString:@" "];
+        qldebug(@"%@",nscmd2);
+        const char *cmd2 = [nscmd2 UTF8String];
+        int res2 = system(cmd2);
+        if (res2 != 0) {
+            qlerror(@"Error trying to sign %@",aPKG);
+        } else {
+            qlinfo(@"Sign %@ succeeded",aPKG);
+        }
         [NSThread sleepForTimeInterval:1.0];
     }
 }
 
 - (void)compressPKG:(NSString *)aPKG
 {
-    NSArray *tArgs = [NSArray arrayWithObjects:@"-c",@"-k",aPKG,[aPKG stringByAppendingPathExtension:@"zip"], nil];
-    [NSTask launchedTaskWithLaunchPath:@"/usr/bin/ditto" arguments:tArgs];
-    [NSThread sleepForTimeInterval:2.0];
+    if (![fm fileExistsAtPath:aPKG]) {
+        qlerror(@"No File Exists to compress %@",aPKG);
+        qlerror(@"No File compress will occure.");
+        return;
+    }
+    
+    NSArray *tArgs = [NSArray arrayWithObjects:@"/usr/bin/ditto", @"-c",@"-k",aPKG,[aPKG stringByAppendingPathExtension:@"zip"], nil];
+    NSString *nscmd = [tArgs componentsJoinedByString:@" "];
+    qldebug(@"%@",nscmd);
+    
+    const char *cmd = [nscmd UTF8String];
+    int res = system(cmd);
+    if (res != 0) {
+        qlerror(@"Error trying to compress %@",aPKG);
+    } else {
+        qlinfo(@"Compress %@ succeeded",aPKG);
+    }
+
+    [NSThread sleepForTimeInterval:1.0];
 }
 
 - (NSArray *)writePlistForPackage:(NSString *)aPlist error:(NSError **)err
@@ -659,8 +696,11 @@
     NSArray *pkgFiles = [dirFiles filteredArrayUsingPredicate:[NSPredicate  predicateWithFormat:@"self ENDSWITH '.pkg'"]];
     NSString *fullPathScripts;
     NSString *fullPathPKG;
+    NSString *expandedPKG = [_tmpDir stringByAppendingPathComponent:@"MPClientInstall"];
     for (NSString *pkg in pkgFiles)
     {
+        
+        
         fullPathPKG = [[_tmpDir stringByAppendingPathComponent:@"MPClientInstall"] stringByAppendingPathComponent:pkg];
         fullPathScripts = [fullPathPKG stringByAppendingPathComponent:@"Scripts/gov.llnl.mpagent.plist"];
         [aPlist writeToFile:fullPathScripts atomically:NO encoding:NSUTF8StringEncoding error:NULL];
@@ -675,10 +715,14 @@
                 // Add Plugins
                 NSString *pkgScriptPlugDir = [fullPathPKG stringByAppendingPathComponent:@"Scripts/Plugins"];
                 [self addPluginsToBasePackage:pkgScriptPlugDir pluginsPath:_pluginsPathField.stringValue];
-                if ([fm fileExistsAtPath:[fullPathPKG stringByAppendingPathComponent:@"Resources/Background_done.png"]]) {
-                    [fm removeItemAtPath:[fullPathPKG stringByAppendingPathComponent:@"Resources/Background_done.png"] error:NULL];
-                    [fm moveItemAtPath:[fullPathPKG stringByAppendingPathComponent:@"Resources/Background_done.png"]
-                                toPath:[fullPathPKG stringByAppendingPathComponent:@"Resources/Background.png"]
+                if ([fm fileExistsAtPath:[expandedPKG stringByAppendingPathComponent:@"Resources/Background_done.png"]]) {
+                    NSError *rmErr = nil;
+                    [fm removeItemAtPath:[expandedPKG stringByAppendingPathComponent:@"Resources/Background.png"] error:&rmErr];
+                    if (rmErr) {
+                        qlerror(@"Error: %@",rmErr.localizedDescription);
+                    }
+                    [fm moveItemAtPath:[expandedPKG stringByAppendingPathComponent:@"Resources/Background_done.png"]
+                                toPath:[expandedPKG stringByAppendingPathComponent:@"Resources/Background.png"]
                                  error:NULL];
                 }
                 
@@ -704,7 +748,7 @@
     NSError *pFileErr = nil;
     NSArray *pFiles = [fm contentsOfDirectoryAtPath:aPluginsPath error:&pFileErr];
     if (pFileErr) {
-        NSLog(@"%@",pFileErr.localizedDescription);
+        qlerror(@"%@",pFileErr.localizedDescription);
         return;
     }
     
@@ -719,10 +763,10 @@
     
     for (NSString *plugin in pBundleFiles) {
         err = nil;
-        NSLog(@"Copy %@ to %@",[aPluginsPath stringByAppendingPathComponent:plugin],[pkgPath stringByAppendingPathComponent:plugin]);
+        qlinfo(@"Copy %@ to %@",[aPluginsPath stringByAppendingPathComponent:plugin],[pkgPath stringByAppendingPathComponent:plugin]);
         [fm copyItemAtPath:[aPluginsPath stringByAppendingPathComponent:plugin] toPath:[pkgPath stringByAppendingPathComponent:plugin] error:&err];
         if (err) {
-            NSLog(@"%@",err.localizedDescription);
+            qlerror(@"%@",err.localizedDescription);
         }
     }
 }
@@ -1256,7 +1300,7 @@
         __block NSString *result = nil;
         
         NSString *_url = [NSString stringWithFormat:@"%@://%@:%@%@/agent/config/%@",_ssl,_host,_port,MP_BASE_URI, _authToken];
-        NSLog(@"%@",_url);
+        //NSLog(@"%@",_url);
         NSMutableURLRequest *request =[[NSMutableURLRequest alloc] init];
         [request setURL:[NSURL URLWithString:_url]];
         [request setHTTPMethod:@"GET"];
@@ -1313,6 +1357,7 @@
         } else {
             [writeConfigImage setImage:[NSImage imageNamed:@"YesIcon"]];
         }
+        [writeConfigImage performSelectorOnMainThread:@selector(needsDisplay) withObject:nil waitUntilDone:YES];
         
         NSArray *pkgs2;
         bErr = nil;
@@ -1327,6 +1372,7 @@
         } else {
             [flattenPackagesImage setImage:[NSImage imageNamed:@"YesIcon"]];
         }
+        [flattenPackagesImage performSelectorOnMainThread:@selector(needsDisplay) withObject:nil waitUntilDone:YES];
         
         NSArray *pkgs3;
         bErr = nil;
@@ -1341,6 +1387,7 @@
         } else {
             [compressPackgesImage setImage:[NSImage imageNamed:@"YesIcon"]];
         }
+        [compressPackgesImage performSelectorOnMainThread:@selector(needsDisplay) withObject:nil waitUntilDone:YES];
         
         d = [NSUserDefaults standardUserDefaults];
         if ([d objectForKey:@"dDoNotUpload"]) {
@@ -1352,14 +1399,14 @@
                 [uploadButton setEnabled:YES];
                 return;
             }
+        } else {
+            [postPackagesImage setImage:[NSImage imageNamed:NSImageNameRemoveTemplate]];
+            [postPackagesImage performSelectorOnMainThread:@selector(needsDisplay) withObject:nil waitUntilDone:YES];
+            [self postFilesREST:(NSArray *)pkgs3];
+            
+            [progressBar stopAnimation:progressBar];
+            [uploadButton setEnabled:YES];
         }
-        
-        [postPackagesImage setImage:[NSImage imageNamed:NSImageNameRemoveTemplate]];
-        [postPackagesImage performSelectorOnMainThread:@selector(needsDisplay) withObject:nil waitUntilDone:YES];
-        [self postFilesREST:(NSArray *)pkgs3];
-        
-        [progressBar stopAnimation:progressBar];
-        [uploadButton setEnabled:YES];
     }
 }
 
