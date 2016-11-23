@@ -80,6 +80,7 @@ USESSL=false
 MACPROMPTFORXCODE=true
 
 MPBASE="/opt/MacPatch"
+MPSRVCONTENT="${MPBASE}/Content/Web"
 MPSERVERBASE="/opt/MacPatch/Server"
 BUILDROOT="${MPBASE}/.build/server"
 TMP_DIR="${MPBASE}/.build/tmp"
@@ -456,6 +457,7 @@ for f in $FILES
 do
   #echo "$f"
   perl -pi -e "s#\[SRVBASE\]#$MPSERVERBASE#g" $f
+  perl -pi -e "s#\[SRVCONTENT\]#$MPSRVCONTENT#g" $f
 done
 
 # ------------------

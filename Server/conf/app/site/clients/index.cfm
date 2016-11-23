@@ -26,8 +26,8 @@
             </div>
     		<p>&nbsp;</p>
     		<cfif agent_id NEQ 0>
-        		<cfset mpClientDir = #server.mpsettings.settings.paths.base# & "/Content/Web/clients/" & agent_id />
-        		<cfset mpClientDirAlt = #server.mpsettings.settings.paths.base# & "/Content/Web/clients/other" />
+        		<cfset mpClientDir = #server.mpsettings.settings.paths.content# & "/clients/" & agent_id />
+        		<cfset mpClientDirAlt = #server.mpsettings.settings.paths.content# & "/clients/other" />
                 <cfdirectory action="list" sort="datelastmodified Desc" directory="#mpClientDir#" name="getdir" filter="#agent_pkg#*.zip">
                 <div id="normalize">
                     <ul>
