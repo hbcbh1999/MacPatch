@@ -458,6 +458,17 @@ def upgrade():
     sa.Column('validToDate', sa.DateTime(), server_default='1970-01-01 00:00:00', nullable=True),
     sa.PrimaryKeyConstraint('rid')
     )
+    op.create_table('mp_site_keys',
+    sa.Column('rid', sa.BigInteger(), nullable=False, autoincrement=True),
+    sa.Column('pubKey', mysql.MEDIUMTEXT(), nullable=False),
+    sa.Column('pubKeyHash', sa.String(length=255), nullable=False),
+    sa.Column('priKey', mysql.MEDIUMTEXT(), nullable=False),
+    sa.Column('priKeyHash', sa.String(length=255), nullable=False),
+    sa.Column('active', sa.Integer(), server_default='1', nullable=True),
+    sa.Column('request_new_key', sa.Integer(), server_default='0', nullable=True),
+    sa.Column('mdate', sa.DateTime(), server_default='1970-01-01 00:00:00', nullable=True),
+    sa.PrimaryKeyConstraint('rid')
+    )
     op.create_table('mp_server_list',
     sa.Column('rid', sa.BigInteger(), nullable=False, autoincrement=True),
     sa.Column('listid', sa.String(length=50), nullable=False),
@@ -781,6 +792,7 @@ def downgrade():
     op.drop_table('mp_software_criteria')
     op.drop_table('mp_software')
     op.drop_table('mp_servers')
+    op.drop_table('mp_site_keys')
     op.drop_table('mp_server_list')
     op.drop_table('mp_reg_keys')
     op.drop_table('mp_patches_requisits')

@@ -4,7 +4,7 @@ import os
 import md5
 from flask_script import Manager, Command, Option, Server
 from flask_migrate import Migrate, MigrateCommand
-from mpdb import addDefaultData
+from mpdb import addDefaultData, resetSiteKeys, addSiteKeys
 from mpapi.extensions import db
 import hashlib
 import multiprocessing
@@ -76,15 +76,27 @@ manager.add_command('db', MigrateCommand)
 
 @manager.command
 def insert_data():
-	print 'Add Default Data To Database'
+	print 'Add Default Data to Database'
 	addDefaultData()
-	print 'Default Data Added Database'
+	print 'Default Data Added to Database'
 
 @manager.command
-def populateDB():
-	print 'Add Default Data To Database'
+def populate_db():
+	print 'Add Default Data to Database'
 	addDefaultData()
-	print 'Default Data Added Database'
+	print 'Default Data Added to Database'
+
+@manager.command
+def add_site_keys():
+	print 'Add Site Keys to Database'
+	addSiteKeys()
+	print 'Default Site Keys Added to Database'
+
+@manager.command
+def reset_site_keys():
+	print 'Reset Site Keys in Database'
+	resetSiteKeys()
+	print 'Site Keys Added to Database'
 
 
 

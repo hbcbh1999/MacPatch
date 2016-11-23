@@ -1,9 +1,10 @@
 import uuid
-import md5
+import hashlib
+import os.path
 from datetime import datetime
 from mpapi import db
 from mpapi.mputil import return_data_for_root_key
-from mpapi.model import MpClientsRegistrationSettings
+from mpapi.model import MpClientsRegistrationSettings, MpSiteKeys
 from mpapi.model import AgentConfig, AgentConfigData
 from mpapi.model import MpPatchGroup, PatchGroupMembers
 from mpapi.model import MpAsusCatalogList
@@ -12,6 +13,7 @@ from mpapi.model import MpSoftwareGroup, MpSoftwareGroupPrivs
 
 def addDefaultData():
 	addRegConfig()
+	addSiteKeys()
 	addClientConfig()
 	addDefaultPatchGroup()
 	addDefaultSWGroup()
@@ -35,6 +37,83 @@ def addRegConfig():
 	# Add Agent Config
 	db.session.add(MpClientsRegistrationSettings(autoreg="0", autoreg_key="999999999", client_parking="0"))
 	db.session.commit()
+
+# Add Site Keys  -------------------------------------------------------------
+def hasSiteKeys():
+
+	_siteData = getSiteKeyData()
+	res = MpSiteKeys.query.filter(MpSiteKeys.pubKeyHash==_siteData['pubKeyHash'],
+								  MpSiteKeys.priKeyHash==_siteData['priKeyHash'],
+								  MpSiteKeys.active==1).first()
+	if res is not None:
+		return True
+	else:
+		return False
+
+def addSiteKeys():
+	# Check for config
+	if hasSiteKeys():
+		return False
+
+	_siteData = getSiteKeyData()
+
+	# Add Site Keys
+	db.session.add(MpSiteKeys(pubKey=_siteData['pubKey'], pubKeyHash=_siteData['pubKeyHash'],
+							  priKey=_siteData['priKey'], priKeyHash=_siteData['priKeyHash'],
+							  active="1", mdate=datetime.now()))
+	db.session.commit()
+
+def resetSiteKeys():
+	# Check for config
+	if hasSiteKeys():
+		return False
+
+	_siteData = getSiteKeyData()
+
+	res = MpSiteKeys.query.filter(MpSiteKeys.active == 1).first()
+	if res is not None:
+		setattr(res, 'active', 2)
+		setattr(res, 'request_new_key', 1)
+		db.session.commit()
+
+	# Add Site Keys
+	db.session.add(MpSiteKeys(pubKey=_siteData['pubKey'], pubKeyHash=_siteData['pubKeyHash'],
+							  priKey=_siteData['priKey'], priKeyHash=_siteData['priKeyHash'],
+							  active="1", mdate=datetime.now()))
+	db.session.commit()
+
+def getSiteKeyData():
+
+	keyData = {}
+	keyData['pubKey'] = ""
+	keyData['pubKeyHash'] = ""
+	keyData['priKey'] = ""
+	keyData['priKeyHash'] = ""
+
+	_priKeyPath = ""
+	_pubKeyPath = ""
+
+	srv_dict = return_data_for_root_key('server')
+
+	if all(k in srv_dict for k in ("priKey", "pubKey")):
+		_priKeyPath = srv_dict['priKey']
+		_pubKeyPath = srv_dict['pubKey']
+
+	if os.path.exists(_priKeyPath) and os.path.exists(_pubKeyPath):
+		keyData['priKeyHash'] = md5ForFile(_priKeyPath)
+		keyData['pubKeyHash'] = md5ForFile(_pubKeyPath)
+
+		keyData['pubKey'] = open(_pubKeyPath, 'r').read()
+		keyData['priKey'] = open(_priKeyPath, 'r').read()
+
+	return keyData
+
+def md5ForFile(fname):
+    hash_md5 = hashlib.md5()
+    with open(fname, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()
 
 # Agent Config ---------------------------------------------------------------
 def hasClientConfig():

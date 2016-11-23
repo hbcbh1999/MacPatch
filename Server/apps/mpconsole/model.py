@@ -1,6 +1,6 @@
 from mpconsole import db
 
-# Rev 4
+# Rev 5
 #
 
 from datetime import *
@@ -166,6 +166,22 @@ class MpRegKeys(CommonBase):
     validFromDate = Column(DateTime, nullable=True, server_default='1970-01-01 00:00:00')
     validToDate = Column(DateTime, nullable=True, server_default='1970-01-01 00:00:00')
 
+# mp_site_keys
+class MpSiteKeys(CommonBase):
+    __tablename__ = 'mp_site_keys'
+
+    rid = Column(BigInteger, primary_key=True, nullable=False, autoincrement=True)
+    pubKey = Column(MEDIUMTEXT(), nullable=False)
+    pubKeyHash = Column(String(255), nullable=False)
+    priKey = Column(MEDIUMTEXT(), nullable=False)
+    priKeyHash = Column(String(255), nullable=False)
+    active = Column(Integer, nullable=True, server_default='1')
+    request_new_key = Column(Integer, nullable=True, server_default='0')
+    mdate = Column(DateTime, nullable=True, server_default='1970-01-01 00:00:00')
+
+
+# ------------------------------------------
+## Main
 
 # mp_clients
 class MpClient(CommonBase):
