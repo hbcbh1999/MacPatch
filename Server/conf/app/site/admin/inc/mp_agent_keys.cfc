@@ -71,7 +71,6 @@
 						mp_clients_reg_conf
 					SET
 						autoreg = <cfqueryparam value="#Arguments.autoreg#">,
-						autoreg_key = <cfqueryparam value="#Arguments.autoreg_key#">,
 						client_parking = <cfqueryparam value="#Arguments.client_parking#">
 					WHERE
 						rid = #Val(Arguments.id)#
