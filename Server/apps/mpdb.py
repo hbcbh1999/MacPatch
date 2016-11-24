@@ -162,7 +162,7 @@ def getRevisonForConfig(configID):
 			reslst.append(i.akeyValue.lower())
 
 		reslststr = "".join(reslst)
-		configHash = md5.md5(reslststr).hexdigest()
+		configHash = hashlib.md5(reslststr).hexdigest()
 
 		return configHash
 	else:
