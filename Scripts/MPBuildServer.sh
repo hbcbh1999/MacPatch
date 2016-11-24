@@ -319,7 +319,7 @@ if $USELINUX; then
   if $USERHEL; then
     # Check if needed packges are installed or install
     # "mysql-connector-python" 
-    pkgs=("gcc" "gcc-c++" "python-pip" "java-1.8.0-openjdk" "java-1.8.0-openjdk-devel" "zlib-devel" "pcre-devel" "openssl-devel" "python-devel")
+    pkgs=("gcc" "gcc-c++" "java-1.8.0-openjdk" "java-1.8.0-openjdk-devel" "zlib-devel" "pcre-devel" "openssl-devel" "python-devel" "python-pip")
   
     for i in "${pkgs[@]}"
     do
