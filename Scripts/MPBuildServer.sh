@@ -332,7 +332,7 @@ if $USELINUX; then
 
   elif $USEUBUNTU; then
     #statements
-    pkgs=("build-essential" "zlib1g-dev" "libpcre3-dev" "libssl-dev" "openjdk-8-jdk" "openjdk-8-jdk-headless" "python-dev" "python-pip" )
+    pkgs=("build-essential" "zlib1g-dev" "libpcre3-dev" "libssl-dev" "openjdk-8-jdk" "openjdk-8-jdk-headless" "python-dev" "python-pip" "swig")
     for i in "${pkgs[@]}"
     do
       p=`dpkg -l | grep '^ii' | grep ${i} | head -n 1 | awk '{print $2}' | grep ^${i}`
