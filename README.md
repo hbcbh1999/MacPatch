@@ -36,7 +36,26 @@ MacPatch offers features and functionality that provide Mac OS X administrators 
 * Python 2.7
 * Java v1.8 or higher (Java 8 may not available in older distributions of Linux)
 * MySQL version 5.1 or higher, MySQL 5.6.x is recommended.
-* ***Note: MySQL 5.7 is not supported***
+
+####MySQL
+
+While MySQL 5.6 is still the recommended database version. MySQL 5.7 has been out for some time now. MySQL changed the sql_mode settings in 5.7 which broke some queries in MacPatch. In order to use MacPatch with MySQL 5.7 the **sql_mode** setting will have to be changed.
+
+To view and set the config use 
+	
+	SELECT @@GLOBAL.sql_mode;
+	SET GLOBAL sql_mode = 'modes';
+
+The default SQL mode in MySQL 5.7 includes these modes: 
+	
+	ONLY_FULL_GROUP_BY, STRICT_TRANS_TABLES, NO_ZERO_IN_DATE, NO_ZERO_DATE, ERROR_FOR_DIVISION_BY_ZERO, NO_AUTO_CREATE_USER, and NO_ENGINE_SUBSTITUTION.
+	
+The default SQL mode in MySQL 5.6 includes this mode: 
+
+	NO_ENGINE_SUBSTITUTION
+
+Preliminary testing has been successful when removing the **ONLY\_FULL\_GROUP\_BY** mode.
+
 
 ## Install and Setup
 To get MacPatch up and running use the QuickStart docs from the macpatch.github.io website.
