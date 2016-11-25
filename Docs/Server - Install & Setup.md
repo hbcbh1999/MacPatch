@@ -6,7 +6,8 @@ This document will walk you through the install and setup of the MacPatch 3.x en
 
 ### Table of Contents
 * [Required Software](#a1)
-* [Prequisits](#a2) 
+* [Prequisits](#a2)
+	* [MySQL](#a2a) 
 * [Download, Setup and Install](#a3)
 	* [Get Software] (#a3a)
 	* [Setup Database] (#a3b)
@@ -34,12 +35,31 @@ root or sudo access will be needed to perform these tasks.
 		- RHEL 7.x or CentOS 7.x
 		- Ubuntu Server 16.04
 - RAM: 4 Gig min
-- MySQL 5.6.x (5.7.x is not supported)
+- MySQL (5.6.x is Recommended)
 - JAVA JDK 1.8.x
 
 #### Prequisits <a name='a2'></a>
 - Install MySQL 5.6.x (must have root password)
 - If Installing on Mac OS X, Xcode and command line developer tools need to be installed **AND** the license agreement needs to have been accepted.
+
+#####MySQL <a name='a2a'></a>
+
+While MySQL 5.6 is still the recommended database version. MySQL 5.7 has been out for some time now. MySQL changed the sql_mode settings in 5.7 which broke some queries in MacPatch. In order to use MacPatch with MySQL 5.7 the **sql\_mode** setting will have to be changed.
+
+To view and set the config use 
+	
+	SELECT @@GLOBAL.sql_mode;
+	SET GLOBAL sql_mode = 'modes';
+
+The default SQL mode in MySQL 5.7 includes these modes: 
+	
+	ONLY_FULL_GROUP_BY, STRICT_TRANS_TABLES, NO_ZERO_IN_DATE, NO_ZERO_DATE, ERROR_FOR_DIVISION_BY_ZERO, NO_AUTO_CREATE_USER, and NO_ENGINE_SUBSTITUTION.
+	
+The default SQL mode in MySQL 5.6 includes this mode: 
+
+	NO_ENGINE_SUBSTITUTION
+
+Preliminary testing has been successful when removing the **ONLY\_FULL\_GROUP\_BY** mode.
 
 ### Download, Setup and Install <a name='a3'></a>
 

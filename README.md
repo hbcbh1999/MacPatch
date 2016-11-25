@@ -39,7 +39,7 @@ MacPatch offers features and functionality that provide Mac OS X administrators 
 
 ####MySQL
 
-While MySQL 5.6 is still the recommended database version. MySQL 5.7 has been out for some time now. MySQL changed the sql_mode settings in 5.7 which broke some queries in MacPatch. In order to use MacPatch with MySQL 5.7 the **sql_mode** setting will have to be changed.
+While MySQL 5.6 is still the recommended database version. MySQL 5.7 has been out for some time now. MySQL changed the sql_mode settings in 5.7 which broke some queries in MacPatch. In order to use MacPatch with MySQL 5.7 the **sql\_mode** setting will have to be changed.
 
 To view and set the config use 
 	
