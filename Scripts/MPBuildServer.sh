@@ -369,7 +369,7 @@ do
       sleep 2
       echo
       echo " - Trying ${p}, python module again."
-      pip install --quiet --upgrade --trusted-host pypi.python.org ${p}
+      pip install --egg --quiet --upgrade --trusted-host pypi.python.org ${p}
       if [ $? != 0 ] ; then
         echo " Error installing ${p}"
       fi
