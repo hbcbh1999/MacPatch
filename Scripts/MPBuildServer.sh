@@ -329,6 +329,21 @@ if $USELINUX; then
         yum install -y -q -e 1 ${i}
       fi
     done
+
+  elif $USEUBUNTU; then
+    #statements
+    pkgs=("build-essential" "zlib1g-dev" "libpcre3-dev" "libssl-dev" "openjdk-8-jdk" "openjdk-8-jdk-headless" "python-dev" "python-pip" )
+    for i in "${pkgs[@]}"
+    do
+      p=`dpkg -l | grep '^ii' | grep ${i} | head -n 1 | awk '{print $2}' | grep ^${i}`
+      if [ -z $p ]; then
+        echo
+        echo "Install $i"
+        echo
+        apt-get build-dep ${i} -y
+      fi
+    done
+
   fi
 fi
 
