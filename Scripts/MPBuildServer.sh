@@ -340,7 +340,7 @@ if $USELINUX; then
         echo
         echo "Install $i"
         echo
-        apt-get build-dep install ${i} -y
+        apt-get install ${i} -y
       fi
     done
 
