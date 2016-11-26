@@ -1399,14 +1399,14 @@
                 [uploadButton setEnabled:YES];
                 return;
             }
-        } else {
-            [postPackagesImage setImage:[NSImage imageNamed:NSImageNameRemoveTemplate]];
-            [postPackagesImage performSelectorOnMainThread:@selector(needsDisplay) withObject:nil waitUntilDone:YES];
-            [self postFilesREST:(NSArray *)pkgs3];
-            
-            [progressBar stopAnimation:progressBar];
-            [uploadButton setEnabled:YES];
         }
+        
+        [postPackagesImage setImage:[NSImage imageNamed:NSImageNameRemoveTemplate]];
+        [postPackagesImage performSelectorOnMainThread:@selector(needsDisplay) withObject:nil waitUntilDone:YES];
+        [self postFilesREST:(NSArray *)pkgs3];
+        
+        [progressBar stopAnimation:progressBar];
+        [uploadButton setEnabled:YES];
     }
 }
 
