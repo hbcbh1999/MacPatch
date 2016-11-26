@@ -130,8 +130,6 @@ productbuild --distribution ${BUILDROOT}/Combined/Distribution \
 --package-path ${BUILDROOT}/Combined/Packages \
 ${BUILDROOT}/Combined/MPClientInstall.pkg
 
-open ${BUILDROOT}/Combined/Resources
-
 # Expand the newly created package so we can add the nessasary files
 pkgutil --expand ${BUILDROOT}/Combined/MPClientInstall.pkg ${BUILDROOT}/Combined/.MPClientInstall
 
