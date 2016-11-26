@@ -130,8 +130,8 @@ def addClientConfig():
 
 	agentConf = { "AllowClient": "1", "AllowServer": "0", "Description": "Defautl Agent Config",
 					"Domain": "Default", "PatchGroup": "Default", "Reboot": "1", "SWDistGroup": "Default",
-					"MPProxyServerAddress": "AUTOFILL", "MPProxyServerPort": "2600", "MPProxyEnabled": "0",
-					"MPServerAddress": "AUTOFILL", "MPServerPort": "2600", "MPServerSSL": "1",
+					"MPProxyServerAddress": "AUTOFILL", "MPProxyServerPort": "3600", "MPProxyEnabled": "0",
+					"MPServerAddress": "AUTOFILL", "MPServerPort": "3600", "MPServerSSL": "1",
 					"CheckSignatures": "0", "MPServerAllowSelfSigned": "0"
 				}
 
@@ -252,7 +252,7 @@ def addDefaultServerConfig():
 		return False
 
 	# Add Agent Config
-	db.session.add(MpServer(listid='1', server="localhost", port="2600", useSSL='1', useSSLAuth='0', allowSelfSignedCert='1', isMaster='1', isProxy='0', active='0'))
+	db.session.add(MpServer(listid='1', server="localhost", port="3600", useSSL='1', useSSLAuth='0', allowSelfSignedCert='1', isMaster='1', isProxy='0', active='0'))
 	db.session.commit()
 
 def hasDefaultServerList():
