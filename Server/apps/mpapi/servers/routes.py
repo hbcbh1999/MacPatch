@@ -106,6 +106,7 @@ class SUServerList(MPResource):
 
             _servers = []
             _catalog = {'os': osminor, 'servers': []}
+            _server_dict = {}
             if q_cats is not None:
                 for row in q_cats:
                     if row.proxy == 1:

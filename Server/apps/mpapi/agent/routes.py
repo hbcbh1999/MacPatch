@@ -598,6 +598,8 @@ class GenAgentConfig():
         _enforced = {}
 
         for row in _agentConfig:
+            print row.asDict
+
             if row.enforced == 0:
                 if 'Proxy' in row.akey:
                     defaultProxy = True
@@ -618,10 +620,12 @@ class GenAgentConfig():
             _default['MPServerAddress'] = masterConf['MPServerAddress']
             _default['MPServerPort']    = masterConf['MPServerPort']
             _default['MPServerSSL']     = masterConf['MPServerSSL']
+            _default['MPServerAllowSelfSigned'] = masterConf['MPServerAllowSelfSigned']
         else:
             _enforced['MPServerAddress'] = masterConf['MPServerAddress']
             _enforced['MPServerPort'] = masterConf['MPServerPort']
             _enforced['MPServerSSL'] = masterConf['MPServerSSL']
+            _enforced['MPServerAllowSelfSigned'] = masterConf['MPServerAllowSelfSigned']
 
         if defaultProxy:
             _default['MPProxyServerAddress'] = proxyConf['MPProxyServerAddress']
@@ -634,6 +638,8 @@ class GenAgentConfig():
 
         _aConfig["default"] = _default
         _aConfig["enforced"] = _enforced
+
+        print _aConfig
 
         return _aConfig
 
@@ -648,7 +654,6 @@ class GenAgentConfig():
                 _res['MPProxyServerPort'] = _server.port
                 _res['MPProxyEnabled'] = _server.useSSL
             else:
-                print "No Data for Master Server found."
                 _res['MPProxyServerAddress'] = "localhost"
                 _res['MPProxyServerPort'] = 2600
                 _res['MPProxyEnabled'] = 0
@@ -660,6 +665,7 @@ class GenAgentConfig():
                 _res['MPServerAddress'] = _server.server
                 _res['MPServerPort'] = _server.port
                 _res['MPServerSSL'] = _server.useSSL
+                _res['MPServerAllowSelfSigned'] = _server.allowSelfSignedCert
                 return _res
             else:
                 log_Error("[serverDataOfType]: No Data for Master Server found.")
