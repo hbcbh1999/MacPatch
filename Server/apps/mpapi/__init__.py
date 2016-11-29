@@ -1,6 +1,7 @@
 import os
 import logging, logging.handlers
 import json
+import subprocess
 from flask import Flask
 from mpapi.config import DevelopmentConfig, ProductionConfig
 from mpapi.extensions import db, migrate
@@ -35,7 +36,12 @@ def create_app(config_object=DefaultConfig):
     # Configure logging
     # handler = logging.FileHandler(app.config['LOGGING_LOCATION'])
     # handler = logging.handlers.RotatingFileHandler(app.config['LOGGING_LOCATION'], maxBytes=20, backupCount=30)
-    handler = logging.handlers.TimedRotatingFileHandler(app.config['LOGGING_LOCATION'], when='midnight', interval=1, backupCount=30)
+    log_file = app.config['LOGGING_LOCATION'] + "/mpwsapi.log"
+    if not os.path.exists(app.config['LOGGING_LOCATION']):
+		os.makedirs(app.config['LOGGING_LOCATION'])
+		subprocess.call(['chmod', '2775', app.config['LOGGING_LOCATION']])
+
+    handler = logging.handlers.TimedRotatingFileHandler(log_file, when='midnight', interval=1, backupCount=30)
     handler.setLevel(app.config['LOGGING_LEVEL'])
     formatter = logging.Formatter(app.config['LOGGING_FORMAT'])
     handler.setFormatter(formatter)
