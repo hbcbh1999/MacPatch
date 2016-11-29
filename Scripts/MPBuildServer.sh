@@ -319,7 +319,7 @@ if $USELINUX; then
   if $USERHEL; then
     # Check if needed packges are installed or install
     # "mysql-connector-python" 
-    pkgs=("gcc" "gcc-c++" "java-1.8.0-openjdk" "java-1.8.0-openjdk-devel" "zlib-devel" "pcre-devel" "openssl-devel" "python-devel" "python-pip" "swig")
+    pkgs=("gcc" "gcc-c++" "java-1.8.0-openjdk" "java-1.8.0-openjdk-devel" "zlib-devel" "pcre-devel" "openssl-devel" "python-devel" "python-setuptools" "python-wheel" "python-pip" "swig")
   
     for i in "${pkgs[@]}"
     do
@@ -507,24 +507,15 @@ MPTOMCAT="${MPSERVERBASE}/apache-tomcat"
 
 echo " - Copy console.war to ${MPTOMCAT}/webapps"
 cp "${MPSERVERBASE}/conf/app/war/site/console.war" "${MPTOMCAT}/webapps"
+cp "${MPTCCONF}/bin/setenv.sh" "${MPTOMCAT}/bin/setenv.sh"
+
 if $USEMACOS; then
-  cp "${MPTCCONF}/bin/setenv.sh.sml" "${MPTOMCAT}/bin/setenv.sh"
   cp "${MPTCCONF}/bin/launchdTomcat.sh" "${MPTOMCAT}/bin/launchdTomcat.sh"
   cp -r "${MPTCCONF}/conf/server_mac.xml" "${MPTOMCAT}/conf/server.xml"
 elif $USELINUX; then
-  msize=`awk '{ printf "%.2f", $2/1024/1024 ; exit}' /proc/meminfo`
-  if (( $(echo "$msize <= 4" | bc -l) )); then
-    cp "${MPTCCONF}/bin/setenv.sh.sml" "${MPTOMCAT}/bin/setenv.sh"
-  elif (( $(echo "$msize < 8" | bc -l) )); then
-    cp "${MPTCCONF}/bin/setenv.sh.med" "${MPTOMCAT}/bin/setenv.sh"
-  elif (( $(echo "$msize > 8" | bc -l) )); then
-    echo "Config was undetermined, using small server tomcat config."
-    "${MPTCCONF}/bin/setenv.sh.lrg" "${MPTOMCAT}/bin/setenv.sh"
-  else
-    cp "${MPTCCONF}/bin/setenv.sh.sml" "${MPTOMCAT}/bin/setenv.sh"
-  fi
   cp -r "${MPTCCONF}/conf/server_lnx.xml" "${MPTOMCAT}/conf/server.xml"
 fi
+
 cp -r "${MPTCCONF}/conf/Catalina" "${MPTOMCAT}/conf/"
 cp -r "${MPTCCONF}/conf/web.xml" "${MPTOMCAT}/conf/web.xml"
 chmod -R 0775 "${MPTOMCAT}"

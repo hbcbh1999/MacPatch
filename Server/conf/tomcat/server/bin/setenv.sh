@@ -1,15 +1,13 @@
 #!/bin/sh
 
 export CATALINA_OPTS="$CATALINA_OPTS -server -d64 -Djava.awt.headless=true"
-export CATALINA_OPTS="$CATALINA_OPTS -Xms2g"
-export CATALINA_OPTS="$CATALINA_OPTS -Xmx2g"
-export CATALINA_OPTS="$CATALINA_OPTS -XX:PermSize=256m"
+export CATALINA_OPTS="$CATALINA_OPTS -Xms1g"
+export CATALINA_OPTS="$CATALINA_OPTS -Xmx1g"
+export CATALINA_OPTS="$CATALINA_OPTS -XX:PermSize=128m"
 export CATALINA_OPTS="$CATALINA_OPTS -XX:MaxPermSize=256m"
-export CATALINA_OPTS="$CATALINA_OPTS -XX:NewSize=256m"
+export CATALINA_OPTS="$CATALINA_OPTS -XX:NewSize=128m"
 export CATALINA_OPTS="$CATALINA_OPTS -XX:MaxNewSize=256m"
 export CATALINA_OPTS="$CATALINA_OPTS -XX:+UseParallelGC"
-
-#export CATALINA_OPTS="$CATALINA_OPTS -Djava.library.path=/opt/MacPatch/Server/lib/java"
 export CATALINA_OPTS="$CATALINA_OPTS -Djavax.net.ssl.trustStore=/opt/MacPatch/Server/etc/jsseCerts/jssecacerts"
 export JAVA_OPTS="$JAVA_OPTS -Djavax.net.ssl.trustStore=/opt/MacPatch/Server/etc/jsseCerts/jssecacerts"	
  
