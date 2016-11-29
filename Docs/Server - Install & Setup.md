@@ -75,14 +75,14 @@ The database setup script only creates the MacPatch database and the 2 database 
 Please remeber the passwords for mpdbadm and mpdbro accounts while running this script. They will be required during the SetupServer.py script database section.
 
 		cd /opt/MacPatch/Server/conf/scripts/setup
-		MPDBSetup.sh (must be run on the MySQL server)
+		./MPDBSetup.sh (must be run on the MySQL server)
 
 **Note:** The MPDBSetup.sh ***can be/should be*** copied to another host if the database exists on a seperate server.
 	
 ##### Install Software <a name='a3c'></a>
 	
 		cd /opt/MacPatch/scripts
-		sudo MPBuildServer.sh	
+		sudo ./MPBuildServer.sh	
 		
 **Note:** If your behind a SSL content inspector add the custom ca using
 		
@@ -91,14 +91,14 @@ Please remeber the passwords for mpdbadm and mpdbro accounts while running this 
 ##### Configure Server Software <a name='a3d'></a>
 	
 		cd /opt/MacPatch/Server/conf/scripts/setup
-		sudo ServerSetup.py --setup
+		sudo ./ServerSetup.py --setup
 	
 ##### Configure MacPatch schema & populate default data <a name='a3f'></a>
 		
 		cd /opt/MacPatch/Server/apps
 		source env/bin/activate
-		mpapi.py db upgrade head
-		mpapi.py populate_db
+		./mpapi.py db upgrade head
+		./mpapi.py populate_db
 		deactivate
 		
 **Note:** If "mpapi.py db upgrade head" is done using a root shell. Please delete the "/opt/MacPatch/Server/logs/mpwsapi.log" file. It will be owned by root and the REST api will not launch.
@@ -106,7 +106,7 @@ Please remeber the passwords for mpdbadm and mpdbro accounts while running this 
 ##### Start Services
 		
 		cd /opt/MacPatch/Server/conf/scripts/setup
-		sudo ServerSetup.py --load All
+		sudo ./ServerSetup.py --load All
 
 --
 
