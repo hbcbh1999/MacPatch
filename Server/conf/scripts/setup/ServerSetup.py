@@ -159,7 +159,6 @@ def passwordEntry():
 
 	return pass1
 
-
 def repairPermissions():
 	try:
 		if os_type == "Darwin":
@@ -867,6 +866,7 @@ class MPConfigDefaults:
 			json.dump(config, outfile, indent=4)
 
 	def genConfigDefaults(self):
+		print "Loading initial configuration data ..."
 		conf = self.loadConfig()
 
 		# Paths
@@ -880,6 +880,7 @@ class MPConfigDefaults:
 		if not os.path.exists(MP_SRV_KEYS):
 			os.makedirs(MP_SRV_KEYS)
 		
+		print "Generating server keys ..."
 		pub_key = MP_SRV_KEYS + "/server_pub.pem"
 		pri_key = MP_SRV_KEYS + "/server_pri.pem"
 		if not os.path.exists(pub_key) and not os.path.exists(pri_key):
@@ -911,12 +912,17 @@ def main():
 	group.add_argument('--load', help="Load/Start Services", required=False)
 	group.add_argument('--cron', help="Load/Start Cron Services", required=False)
 	group.add_argument('--unload', help='Unload/Stop Services', required=False)
+	group.add_argument('--permissions', help='Reset permissions', required=False)
 	args = parser.parse_args()
 
-	# First Repair permissions
-	# repairPermissions()
-
+	if args.permissions == True:
+		repairPermissions()
+		return
+	
 	if args.setup != False:
+		# First Repair permissions
+		repairPermissions()
+
 		srvconf = MPConfigDefaults()
 		srvconf.genConfigDefaults()
 
