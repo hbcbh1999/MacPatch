@@ -6,8 +6,9 @@ This document will walk you through the install and setup of the MacPatch 3.x en
 
 ### Table of Contents
 * [Required Software](#a1)
-* [Prequisits](#a2)
-	* [MySQL](#a2a) 
+* [Perquisites](#a2)
+	* [Linux Packages] (#a2a)
+	* [MySQL](#a2b)
 * [Download, Setup and Install](#a3)
 	* [Get Software] (#a3a)
 	* [Setup Database] (#a3b)
@@ -38,11 +39,26 @@ root or sudo access will be needed to perform these tasks.
 - MySQL (5.6.x is Recommended)
 - JAVA JDK 1.8.x
 
-#### Prequisits <a name='a2'></a>
+#### Perquisites <a name='a2'></a>
 - Install MySQL 5.6.x (must have root password)
-- If Installing on Mac OS X, Xcode and command line developer tools need to be installed **AND** the license agreement needs to have been accepted.
+- If Installing on Mac OS X, **Xcode and command line developer tools** need to be installed **AND** the license agreement needs to have been accepted.
 
-#####MySQL <a name='a2a'></a>
+#####Linux Packages <a name='a2a'></a>
+
+The MacPatch server build script will attempt to install a number of required software packages there are a few packages that are recommended that be installed prior to running the build script.
+
+**RedHat & CentOS**
+
+RedHat & CentOS will require the "Development tools" group install. This group has a number of packages needed to build the MacPatch server. 
+
+	yum groupinstall "Development tools"
+	yum install epel-release
+	
+**Ubuntu**
+
+	apt-get install build-essential
+
+#####MySQL <a name='a2b'></a>
 
 While MySQL 5.6 is still the recommended database version. MySQL 5.7 has been out for some time now. MySQL changed the sql_mode settings in 5.7 which broke some queries in MacPatch. In order to use MacPatch with MySQL 5.7 the **sql\_mode** setting will have to be changed.
 
