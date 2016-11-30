@@ -574,6 +574,9 @@ echo "* Create Virtualenv for Web services app"
 echo "-----------------------------------------------------------------------"
 
 cd "${MPSERVERBASE}/apps"
+mkdir -p "${MPSERVERBASE}/apps/log"
+chown $OWNERGRP "${MPSERVERBASE}/apps/log"
+chmod 2777 "${MPSERVERBASE}/apps/log"
 virtualenv --no-site-packages env
 source env/bin/activate
 python install.py
