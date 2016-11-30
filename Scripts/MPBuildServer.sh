@@ -574,7 +574,7 @@ echo "* Create Virtualenv for Web services app"
 echo "-----------------------------------------------------------------------"
 
 cd "${MPSERVERBASE}/apps"
-virtualenv --no-site-packages --always-copy --relocatable env
+virtualenv --no-site-packages env
 source env/bin/activate
 python install.py
 deactivate
