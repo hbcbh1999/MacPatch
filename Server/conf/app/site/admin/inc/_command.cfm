@@ -69,6 +69,9 @@
                             <cfcase value="CheckSignatures"> 
 						        <cfset fKeyName = "CheckSignatures">
 						    </cfcase>
+						    <cfcase value="registrationEnabled"> 
+						        <cfset fKeyName = "registrationEnabled">
+						    </cfcase>
 						</cfswitch>
 						<cfquery datasource="#session.dbsource#" name="addConfigData">
 							Insert Into mp_agent_config_data (aid, aKey, aKeyValue, enforced)
@@ -153,6 +156,9 @@
 						    </cfcase>
                             <cfcase value="CheckSignatures"> 
 						        <cfset efKeyName = "CheckSignatures">
+						    </cfcase>
+						    <cfcase value="registrationEnabled"> 
+						        <cfset efKeyName = "registrationEnabled">
 						    </cfcase>
 						</cfswitch>
 						
