@@ -95,6 +95,9 @@
  */
 - (NSString *)secKeyDecrypt:(SecKeyRef)aKey padding:(SecPadding)aSecPadding stringToDecrypt:(NSString *)AstringToDecrypt error:(NSError **)err;
 
+/*! Creates RSA/PEM Key Pair for client registration
+ * \returns NSDictionary with keys
+ */
 - (NSDictionary *)rsaKeysForRegistration:(NSError **)error;
 
 @end

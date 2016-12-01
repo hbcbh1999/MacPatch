@@ -72,6 +72,7 @@
 
 - (OSStatus)keychainRefFromFile:(NSString *)aKeychainFilePath
 {
+    logit(lcl_vError,@"Does nothing");
     return noErr;
 }
 
@@ -85,16 +86,21 @@
         result = SecKeychainCreate([aKeychainFilePath fileSystemRepresentation], (UInt32)strlen(uuid), uuid, FALSE, NULL, &aKeychainItem);
         keychainItem = aKeychainItem;
     } else {
+        /*
         result = SecKeychainSetUserInteractionAllowed(FALSE);
         if ( result ) {
+            logit(lcl_vError,@"[SecKeychainSetUserInteractionAllowed] %@",[self errorForOSStatus:result].localizedDescription);
             return result;
         }
+         */
         result = SecKeychainOpen([aKeychainFilePath fileSystemRepresentation], &keychainItem);
         if (result != 0) {
+            logit(lcl_vError,@"[SecKeychainOpen] %@",[self errorForOSStatus:result].localizedDescription);
             NSLog(@"%@",[self errorForOSStatus:result].localizedDescription);
         }
         result = SecKeychainUnlock(keychainItem, (UInt32)strlen(uuid), uuid, TRUE);
         if (result != 0) {
+            logit(lcl_vError,@"[SecKeychainUnlock] %@",[self errorForOSStatus:result].localizedDescription);
             NSLog(@"%@",[self errorForOSStatus:result].localizedDescription);
         }
     }
@@ -262,9 +268,11 @@
         NSDictionary *storedDictionary = [NSKeyedUnarchiver unarchiveObjectWithData:data];
         return storedDictionary;
     } else if (osStatus == errSecItemNotFound) {
+        NSLog(@"%@",[self errorForOSStatus:osStatus].localizedDescription);
         return nil;
     } else {
         if (err != NULL) {
+            NSLog(@"%@",[self errorForOSStatus:osStatus].localizedDescription);
             *err = [self errorForOSStatus:osStatus];
         }
         return nil;

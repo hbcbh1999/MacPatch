@@ -69,6 +69,8 @@ extern NSString * const kMPPatchUPDATE;
 extern NSString * const kMPInventory;
 extern NSString * const kMPAVUpdate;
 
+extern NSString * const MP_KEYCHAIN_FILE;
+
 @interface Constants : NSObject {
 
 }

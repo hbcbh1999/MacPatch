@@ -91,6 +91,8 @@
 #import "MPCrypto.h"
 #import "MPCodeSign.h"
 #import "MPKeychain.h"
+#import "MPKeyItem.h"
+#import "MPSimpleKeychain.h"
 
 // Helpers
 #import "NSString+Helper.h"

@@ -1,5 +1,5 @@
 //
-//  MPCrypto.m
+//  MPSimpleKeychain.m
 /*
  Copyright (c) 2013, Lawrence Livermore National Security, LLC.
  Produced at the Lawrence Livermore National Laboratory (cf, DISCLAIMER).
@@ -23,503 +23,390 @@
  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#import "MPCrypto.h"
-#import <CommonCrypto/CommonDigest.h>
+#import "MPSimpleKeychain.h"
+#import "MPKeyItem.h"
 #import <Security/Security.h>
+#import <CommonCrypto/CommonDigest.h>
+#include <sys/types.h>
+#include <sys/sysctl.h>
 
-#define BUF_SIZE 4096
+#define ACCESS_LABEL    @"MPSimpleKeychainAccess"
+#define ACCOUNT_LABEL   @"MacPatch-Service"
 
-@interface MPCrypto (hidden)
+@interface MPSimpleKeychain () {
+    SecKeychainRef xKeychain;
+    NSString *keyChainFile;
+}
 
-- (NSString *)MD5HashForFile:(NSString *)aFilePath;
-- (NSString *)SHA1HashForFile:(NSString *)aFilePath;
+@property (nonatomic) ServiceType type;
 
-- (NSString *)MD5FromString:(NSString *)inputStr;
-- (NSString *)SHA1FromString:(NSString *)inputStr;
+- (BOOL)keychainIsUnlocked;
+- (NSDictionary *)serviceTypeNames;
+- (NSString *)nameForServiceType:(ServiceType)aService;
+- (SecAccessRef)createAccessRefWithLabel:(NSString *)label error:(NSError **)err;
 
-- (SecKeychainRef)genSecKeychainRef;
+- (NSString *)clientInfo;
+- (NSString *)md5HexDigest:(NSString*)input;
+- (NSString *)sha1HexDigest:(NSString*)input;
+- (NSString *)clientUUID;
+- (NSString *)modelInfo;
 
+- (NSError *)errorWithCode:(NSInteger)code message:(NSString *)message;
 @end
 
+@implementation MPSimpleKeychain
 
-@implementation MPCrypto
+- (id)initWithKeychainFile:(NSString *)aKeyChainFile
 {
-    SecKeychainRef keychainItem;
-    SecKeyRef localPrivateKey;
-    SecKeyRef localPublicKey;
-}
-
-#pragma mark -
-#pragma mark Public API Digest Hashing
-
--(NSString *)getHashFromStringForType:(NSString *)inputStr type:(NSString *)aType
-{
-    if ([aType isEqualToString:@"MD5"]) {
-        return [self MD5FromString:inputStr];
-    } else if ([aType isEqualToString:@"SHA1"]) {
-        return [self SHA1FromString:inputStr];
-    }
-    
-    return NULL;
-}
-
--(NSString *)getHashForFileForType:(NSString *)aFile type:(NSString *)aType
-{
-    if ([[NSFileManager defaultManager] fileExistsAtPath:aFile] == FALSE) {
-        qlerror(@"Unable to get file hash for %@, file does not exist.",aFile);
-        return @"ERROR_FILE_MISSING";
-    }
-    
-    if ([aType isEqualToString:@"MD5"]) {
-        return [self MD5HashForFile:aFile];
-    } else if ([aType isEqualToString:@"SHA1"]) {
-        return [self SHA1HashForFile:aFile];
-    }
-    
-    return NULL;
-}
-
-#pragma mark Convienience Methods
-- (NSString *)md5HashForFile:(NSString *)aFilePath
-{
-    return [self MD5HashForFile:aFilePath];
-}
-
-- (NSString *)sha1HashForFile:(NSString *)aFilePath
-{
-    return [self SHA1HashForFile:aFilePath];
-}
-
-#pragma mark Private API
-
-- (NSString *)MD5HashForFile:(NSString *)aFilePath
-{
-    NSFileManager *fm = [NSFileManager defaultManager];
-    if (![fm fileExistsAtPath:aFilePath]) {
-        qlerror(@"Unable to find %@, MD5HashForFile failed.",aFilePath);
-        return @"ERROR FILE MISSING";
-    }
-    
-    NSMutableString *hashStr = [NSMutableString string];
-    size_t blockSize = BUF_SIZE;
-    
-    // Declare needed variables
-    CFReadStreamRef readStream = NULL;
-    
-    // Create and open the read stream
-    readStream = CFReadStreamCreateWithFile(kCFAllocatorDefault, (CFURLRef)[NSURL fileURLWithPath:aFilePath]);
-    
-    if (!readStream) goto done;
-    bool didSucceed = (bool)CFReadStreamOpen(readStream);
-    if (!didSucceed) goto done;
-    
-    // Initialize the hash object
-    CC_MD5_CTX hashObject;
-    CC_MD5_Init(&hashObject);
-    
-    // Feed the data to the hash object
-    bool hasMoreData = true;
-    while (hasMoreData) {
-        uint8_t buffer[blockSize];
-        CFIndex readBytesCount = CFReadStreamRead(readStream,(UInt8 *)buffer,(CFIndex)sizeof(buffer));
-        
-        if (readBytesCount == -1) break;
-        if (readBytesCount == 0) {
-            hasMoreData = false;
-            continue;
-        }
-        CC_MD5_Update(&hashObject,(const void *)buffer,(CC_LONG)readBytesCount);
-    }
-    
-    // Check if the read operation succeeded
-    didSucceed = !hasMoreData;
-    
-    // Compute the hash digest
-    unsigned char digest[CC_MD5_DIGEST_LENGTH];
-    CC_MD5_Final(digest, &hashObject);
-    
-    // Abort if the read operation failed
-    if (!didSucceed) goto done;
-    
-    // Compute the string result
-    int i = 0;
-    for (i = 0; i < CC_MD5_DIGEST_LENGTH; ++i) {
-        [hashStr appendFormat:@"%02x",digest[i]];
-    }
-    
-done:
-    if (readStream) {
-        CFReadStreamClose(readStream);
-        CFRelease(readStream);
-    }
-    qldebug(@"MD5 HASH=%@",hashStr);
-    return hashStr;
-}
-
-- (NSString *)SHA1HashForFile:(NSString *)aFilePath
-{
-    NSFileManager *fm = [NSFileManager defaultManager];
-    if (![fm fileExistsAtPath:aFilePath]) {
-        qlerror(@"Unable to find %@, MD5HashForFile failed.",aFilePath);
-        return @"ERROR FILE MISSING";
-    }
-    
-    NSMutableString *hashStr = [NSMutableString string];
-    size_t blockSize = BUF_SIZE;
-    
-    // Declare needed variables
-    CFReadStreamRef readStream = NULL;
-    
-    // Create and open the read stream
-    readStream = CFReadStreamCreateWithFile(kCFAllocatorDefault, (CFURLRef)[NSURL fileURLWithPath:aFilePath]);
-    
-    if (!readStream) goto done;
-    bool didSucceed = (bool)CFReadStreamOpen(readStream);
-    if (!didSucceed) goto done;
-    
-    // Initialize the hash object
-    CC_SHA1_CTX hashObject;
-    CC_SHA1_Init(&hashObject);
-    
-    // Feed the data to the hash object
-    bool hasMoreData = true;
-    while (hasMoreData) {
-        uint8_t buffer[blockSize];
-        CFIndex readBytesCount = CFReadStreamRead(readStream,(UInt8 *)buffer,(CFIndex)sizeof(buffer));
-        
-        if (readBytesCount == -1) break;
-        if (readBytesCount == 0) {
-            hasMoreData = false;
-            continue;
-        }
-        CC_SHA1_Update(&hashObject,(const void *)buffer,(CC_LONG)readBytesCount);
-    }
-    
-    // Check if the read operation succeeded
-    didSucceed = !hasMoreData;
-    
-    // Compute the hash digest
-    unsigned char digest[CC_SHA1_DIGEST_LENGTH];
-    CC_SHA1_Final(digest, &hashObject);
-    
-    // Abort if the read operation failed
-    if (!didSucceed) goto done;
-    
-    // Compute the string result
-    int i = 0;
-    for (i = 0; i < CC_SHA1_DIGEST_LENGTH; ++i) {
-        [hashStr appendFormat:@"%02x",digest[i]];
-    }
-    
-done:
-    if (readStream) {
-        CFReadStreamClose(readStream);
-        CFRelease(readStream);
-    }
-    qldebug(@"SHA1 HASH=%@",hashStr);
-    return hashStr;
-}
-
--(NSString *)MD5FromString:(NSString *)inputStr
-{
-    NSData* inputData = [inputStr dataUsingEncoding:NSUTF8StringEncoding];
-    unsigned char outputData[CC_MD5_DIGEST_LENGTH];
-    CC_MD5([inputData bytes], (CC_LONG)[inputData length], outputData);
-    
-    NSMutableString* hashStr = [NSMutableString string];
-    int i = 0;
-    for (i = 0; i < CC_MD5_DIGEST_LENGTH; ++i)
-        [hashStr appendFormat:@"%02x", outputData[i]];
-    
-    return hashStr;
-}
-
--(NSString *)SHA1FromString:(NSString *)inputStr
-{
-    NSData* inputData = [inputStr dataUsingEncoding:NSUTF8StringEncoding];
-    unsigned char outputData[CC_SHA1_DIGEST_LENGTH];
-    CC_SHA1([inputData bytes], (CC_LONG)[inputData length], outputData);
-    
-    NSMutableString* hashStr = [NSMutableString string];
-    int i = 0;
-    for (i = 0; i < CC_SHA1_DIGEST_LENGTH; ++i)
-        [hashStr appendFormat:@"%02x", outputData[i]];
-    
-    return hashStr;
-}
-
-#pragma mark - RSA Keys
-
-#pragma mark Private API
-
-- (SecKeychainRef)genSecKeychainRef
-{
-    logit(lcl_vDebug,@"genSecKeychainRef called");
-    OSStatus err;
-    SecKeychainRef keychain = NULL;
-
-    NSString *_keyID = [NSString stringWithFormat: @"mp_%.0f", [NSDate timeIntervalSinceReferenceDate] * 1000.0];
-    NSString *_keychainFileName = [NSString stringWithFormat: @"%@.%@", _keyID, @"keychain"];
-    NSString *_keychain = [NSTemporaryDirectory() stringByAppendingPathComponent:_keychainFileName];
-    const char *pass = [_keyID UTF8String];
-    logit(lcl_vDebug,@"Create temporary keychain for rsa key gen.");
-    logit(lcl_vDebug,@"keyID:",_keyID);
-    logit(lcl_vDebug,@"keychainFileName:",_keychainFileName);
-    logit(lcl_vDebug,@"keychain:",_keychain);
-    
-    err = SecKeychainCreate([_keychain UTF8String], (UInt32)strlen(pass), pass, FALSE, NULL, &keychain);
-    
-    if (err != noErr) {
-        logit(lcl_vError,@"%@",[self errorForOSStatus:err]);
-    }
-    
-    return keychain;
-}
-
-#pragma mark Public API
-- (int)generateRSAKeyPairOfSize:(unsigned)keySize error:(NSError **)error
-{
-    keychainItem = [self genSecKeychainRef];
-    
-    OSStatus err;
-    err = SecKeyCreatePair(keychainItem,
-                           CSSM_ALGID_RSA,
-                           keySize,
-                           0LL,
-                           CSSM_KEYUSE_ENCRYPT | CSSM_KEYUSE_VERIFY | CSSM_KEYUSE_WRAP,     // public key
-                           CSSM_KEYATTR_EXTRACTABLE | CSSM_KEYATTR_PERMANENT,
-                           CSSM_KEYUSE_ANY,                                                 // private key
-                           CSSM_KEYATTR_EXTRACTABLE | CSSM_KEYATTR_PERMANENT ,
-                           NULL,                                                            // SecAccessRef
-                           &localPublicKey, &localPrivateKey);
-    
-    if (error != NULL) *error = [self errorForOSStatus:err];
-    return (int)err;
-}
-
-// @param format  The data format: kSecFormatPEMSequence, kSecFormatWrappedOpenSSL, kSecFormatOpenSSL, kSecFormatSSH, kSecFormatBSAFE or kSecFormatSSHv2.
-- (NSData *)exportPrivateKeyInFormat:(SecExternalFormat)format withPEM:(BOOL)withPEM error:(NSError **)error
-{
-    OSStatus err;
-    CFDataRef data = NULL;
-    err = SecItemExport(localPrivateKey, format , (withPEM ?kSecItemPemArmour :0), NULL, &data);
-    
-    if (error != NULL) *error = [self errorForOSStatus:err];
-    return (__bridge NSData *)data;
-}
-
-- (NSData *)exportPublicKeyInFormat:(SecExternalFormat)format withPEM:(BOOL)withPEM error:(NSError **)error
-{
-    OSStatus err;
-    CFDataRef data = NULL;
-    err = SecItemExport(localPublicKey, format , (withPEM ?kSecItemPemArmour :0), NULL, &data);
-    
-    if (error != NULL) *error = [self errorForOSStatus:err];
-    return (__bridge NSData *)data;
-}
-
-- (NSString *)exportRSAPemKeyAsString:(SecKeyRef)aKey error:(NSError **)error
-{
-    OSStatus err;
-    CFDataRef data = NULL;
-    err = SecItemExport(aKey, kSecFormatPEMSequence , kSecItemPemArmour, NULL, &data);
-    
-    if (error != NULL) *error = [self errorForOSStatus:err];
-    
-    NSString *keyStr = [[NSString alloc] initWithData:(__bridge NSData *)data encoding:NSUTF8StringEncoding];
-    return keyStr;
-}
-
-- (SecKeyRef)getKeyRef:(NSData *)aKeyData
-{
-    return [self getKeyRef:aKeyData format:kSecFormatPEMSequence];
-}
-
-- (SecKeyRef)getKeyRef:(NSData *)aKeyData format:(SecExternalFormat)aFormat
-{
-    CFArrayRef imported = NULL;
-    OSStatus err = 0;
-    SecExternalFormat format = kSecFormatPEMSequence;
-    
-    err = SecItemImport((__bridge CFDataRef)(aKeyData), (CFStringRef)@"pem", &format, NULL, kNilOptions, kNilOptions, NULL, &imported);
-    if (err != 0) {
-        NSLog(@"SecItemImport[importPublicKey]: %@ ERROR: %@", self.class, [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:nil]);
-    }
-    
-    assert(err == errSecSuccess);
-    assert(CFArrayGetCount(imported) == 1);
-    return (SecKeyRef)CFArrayGetValueAtIndex(imported, 0);
-}
-
-
-#pragma mark Registration
-
-- (NSDictionary *)rsaKeysForRegistration:(NSError **)error
-{
-    NSError *err = nil;
-    NSString *priKeyStr = [self exportRSAPemKeyAsString:localPrivateKey error:&err];
-    if (err) {
-        if (error != NULL) *error = err;
-        return nil;
-    }
-    NSString *pubKeyStr = [self exportRSAPemKeyAsString:localPublicKey error:&err];
-    if (err) {
-        if (error != NULL) *error = err;
-        return nil;
-    }
-    
-    return @{@"privateKey":priKeyStr,@"publicKey":pubKeyStr};
-}
-
-#pragma mark Misc
-
-- (NSString *)stripAndEncodePEMKey:(NSString *)aKey isPublic:(BOOL)aPublic
-{
-    NSString *startHeader;
-    NSString *endHeader;
-    
-    if (aPublic) {
-        NSRange isRange = [aKey rangeOfString:@"BEGIN RSA PUBLIC KEY" options:NSCaseInsensitiveSearch];
-        if(isRange.location != NSNotFound) {
-            startHeader = @"-----BEGIN RSA PUBLIC KEY-----";
-            endHeader = @"-----END RSA PUBLIC KEY-----";
+    self = [super init];
+    if (self)
+    {
+        if ([[NSFileManager defaultManager] fileExistsAtPath:aKeyChainFile]) {
+            keyChainFile = [aKeyChainFile copy];
+            OSStatus unlockResult = [self unlockKeyChain:aKeyChainFile];
+            if (unlockResult != noErr) {
+                NSLog(@"Unlock Keychain error: %d",unlockResult);
+                return nil;
+            }
         } else {
-            NSRange isSpacedRange = [aKey rangeOfString:@"BEGIN PUBLIC KEY" options:NSCaseInsensitiveSearch];
-            if(isSpacedRange.location != NSNotFound) {
-                startHeader = @"-----BEGIN PUBLIC KEY-----";
-                endHeader = @"-----END PUBLIC KEY-----";
-            } else {
+            OSStatus result = [self createKeyChain:aKeyChainFile];
+            if (result != noErr) {
+                NSLog(@"Create Keychain error: %d",result);
                 return nil;
             }
         }
+    }
+    return self;
+}
+
+- (OSStatus)createKeyChain:(NSString *)aKeyChainFile
+{
+    if ([[NSFileManager defaultManager] fileExistsAtPath:aKeyChainFile]) {
+        return errSecDuplicateKeychain;
+    }
+
+    const char *path = [aKeyChainFile UTF8String];
+    const char *pass = [[self clientInfo] UTF8String];
+    
+    OSStatus result = SecKeychainCreate(path,
+                                     (UInt32) strlen(pass),
+                                     pass,
+                                     NO,
+                                     NULL,
+                                     &xKeychain);
+    
+    return result;
+}
+
+- (OSStatus)unlockKeyChain:(NSString *)aKeyChainFile
+{
+    const char *path = [aKeyChainFile UTF8String];
+    const char *pass = [[self clientInfo] UTF8String];
+    SecKeychainOpen(path, &xKeychain);
+    OSStatus unlockResult = SecKeychainUnlock(xKeychain, (UInt32) strlen(pass), pass, TRUE);
+
+    return unlockResult;
+}
+
+- (OSStatus)lockKeyChain:(NSString *)aKeyChainFile
+{
+    return SecKeychainLock(xKeychain);
+}
+
+- (OSStatus)deleteKeyChain
+{
+    OSStatus result = SecKeychainDelete(xKeychain);
+    CFRelease(xKeychain);
+    return result;
+}
+
+#pragma mark - MacPatch
+
+- (BOOL)saveKeyItemWithService:(MPKeyItem *)aPasswordObj service:(ServiceType)aService error:(NSError **)error
+{
+    NSString *accountName = [self nameForServiceType:aService];
+    return [self saveKeyItemWithServiceAndAccount:aPasswordObj service:aService account:accountName error:error];
+}
+
+- (BOOL)saveKeyItemWithServiceAndAccount:(MPKeyItem *)aPasswordObj service:(ServiceType)aService account:(NSString *)aAccount error:(NSError **)error
+{
+    if (![self keychainIsUnlocked]) {
+        if (![self unlockKeyChain:keyChainFile]) {
+            return NO;
+        }
+    }
+    
+    NSData *passData = [NSKeyedArchiver archivedDataWithRootObject:[aPasswordObj toDictionary]];
+    
+    // setup keychain storage properties
+    SecAccessRef kAccess = [self createAccessRefWithLabel:ACCESS_LABEL error:NULL];
+    NSDictionary *storageQuery = @{
+                                   (__bridge id)kSecAttrAccount:    [self nameForServiceType:aService],
+                                   (__bridge id)kSecAttrService:    aAccount,
+                                   (__bridge id)kSecValueData:      passData,
+                                   (__bridge id)kSecClass:          (__bridge id)kSecClassGenericPassword,
+                                   (__bridge id)kSecAttrAccessible: (__bridge id)kSecAttrAccessibleWhenUnlocked,
+                                   (__bridge id)kSecUseKeychain:    (__bridge id)xKeychain,
+                                   (__bridge id)kSecAttrAccess:     (__bridge id)kAccess,
+                                   };
+    
+    OSStatus osStatus = SecItemAdd((__bridge CFDictionaryRef)storageQuery, nil);
+    if(osStatus != noErr) {
+        if (error != NULL) {
+            *error = [self errorForOSStatus:osStatus];
+        }
+        return NO;
+    }
+    
+    return YES;
+}
+
+- (MPKeyItem *)retrieveKeyItemForService:(ServiceType)aService error:(NSError **)error
+{
+    NSString *accountName = [self nameForServiceType:aService];
+    return [self retrieveKeyItemForServiceAndAccount:aService account:accountName error:error];
+}
+
+- (MPKeyItem *)retrieveKeyItemForServiceAndAccount:(ServiceType)aService account:(NSString *)aAccount error:(NSError **)error
+{
+    return [self retrieveKeyItemForServiceAndAccountWithKeychainItem:aService account:aAccount keychainItem:NULL error:error];
+}
+
+- (MPKeyItem *)retrieveKeyItemForServiceAndAccountWithKeychainItem:(ServiceType)aService account:(NSString *)aAccount keychainItem:(SecKeychainItemRef *)item error:(NSError **)error
+{
+    if (![self keychainIsUnlocked]) {
+        if (![self unlockKeyChain:keyChainFile]) {
+            return NO;
+        }
+    }
+    
+    const char *serviceUTF8  = [[self nameForServiceType:aService] UTF8String];
+    const char *accountUTF8  = [aAccount UTF8String];
+    char *passwordData;
+    UInt32 passwordLength;
+    
+    OSStatus status = SecKeychainFindGenericPassword(xKeychain,
+                                                     (UInt32)strlen(serviceUTF8),
+                                                     serviceUTF8,
+                                                     (UInt32)strlen(accountUTF8),
+                                                     accountUTF8,
+                                                     &passwordLength,
+                                                     (void **)&passwordData,
+                                                     item);
+    
+    if (status != noErr) {
+        if (error != NULL) {
+            *error = [self errorForOSStatus:status];
+        }
+        return nil;
+    }
+    
+    NSData *data = [[NSData alloc] initWithBytesNoCopy:passwordData length:passwordLength];
+    NSDictionary *storedDictionary = [NSKeyedUnarchiver unarchiveObjectWithData:data];
+    MPKeyItem *ki = [[MPKeyItem alloc] initWithDictionary:storedDictionary];
+    return ki;
+}
+
+- (BOOL)updateKeyItemWithService:(MPKeyItem *)aPasswordObj service:(ServiceType)aService error:(NSError **)error
+{
+    NSString *accountName = [self nameForServiceType:aService];
+    return [self updateKeyItemWithServiceAndAccount:aPasswordObj service:aService account:accountName error:error];
+}
+
+- (BOOL)updateKeyItemWithServiceAndAccount:(MPKeyItem *)aPasswordObj service:(ServiceType)aService account:(NSString *)aAccount error:(NSError **)error
+{
+    if (![self keychainIsUnlocked]) {
+        if (![self unlockKeyChain:keyChainFile]) {
+            return NO;
+        }
+    }
+    
+    NSError *err = nil;
+    BOOL delItem = [self deleteKeyItemWithServiceAndAccount:aService account:aAccount error:&err];
+    if (err) {
+        if (error != NULL) *error = err;
+        return NO;
+    }
+    
+    err = nil;
+    if (delItem == YES) {
+        BOOL saveItem = [self saveKeyItemWithServiceAndAccount:aPasswordObj service:aService account:aAccount error:&err];
+        if (err) {
+            if (error != NULL) *error = err;
+            return NO;
+        }
+        return saveItem;
+    }
+    
+    return NO;
+}
+
+- (BOOL)deleteKeyItemWithService:(ServiceType)aService error:(NSError **)error
+{
+    NSString *accountName = [self nameForServiceType:aService];
+    return [self deleteKeyItemWithServiceAndAccount:aService account:accountName error:error];
+}
+
+- (BOOL)deleteKeyItemWithServiceAndAccount:(ServiceType)aService account:(NSString *)aAccount error:(NSError **)error
+{
+    if (![self keychainIsUnlocked]) {
+        if (![self unlockKeyChain:keyChainFile]) {
+            return NO;
+        }
+    }
+    
+    NSError *err = nil;
+    SecKeychainItemRef item = nil;
+    MPKeyItem *keyItem = [self retrieveKeyItemForServiceAndAccountWithKeychainItem:aService account:aAccount keychainItem:&item error:&err];
+    if (err) {
+        if (error != NULL) *error = err;
+        return NO;
+    }
+    
+    OSStatus status;
+    
+    if (keyItem == nil || item == nil) {
+        status = errSecItemNotFound;
     } else {
-        startHeader = @"-----BEGIN RSA PRIVATE KEY-----";
-        endHeader = @"-----END RSA PRIVATE KEY-----";
+        status = SecKeychainItemDelete(item);
     }
     
-    NSString *keyStr;
-    NSScanner *scanner = [NSScanner scannerWithString:aKey];
-    [scanner scanUpToString:startHeader intoString:nil];
-    [scanner scanString:startHeader intoString:nil];
-    [scanner scanUpToString:endHeader intoString:&keyStr];
+    if (item != nil) CFRelease(item);
     
-    return [keyStr stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+    if (status == noErr) {
+        return YES;
+    } else {
+        if (error != NULL) *error = [self errorForOSStatus:status];
+        return NO;
+    }
 }
 
-#pragma mark - Encryption using RSA Keys
-- (NSString *)encryptStringUsingKey:(NSString *)stringToEncrypt key:(SecKeyRef)aKey error:(NSError **)err
+#pragma mark - Private
+
+- (BOOL)keychainIsUnlocked
 {
-    return [self secKeyEncrypt:aKey padding:kSecPaddingPKCS1 stringToEncrypt:stringToEncrypt error:err];
+    SecKeychainStatus keychainStatus;
+    OSStatus err = SecKeychainGetStatus(xKeychain, &keychainStatus);
+    
+    if (err != errSecSuccess) {
+        NSLog(@"Error getting Keychain status.");
+        return NO;
+    }
+    
+    return (keychainStatus & kSecUnlockStateStatus) ? YES : NO;
 }
 
-- (NSString *)secKeyEncrypt:(SecKeyRef)aKey padding:(SecPadding)aSecPadding stringToEncrypt:(NSString *)AstringToEncrypt error:(NSError **)err
+- (NSDictionary *)serviceTypeNames
 {
+    return @{@(kMPServerService) : [NSString stringWithFormat:@"Server (%@)",[self clientUUID]],
+             @(kMPClientService) : [NSString stringWithFormat:@"Client (%@)",[self clientUUID]]};
+}
+
+- (NSString *)nameForServiceType:(ServiceType)aService
+{
+    return [self serviceTypeNames][@(aService)];
+}
+
+- (SecAccessRef)createAccessRefWithLabel:(NSString *)label error:(NSError **)err
+{
+    OSStatus result;
+    SecTrustedApplicationRef me;
+    SecTrustedApplicationRef MPAgent = NULL;
+    SecTrustedApplicationRef MPAgentExec = NULL;
+    SecTrustedApplicationRef MPWorker = NULL;
+    SecTrustedApplicationRef MPCatalog = NULL;
+    SecTrustedApplicationRef SelfPatch = NULL;
+    SecTrustedApplicationRef MPClientStatus = NULL;
+    SecTrustedApplicationRef MPLoginAgent = NULL;
     
-    NSData *plainData = [AstringToEncrypt dataUsingEncoding:NSUTF8StringEncoding];
-    const void *plainBytes = [plainData bytes];
-    int plainLength = (int)[plainData length];
+    result = SecTrustedApplicationCreateFromPath(NULL, &me);
+    result = SecTrustedApplicationCreateFromPath("/Library/MacPatch/Client/MPAgent", &MPAgent);
+    result = SecTrustedApplicationCreateFromPath("/Library/MacPatch/Client/MPAgentExec", &MPAgentExec);
+    result = SecTrustedApplicationCreateFromPath("/Library/MacPatch/Client/MPWorker", &MPWorker);
+    result = SecTrustedApplicationCreateFromPath("/Library/MacPatch/Client/MPCatalog.app", &MPCatalog);
+    result = SecTrustedApplicationCreateFromPath("/Library/MacPatch/Client/Self Patch.app", &SelfPatch);
+    result = SecTrustedApplicationCreateFromPath("/Library/MacPatch/Client/MPClientStatus.app", &MPClientStatus);
+    result = SecTrustedApplicationCreateFromPath("/Library/PrivilegedHelperTools/MPLoginAgent.app", &MPLoginAgent);
     
-    const uint8_t *plainText = (uint8_t*)plainBytes;
-    size_t plainTextLen = plainLength;
+    NSArray *trustedApplications = [NSArray arrayWithObjects:(__bridge_transfer id)me, (__bridge_transfer id)MPAgent,
+                                    (__bridge_transfer id)MPAgentExec, (__bridge_transfer id)MPWorker,(__bridge_transfer id)MPCatalog,
+                                    (__bridge_transfer id)SelfPatch,(__bridge_transfer id)MPClientStatus,(__bridge_transfer id)MPLoginAgent,nil];
     
-    CFMutableDictionaryRef parameters = CFDictionaryCreateMutable(kCFAllocatorDefault,
-                                                                  0,
-                                                                  &kCFTypeDictionaryKeyCallBacks,
-                                                                  &kCFTypeDictionaryValueCallBacks);
-    
-    CFDictionarySetValue(parameters, kSecAttrKeyType, kSecAttrKeyTypeAES);
-    
-    CFErrorRef error = NULL;
-    SecTransformRef encrypt = SecEncryptTransformCreate(aKey, &error);
-    
-    if (error) {
-        if (err != NULL) *err = (__bridge NSError *)error;
-        
-        NSLog(@"Encryption failed: %@\n", (__bridge NSError *)error);
+    SecAccessRef accessObj = NULL;
+    result = SecAccessCreate((__bridge CFStringRef)label, (__bridge CFArrayRef)trustedApplications, &accessObj);
+    if (noErr != result) {
+        if (err != NULL) *err = [self errorForOSStatus:result];
         return nil;
     }
     
-    SecTransformSetAttribute(encrypt,
-                             kSecPaddingKey,
-                             NULL, // kSecPaddingPKCS1Key (rdar://13661366 : NULL means kSecPaddingPKCS1Key and
-                             // kSecPaddingPKCS1Key fails horribly)
-                             &error);
-    
-    CFDataRef sourceData = CFDataCreate(kCFAllocatorDefault, plainText, plainTextLen);
-    SecTransformSetAttribute(encrypt, kSecTransformInputAttributeName, sourceData, &error);
-    
-    CFDataRef encryptedData = SecTransformExecute(encrypt, &error);
-    if (error) {
-        if (err != NULL) *err = (__bridge NSError *)error;
-        
-        NSLog(@"Encryption failed: %@\n", (__bridge NSError *)error);
-        return nil;
-    }
-    
-    // For 10.9 and higher
-    //return [(__bridge NSData *)encryptedData base64EncodedStringWithOptions:NSDataBase64EncodingEndLineWithLineFeed];
-    
-    // Switch to Apple method when 10.9 is min OS
-    return [(__bridge NSData *)encryptedData base64EncodedString];
+    return accessObj;
 }
 
-- (NSString *)decryptStringUsingKey:(NSString *)stringToDecrypt key:(SecKeyRef)aKey error:(NSError **)err
+#pragma mark Client Info
+- (NSString *)clientInfo
 {
-    return [self secKeyDecrypt:aKey padding:kSecPaddingPKCS1 stringToDecrypt:stringToDecrypt error:err];
+    NSMutableString *client = [NSMutableString new];
+    [client appendString:[self clientUUID]];
+    [client appendFormat:@" %@",[self modelInfo]];
+    return [self sha1HexDigest:client];
 }
 
-- (NSString *)secKeyDecrypt:(SecKeyRef)aKey padding:(SecPadding)aSecPadding stringToDecrypt:(NSString *)AstringToDecrypt error:(NSError **)err
+- (NSString *)md5HexDigest:(NSString*)input
 {
-    // For 10.9 and higher
-    //NSData *encData = [[NSData alloc] initWithBase64EncodedString:AstringToDecrypt options:0];
+    const char* str = [input UTF8String];
+    unsigned char digest[CC_MD5_DIGEST_LENGTH];
+    CC_MD5(str, (CC_LONG)strlen(str), digest);
     
-    // Switch to Apple method when 10.9 is min OS
-    NSData *encData = [NSData dataFromBase64String:AstringToDecrypt];
-    
-    CFMutableDictionaryRef parameters = CFDictionaryCreateMutable(kCFAllocatorDefault,
-                                                                  0,
-                                                                  &kCFTypeDictionaryKeyCallBacks,
-                                                                  &kCFTypeDictionaryValueCallBacks);
-    
-    CFDictionarySetValue(parameters, kSecAttrKeyType, kSecAttrKeyTypeAES);
-    
-    CFErrorRef error = nil;
-    SecTransformRef decrypt = SecDecryptTransformCreate(aKey, &error);
-    if (error) {
-        if (err != NULL) *err = (__bridge NSError *)error;
-        
-        NSLog(@"Encryption failed: %@\n", (__bridge NSError *)error);
-        return nil;
+    NSMutableString *ret = [NSMutableString stringWithCapacity:CC_MD5_DIGEST_LENGTH*2];
+    for(int i = 0; i<CC_MD5_DIGEST_LENGTH; i++) {
+        [ret appendFormat:@"%03x",digest[i]];
     }
-    
-    SecTransformSetAttribute(decrypt,
-                             kSecPaddingKey,
-                             NULL, // kSecPaddingPKCS1Key (rdar://13661366 : NULL means kSecPaddingPKCS1Key and
-                             // kSecPaddingPKCS1Key fails horribly)
-                             &error);
-    
-    SecTransformSetAttribute(decrypt, kSecTransformInputAttributeName, (CFDataRef)encData, &error);
-    
-    CFDataRef decryptedData = SecTransformExecute(decrypt, &error);
-    if (error) {
-        if (err != NULL) *err = (__bridge NSError *)error;
-        
-        NSLog(@"Encryption failed: %@\n", (__bridge NSError *)error);
-        return nil;
-    }
-    
-    NSString *newStr = [[NSString alloc] initWithData:(__bridge NSData *)decryptedData encoding:NSUTF8StringEncoding];
-    return newStr;
+    return ret;
 }
 
-#pragma mark - Error Codes for OSStatus
+- (NSString *)sha1HexDigest:(NSString*)input
+{
+    const char* str = [input UTF8String];
+    unsigned char digest[CC_SHA1_DIGEST_LENGTH];
+    CC_SHA1(str, (CC_LONG)strlen(str), digest);
+    
+    NSMutableString *ret = [NSMutableString stringWithCapacity:CC_SHA1_DIGEST_LENGTH*2];
+    for(int i = 0; i<CC_SHA1_DIGEST_LENGTH; i++) {
+        [ret appendFormat:@"%03x",digest[i]];
+    }
+    return ret;
+}
+
+- (NSString *)clientUUID
+{
+    io_service_t platformExpert = IOServiceGetMatchingService(kIOMasterPortDefault,IOServiceMatching("IOPlatformExpertDevice"));
+    CFTypeRef serialNumberAsCFString = IORegistryEntryCreateCFProperty(platformExpert,CFSTR(kIOPlatformUUIDKey),kCFAllocatorDefault, 0);
+    IOObjectRelease(platformExpert);
+    NSString __strong *serialNumber = (__bridge NSString *)(serialNumberAsCFString);
+    CFRelease(serialNumberAsCFString);
+    return serialNumber;
+}
+
+- (NSString *)modelInfo
+{
+    size_t size;
+    sysctlbyname("machdep.cpu.brand_string", NULL, &size, NULL, 0);
+    char *machine = malloc(size);
+    sysctlbyname("machdep.cpu.brand_string", machine, &size, NULL, 0);
+    NSString *platform = [NSString stringWithUTF8String:machine];
+    free(machine);
+    return platform;
+}
+
+#pragma mark Error codes
 
 - (NSError *)errorWithCode:(NSInteger)code message:(NSString *)message
 {
     NSDictionary *userInfo = @{NSLocalizedDescriptionKey: message};
-    return [NSError errorWithDomain:@"MPCryptoDomain" code:code userInfo:userInfo];
+    return [NSError errorWithDomain:@"MPSimpleKeychain" code:code userInfo:userInfo];
 }
 
+// Not Private
 - (NSError *)errorForOSStatus:(OSStatus)OSStatus
 {
     switch (OSStatus)
@@ -2385,8 +2272,6 @@ done:
         {
             return [self errorWithCode:OSStatus message:@"A timestamp authority revocation notification was issued."];
         }
-            
     }
 }
-
 @end

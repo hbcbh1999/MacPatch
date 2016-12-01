@@ -278,18 +278,24 @@ int main (int argc, char * argv[])
         if (doRegistration)
         {
             int regResult = -1;
+            NSError *regErr = nil;
             MPAgentRegister *mpar = [[MPAgentRegister alloc] init];
         
             if (![regKeyArg isEqualToString:@"999999999"]) {
-                regResult = [mpar registerClient:regKeyArg];
+                regResult = [mpar registerClient:regKeyArg error:&regErr];
             } else {
-                regResult = [mpar registerClient:nil];
+                regResult = [mpar registerClient:&regErr];
+            }
+            
+            if (regErr) {
+                NSLog(@"%@",regErr.localizedDescription);
             }
             
             if (regResult == 0) {
                 printf("\nAgent has been registered.\n");
             } else {
-                fprintf(stderr, "Post OS Upgrade status failed.\n");
+                fprintf(stderr, "Agent registration has failed.\n");
+                [[NSFileManager defaultManager] removeItemAtPath:MP_KEYCHAIN_FILE error:NULL];
                 exit(1);
             }
             
@@ -301,10 +307,11 @@ int main (int argc, char * argv[])
             MPAgentRegister *mpar = [[MPAgentRegister alloc] init];
             if ([mpar clientIsRegistered]) {
                 printf("\nAgent is registered.\n");
+                exit(0);
             } else {
                 printf("Warning: Agent is not registered.\n");
+                exit(1);
             }
-            exit(0);
         
         // Post OS Migration Info
         } else if (osMigration) {

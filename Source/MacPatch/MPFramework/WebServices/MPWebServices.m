@@ -1507,8 +1507,8 @@
         qlinfo(@"Data was successfully posted.");
         return YES;
     } else {
-        qlinfo(@"Install data failed to post.");
-        qldebug(@"Install data: %@",aDict);
+        qlinfo(@"Data failed to post.");
+        qldebug(@"Data: %@",aDict);
         return NO;
     }
     
@@ -1516,7 +1516,7 @@
     return NO;
 }
 
-- (BOOL)getAgentRegStatus:(NSString *)keyHash error:(NSError **)err
+- (BOOL)getAgentRegStatusWithKeyHash:(NSString *)keyHash error:(NSError **)err
 {
     BOOL result = NO;
     NSError *error = nil;

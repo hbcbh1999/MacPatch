@@ -136,6 +136,10 @@
 		8FEC938817CBFEFB00AA9C1C /* MPApplePatch.m in Sources */ = {isa = PBXBuildFile; fileRef = 8FEC938617CBFEFB00AA9C1C /* MPApplePatch.m */; };
 		8FEC938B17CBFF0F00AA9C1C /* MPCustomPatch.h in Headers */ = {isa = PBXBuildFile; fileRef = 8FEC938917CBFF0F00AA9C1C /* MPCustomPatch.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		8FEC938C17CBFF0F00AA9C1C /* MPCustomPatch.m in Sources */ = {isa = PBXBuildFile; fileRef = 8FEC938A17CBFF0F00AA9C1C /* MPCustomPatch.m */; };
+		8FF831601DEF7ACF005DC5AD /* MPKeyItem.h in Headers */ = {isa = PBXBuildFile; fileRef = 8FF8315C1DEF7ACF005DC5AD /* MPKeyItem.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		8FF831611DEF7ACF005DC5AD /* MPKeyItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 8FF8315D1DEF7ACF005DC5AD /* MPKeyItem.m */; };
+		8FF831621DEF7ACF005DC5AD /* MPSimpleKeychain.h in Headers */ = {isa = PBXBuildFile; fileRef = 8FF8315E1DEF7ACF005DC5AD /* MPSimpleKeychain.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		8FF831631DEF7ACF005DC5AD /* MPSimpleKeychain.m in Sources */ = {isa = PBXBuildFile; fileRef = 8FF8315F1DEF7ACF005DC5AD /* MPSimpleKeychain.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -278,6 +282,10 @@
 		8FEC938A17CBFF0F00AA9C1C /* MPCustomPatch.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPCustomPatch.m; sourceTree = "<group>"; };
 		8FED886F146462DB00709F8E /* MPASUSCatalogs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPASUSCatalogs.h; sourceTree = "<group>"; };
 		8FED8870146462DB00709F8E /* MPASUSCatalogs.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPASUSCatalogs.m; sourceTree = "<group>"; };
+		8FF8315C1DEF7ACF005DC5AD /* MPKeyItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKeyItem.h; sourceTree = "<group>"; };
+		8FF8315D1DEF7ACF005DC5AD /* MPKeyItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKeyItem.m; sourceTree = "<group>"; };
+		8FF8315E1DEF7ACF005DC5AD /* MPSimpleKeychain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPSimpleKeychain.h; sourceTree = "<group>"; };
+		8FF8315F1DEF7ACF005DC5AD /* MPSimpleKeychain.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPSimpleKeychain.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -573,6 +581,10 @@
 				8F50CB7D199D5DD0006AC537 /* MPKeychain.m */,
 				8F00CD0317610F1D008CC39E /* MPCodeSign.h */,
 				8F00CD0417610F1D008CC39E /* MPCodeSign.m */,
+				8FF8315C1DEF7ACF005DC5AD /* MPKeyItem.h */,
+				8FF8315D1DEF7ACF005DC5AD /* MPKeyItem.m */,
+				8FF8315E1DEF7ACF005DC5AD /* MPSimpleKeychain.h */,
+				8FF8315F1DEF7ACF005DC5AD /* MPSimpleKeychain.m */,
 			);
 			name = Crypto;
 			sourceTree = "<group>";
@@ -673,6 +685,8 @@
 				8FEC938B17CBFF0F00AA9C1C /* MPCustomPatch.h in Headers */,
 				8FC5C8B11BBEF11B00F18BD8 /* MPSUServerList.h in Headers */,
 				8F50CB7E199D5DD0006AC537 /* MPKeychain.h in Headers */,
+				8FF831601DEF7ACF005DC5AD /* MPKeyItem.h in Headers */,
+				8FF831621DEF7ACF005DC5AD /* MPSimpleKeychain.h in Headers */,
 				8FE560D016DE899B00BB7600 /* MPSWInstaller.h in Headers */,
 				8FE560D616DE932900BB7600 /* MPAgentController.h in Headers */,
 				8FE6EEB81B9A035800E8F8E1 /* InventoryPlugin.h in Headers */,
@@ -776,9 +790,11 @@
 				8F47F0FC18EDFD6D00158396 /* MPJsonResult.m in Sources */,
 				8F4B1DFF16DD1D6400E15A9E /* MPOSCheck.m in Sources */,
 				8F4B1E0016DD1D6400E15A9E /* MPScript.m in Sources */,
+				8FF831631DEF7ACF005DC5AD /* MPSimpleKeychain.m in Sources */,
 				8F7B8B401CB03B3200FB940F /* AFHTTPRequestOperation.m in Sources */,
 				8F4B1E0116DD1D6400E15A9E /* MPInstaller.m in Sources */,
 				8F47F0F818EDFD6D00158396 /* MPNetRequest.m in Sources */,
+				8FF831611DEF7ACF005DC5AD /* MPKeyItem.m in Sources */,
 				8F4B1E0316DD1D6400E15A9E /* MPDataMgr.m in Sources */,
 				8F7B8B4F1CB03B3200FB940F /* AFURLResponseSerialization.m in Sources */,
 				8F4B1E0516DD1D6400E15A9E /* MPWebServices.m in Sources */,

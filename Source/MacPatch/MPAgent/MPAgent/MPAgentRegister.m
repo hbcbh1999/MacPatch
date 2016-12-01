@@ -47,25 +47,25 @@
     BOOL result = FALSE;
     NSError *err = nil;
     
-    MPKeychain *mpk = [[MPKeychain alloc] init];
-    mpk.overWriteKeyChainData = self.overWriteKeyChainData;
-    
-    NSString *keyHash = @"NA";
-    NSDictionary *clientData = [mpk dictionaryFromKeychainWithKey:[mpk serviceLabelForClient] error:&err];
+    // Get Client Key
+    MPSimpleKeychain *skc = [[MPSimpleKeychain alloc] initWithKeychainFile:MP_KEYCHAIN_FILE];
+    MPKeyItem *clientKeyItem = [skc retrieveKeyItemForService:kMPClientService error:&err];
     if (err) {
         NSLog(@"Error: %@",err.localizedDescription);
         return FALSE;
     }
     
+    // Gen SHA1 Digest
     err = nil;
     MPCrypto *mpc = [[MPCrypto alloc] init];
-    keyHash = [mpc getHashFromStringForType:[clientData objectForKey:@"cKey"] type:@"SHA1"];
+    NSString *keyHash = [mpc getHashFromStringForType:clientKeyItem.secret type:@"SHA1"];
     if (err) {
         NSLog(@"Error: %@",err.localizedDescription);
         return FALSE;
     }
     
-    result = [mpws getAgentRegStatus:nil error:&err];
+    // Query WebService for answer
+    result = [mpws getAgentRegStatusWithKeyHash:keyHash error:&err];
     if (err) {
         NSLog(@"Error: %@",err.localizedDescription);
         return FALSE;
@@ -76,78 +76,69 @@
 
 - (BOOL)clientIsRegisteredWithValidData
 {
-    BOOL result = FALSE;
+    // This is Not Complete
+    return FALSE;
     NSError *err = nil;
     
-    MPKeychain *mpk = [[MPKeychain alloc] init];
-    mpk.overWriteKeyChainData = self.overWriteKeyChainData;
-    
-    NSDictionary *serverData = [mpk dictionaryFromKeychainWithKey:[mpk serviceLabelForServer] error:&err];
+    MPSimpleKeychain *skc = [[MPSimpleKeychain alloc] initWithKeychainFile:MP_KEYCHAIN_FILE];
+    MPKeyItem *srvKeyItem = [skc retrieveKeyItemForService:kMPServerService error:&err];
     if (err) {
         NSLog(@"%@",err.localizedDescription);
         return FALSE;
     }
-    NSLog(@"serverData: %@",serverData);
+    NSLog(@"Server Key Data: %@",srvKeyItem.toDictionary);
     
-    NSData *pubKey;
-    if ([serverData objectForKey:@"PubKey"]) {
-        pubKey = [[serverData objectForKey:@"PubKey"] dataUsingEncoding:NSUTF8StringEncoding];
-    } else {
-        NSLog(@"Public key was not found using the PubKey attribute.");
-        return FALSE;
-    }
-    
-    
-    NSDictionary *clientData = [mpk dictionaryFromKeychainWithKey:[mpk serviceLabelForClient] error:&err];
+    err = nil;
+    MPKeyItem *clientKeyItem = [skc retrieveKeyItemForService:kMPClientService error:&err];
     if (err) {
         NSLog(@"%@",err.localizedDescription);
         return FALSE;
     }
-    NSLog(@"clientData: %@",clientData);
+    NSLog(@"Client Key Data: %@",clientKeyItem.toDictionary);
     
-    return result;
+    return TRUE;
 }
 
-- (int)registerClient
+- (int)registerClient:(NSError **)error
 {
-    return [self registerClient:nil hostName:nil];
+    return [self registerClient:nil error:error];
 }
 
-- (int)registerClient:(NSString *)aRegKey
-{
-    return [self registerClient:aRegKey hostName:nil];
-}
-
-- (int)registerClient:(NSString *)aRegKey hostName:(NSString *)hostName
+- (int)registerClient:(NSString *)aRegKey error:(NSError **)error
 {
     int res = 0;
     NSError *err = nil;
     
-    if (![self addServerPublicKeyFileToKeychain:SRV_PUB_KEY error:&err]) {
-        qlerror(@"Error adding server public key to keychain.");
-        if (err) {
+    NSDictionary *regDict = [self generateRegistrationData:&err];
+    if (err) {
+        if (error != NULL) {
+            *error = err;
+        } else {
             qlerror(@"%@",err.localizedDescription);
         }
-    }
-    
-    err = nil;
-    NSDictionary *regDict = [self generateRegistrationPayload:&err];
-    if (err) {
-        qlerror(@"%@",err.localizedDescription);
         return 1;
     }
     
     err = nil;
     [self postRegistrationToServer:regDict regKey:aRegKey error:&err];
     if (err) {
-        qlerror(@"%@",err.localizedDescription);
+        if (error != NULL) {
+            *error = err;
+        } else {
+            qlerror(@"%@",err.localizedDescription);
+        }
         return 1;
     }
     
     return res;
 }
 
-- (int)registerClientToBeRemoved:(NSString *)aRegKey hostName:(NSString *)hostName
+- (int)unregisterClient:(NSError **)error
+{
+    return [self unregisterClient:error];
+}
+
+- (int)unregisterClient:(NSString *)aRegKey error:(NSError **)error
 {
     //NSError *err = nil;
     //NSString *res = [mpws getRegisterAgent:aRegKey hostName:hostName clientKey:clientKey error:&err];
@@ -155,22 +146,23 @@
     return 0;
 }
 
+#pragma mark - Private
 - (BOOL)addServerPublicKeyFileToKeychain:(NSString *)aFilePath error:(NSError **)err
 {
-    NSFileManager *fm       = [NSFileManager defaultManager];
-    MPKeychain    *mpk      = [[MPKeychain alloc] init];
-    mpk.overWriteKeyChainData = self.overWriteKeyChainData;
-    NSString      *pubKeyStr;
-    NSError       *fmErr    = nil;
+    NSFileManager *fm = [NSFileManager defaultManager];
+    MPSimpleKeychain *skc = [[MPSimpleKeychain alloc] initWithKeychainFile:MP_KEYCHAIN_FILE];
     
+    NSString *pubKeyStr;
+    NSError  *error = nil;
     
+    // Read Server Public Key to String to add to keychain
     if ([fm fileExistsAtPath:aFilePath]) {
-        pubKeyStr = [NSString stringWithContentsOfFile:aFilePath encoding:NSUTF8StringEncoding error:&fmErr];
-        if (fmErr) {
+        pubKeyStr = [NSString stringWithContentsOfFile:aFilePath encoding:NSUTF8StringEncoding error:&error];
+        if (error) {
             if (err != NULL) {
-                *err = fmErr;
+                *err = error;
             } else {
-                printf("%s\n",[fmErr.localizedDescription UTF8String]);
+                printf("%s\n",[error.localizedDescription UTF8String]);
             }
             return NO;
         }
@@ -184,80 +176,41 @@
         return NO;
     }
     
-    NSDictionary *attributes = @{ @"PubKey" : pubKeyStr };
-    NSError *error = nil;
-    OSStatus *result = [mpk addDictionaryToKeychainWithKey:[mpk serviceLabelForServer] dictionary:attributes error:&error];
+    // Create new MPKeyItem, add server public key
+    // Add key item to keychain for server service
+    MPKeyItem *kItem = [[MPKeyItem alloc] init];
+    kItem.publicKey = pubKeyStr;
+    error = nil;
+    BOOL itemAdded = [skc saveKeyItemWithService:kItem service:kMPServerService error:&error];
     if (error) {
-        if (err != NULL) {
-            *err = error;
-        } else {
-            printf("%s\n",[error.localizedDescription UTF8String]);
-        }
-        return NO;
-    }
-    if (result != noErr) {
-        NSError *resErr = [mpk errorForOSStatus:result];
-        if (err != NULL) {
-            *err = resErr;
-        } else {
-            printf("%s\n",[resErr.localizedDescription UTF8String]);
-        }
+        if (err != NULL) *err = error;
         return NO;
     }
     
-    return YES;
+    if (itemAdded) {
+        return YES;
+    }
+    
+    return NO;
 }
 
-- (BOOL)addServerPublicKeyStringToKeychain:(NSString *)aPubKeyString error:(NSError **)err
+- (BOOL)addClientKeysToKeychain:(MPKeyItem *)aClientKeys error:(NSError **)err
 {
-    MPKeychain *mpk = [[MPKeychain alloc] init];
-    mpk.overWriteKeyChainData = self.overWriteKeyChainData;
-    
-    NSDictionary *attributes = @{ @"PubKey" : aPubKeyString };
     NSError *error = nil;
-    OSStatus *result = [mpk addDictionaryToKeychainWithKey:[mpk serviceLabelForServer] dictionary:attributes error:&error];
-    if (error) {
-        if (err != NULL) {
-            *err = error;
-        } else {
-            printf("%s\n",[error.localizedDescription UTF8String]);
-        }
-        return NO;
-    }
-    if (result != noErr) {
-        NSError *resErr = [mpk errorForOSStatus:result];
-        if (err != NULL) {
-            *err = resErr;
-        } else {
-            printf("%s\n",[resErr.localizedDescription UTF8String]);
-        }
-        return NO;
-    }
+    MPSimpleKeychain *skc = [[MPSimpleKeychain alloc] initWithKeychainFile:MP_KEYCHAIN_FILE];
     
-    return YES;
-}
+    // Make Sure the MPKeyItem is not nil
+    if (!aClientKeys) {
+        if (err != NULL) {
+            *err = [skc errorForOSStatus:errSecBadReq];
+        } else {
+            printf("%s\n",[[skc errorForOSStatus:errSecBadReq].localizedDescription UTF8String]);
+        }
+        return NO;
+    }
 
-- (BOOL)addClientKeysToKeychain:(NSDictionary *)aClientKeys error:(NSError **)err
-{
-    MPKeychain *mpk = [[MPKeychain alloc] init];
-    mpk.overWriteKeyChainData = self.overWriteKeyChainData;
-    
-    if (![aClientKeys objectForKey:@"priKeyPem"] || ![aClientKeys objectForKey:@"pubKeyPem"])
-    {
-        if (err != NULL) {
-            *err = [mpk errorForOSStatus:errSecBadReq];
-        } else {
-            printf("%s\n",[[mpk errorForOSStatus:errSecBadReq].localizedDescription UTF8String]);
-        }
-        return NO;
-    }
-    
-    NSDictionary *attributes = @{ @"PubKey" : [aClientKeys objectForKey:@"pubKeyPem"],
-                                  @"PriKey" : [aClientKeys objectForKey:@"priKeyPem"],
-                                  @"cKey"   : self.clientKey};
-    
-    NSError *error = nil;
-    OSStatus *result = [mpk addDictionaryToKeychainWithKey:[mpk serviceLabelForClient] dictionary:attributes error:&error];
+    // Add the keys to the Keychain
+    OSStatus *result = [skc saveKeyItemWithService:aClientKeys service:kMPClientService error:&error];
     if (error) {
         if (err != NULL) {
             *err = error;
@@ -269,11 +222,10 @@
     
     if (result != noErr)
     {
-        NSError *resErr = [mpk errorForOSStatus:result];
         if (err != NULL) {
-            *err = resErr;
+            *err = [skc errorForOSStatus:result];
         } else {
-            printf("%s\n",[resErr.localizedDescription UTF8String]);
+            printf("%s\n",[[skc errorForOSStatus:result].localizedDescription UTF8String]);
         }
         return NO;
     }
@@ -281,63 +233,22 @@
     return YES;
 }
 
-- (NSDictionary *)generateRegistrationPayload:(NSError **)err
+- (MPKeyItem *)generateClientKeys:(NSError **)err
 {
     NSError *error = nil;
+    MPKeyItem *kItem = [[MPKeyItem alloc] init];
+    MPCrypto *mpc = [[MPCrypto alloc] init];
+    
     // Create New Client Key and set class instance with the new key
     NSString *cKey = [[NSProcessInfo processInfo] globallyUniqueString];
     [self setClientKey:cKey];
-    
-    MPKeychain *mpk = [[MPKeychain alloc] init];
-    mpk.overWriteKeyChainData = self.overWriteKeyChainData;
-    
-    // Get Server Data From the Keychain
-    NSDictionary *serverData = [mpk dictionaryFromKeychainWithKey:[mpk serviceLabelForServer] error:&error];
-    if (error) {
-        if (err != NULL) {
-            *err = error;
-        } else {
-            printf("%s\n",[error.localizedDescription UTF8String]);
-        }
-        return nil;
-    }
-    
-    // Get the Server Public Key from the Server Data
-    NSData *pubKey;
-    if ([serverData objectForKey:@"PubKey"]) {
-        pubKey = [[serverData objectForKey:@"PubKey"] dataUsingEncoding:NSUTF8StringEncoding];
-    } else {
-        NSDictionary *userInfo = @{NSLocalizedDescriptionKey: @"Public key was not found using the public key attribute."};
-        NSError *_Err = [NSError errorWithDomain:@"MPAgentRegistrationDomain" code:99999 userInfo:userInfo];
-        if (err != NULL) {
-            *err = _Err;
-        } else {
-            printf("%s\n",[_Err.localizedDescription UTF8String]);
-        }
-        return nil;
-    }
-    
-    // Encrypt the client key using the servers public key
-    // also, SHA1 encode the client key. This will be used to
-    // verify that we decoded the key properly and it matches.
-    error = nil;
-    MPCrypto *mpc = [[MPCrypto alloc] init];
-    SecKeyRef srvPubKeyRef = [mpc getKeyRef:pubKey];
-    NSString *encodedKey = [mpc encryptStringUsingKey:cKey key:srvPubKeyRef error:&error];
-    NSString *hashOfKey =[mpc getHashFromStringForType:cKey type:@"SHA1"];
-    if (error) {
-        if (err != NULL) *err = error;
-        return nil;
-    }
     
     // Generate a RSA keypair for the Agent using 2048 bit key size
     error = nil;
     int keyRes = [mpc generateRSAKeyPairOfSize:2048 error:&error];
     if (error || keyRes != 0) {
-        if (err != NULL) {
-            *err = error;
-            return nil;
-        }
+        if (err != NULL) *err = error;
+        return nil;
     }
     
     // Put both keys in to a dictionary that will be stored in the
@@ -349,41 +260,91 @@
         return nil;
     }
     
-    // Add the Client Keys to the Keychain, this will also add the
-    // Agent Client Key to this entry as well
+    kItem.publicKey = [clientKeys objectForKey:@"publicKey"];
+    kItem.privateKey = [clientKeys objectForKey:@"privateKey"];
+    kItem.secret = cKey;
+    
+    return [kItem copy];
+}
+
+- (NSDictionary *)generateRegistrationData:(NSError **)err
+{
+    NSError *error = nil;
+    MPSimpleKeychain *skc = [[MPSimpleKeychain alloc] initWithKeychainFile:MP_KEYCHAIN_FILE];
+    
+    // Add Server Public Key to Keychain, for simplicity
+    // Get the Server Public Key from the Server Data
+    MPKeyItem *srvKeyItem = [skc retrieveKeyItemForService:kMPServerService error:NULL];
+    if (!srvKeyItem) {
+        // srvKeyItem will be nil if not found, so we add it
+        if ([[NSFileManager defaultManager] fileExistsAtPath:SRV_PUB_KEY]) {
+            BOOL addServerKey = [self addServerPublicKeyFileToKeychain:SRV_PUB_KEY error:&error];
+            if (err != NULL) *err = error;
+            if (addServerKey == NO) {
+                return nil;
+            }
+        } else {
+            NSDictionary *userInfo = @{NSLocalizedDescriptionKey: @"Public key was not found on file system."};
+            if (err != NULL) *err = [NSError errorWithDomain:@"MPAgentRegistrationDomain" code:99999 userInfo:userInfo];
+            return nil;
+        }
+    }
+    
+    // Get the Key now that it has been added to keychain
     error = nil;
-    [self addClientKeysToKeychain:clientKeys error:&error];
+    srvKeyItem = [skc retrieveKeyItemForService:kMPServerService error:&error];
     if (error) {
         if (err != NULL) *err = error;
         return nil;
     }
     
-    // Create the Agent Registration Dictionary/Payload to send to the server
-    @try
-    {
-        NSDictionary *regInfo;
+    // Create the Client Keys then add to Keychain
+    error = nil;
+    MPKeyItem *clientKeyItem = [self generateClientKeys:&error];
+    if (error) {
+        if (err != NULL) *err = error;
+        return nil;
+    }
+    
+    error = nil;
+    [self addClientKeysToKeychain:clientKeyItem error:&error];
+    if (error) {
+        if (err != NULL) *err = error;
+        return nil;
+    }
+    
+    
+    // Encrypt the client key using the servers public key
+    // also, SHA1 encode the client key. This will be used to
+    // verify that we decoded the key properly and it matches.
+    error = nil;
+    MPCrypto *mpc = [[MPCrypto alloc] init];
+    NSData *pubKeyData = [srvKeyItem.publicKey dataUsingEncoding:NSUTF8StringEncoding];
+    NSString *encodedKey = [mpc encryptStringUsingKey:clientKeyItem.secret key:[mpc getKeyRef:pubKeyData] error:&error];
+    NSString *hashOfKey =[mpc getHashFromStringForType:clientKeyItem.secret type:@"SHA1"];
+    if (error) {
+        if (err != NULL) *err = error;
+        return nil;
+    }
+    
+    // Create the dictionary to send to Web service
+    @try {
         MPAgent *agent = [MPAgent  sharedInstance];
-        regInfo = @{ @"cuuid": [agent g_cuuid],
-                     @"cKey":encodedKey.copy,
-                     @"CPubKeyPem":clientKeys[@"pubKeyPem"],
-                     @"CPubKeyDer":clientKeys[@"pubKeyDer"],
-                     @"ClientHash":hashOfKey,
-                     @"HostName":[agent g_hostName],
-                     @"SerialNo":[agent g_serialNo]};
+        NSDictionary *regInfo = @{ @"cuuid":        [agent g_cuuid],
+                                     @"cKey":       [encodedKey copy],
+                                     @"CPubKeyPem": clientKeyItem.publicKey,
+                                     @"CPubKeyDer": @"NA",
+                                     @"ClientHash": hashOfKey,
+                                     @"HostName":   [agent g_hostName],
+                                     @"SerialNo":   [agent g_serialNo]};
         return regInfo;
     }
     @catch (NSException *exception) {
-        if (err != NULL) {
-            *err = [NSError errorWithDomain:@"MPAgentRegistrationDomain" code:9998 userInfo:exception.userInfo];
-        }
+        if (err != NULL) *err = [NSError errorWithDomain:@"MPAgentRegistrationDomain" code:9998 userInfo:exception.userInfo];
         return nil;
     }
     
     // Should not get here
-    NSDictionary *userInfo = @{NSLocalizedDescriptionKey: @"Reached end of method registration payload."};
-    if (err != NULL) {
-        *err = [NSError errorWithDomain:@"MPAgentRegistrationDomain" code:99997 userInfo:userInfo];
-    }
     return nil;
 }
 
@@ -398,5 +359,4 @@
     }
     return YES;
 }
-
 @end

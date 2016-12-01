@@ -46,6 +46,49 @@ function setOwnerAndPerms {
 	fi
 }
 
+function runClientActions {
+
+	/Library/MacPatch/Client/MPAgent -c
+	sleep 1
+
+	# Get Server List
+	/Library/MacPatch/Client/MPAgent -n
+	sleep 1
+
+	# Get SU Server List
+	/Library/MacPatch/Client/MPAgent -z
+	sleep 1
+
+	# Run Client Inventory Scan
+	/Library/MacPatch/Client/MPAgent -t All
+	sleep 1
+
+	# If iLoadAssitant is not running, scan for patches, AV, and inventory
+	if [ -z "$(isIload)" ]; then
+
+		# Run Client Vul Scan
+		/Library/MacPatch/Client/MPAgentExec -s
+		sleep 1
+		
+		# Run Client AV Scan
+		/Library/MacPatch/Client/MPAgentExec -a
+		sleep 1
+	else
+		CNT=`/usr/libexec/PlistBuddy -c "Print mpTasks" /Library/MacPatch/Client/.tasks/gov.llnl.mp.tasks.plist | grep Dict | wc -l`
+		#loop CNT
+		NXTDAY=$(date -j -v+1d +"%Y-%m-%d")
+		INT=0
+		while [ $INT -lt $CNT ]; do 
+			if [ `/usr/libexec/PlistBuddy -c "Print :mpTasks:$INT:cmd" /Library/MacPatch/Client/.tasks/gov.llnl.mp.tasks.plist` == "kMPVulScan" ]; then
+				/usr/libexec/PlistBuddy -c "Set :mpTasks:$INT:startdate $NXTDAY" /Library/MacPatch/Client/.tasks/gov.llnl.mp.tasks.plist
+			elif [ `/usr/libexec/PlistBuddy -c "Print :mpTasks:$INT:cmd" /Library/MacPatch/Client/.tasks/gov.llnl.mp.tasks.plist` == "kMPVulUpdate" ]; then
+				/usr/libexec/PlistBuddy -c "Set :mpTasks:$INT:startdate $NXTDAY" /Library/MacPatch/Client/.tasks/gov.llnl.mp.tasks.plist
+			fi
+			INT=`expr $INT + 1`
+		done
+	fi
+}
+
 # ******************************************************************
 # Set owner & permissions
 setOwnerAndPerms /Library/LaunchDaemons/gov.llnl.mp.agent.plist
@@ -124,44 +167,64 @@ fi
 # ******************************************************************
 # Run Client Check-in
 
-/Library/MacPatch/Client/MPAgent -c
-sleep 1
 
-# Get Server List
-/Library/MacPatch/Client/MPAgent -n
-sleep 1
+regEnabled=`defaults read "${SRC}/gov.llnl.mpagent.plist" registrationEnabled`
+case "$regEnabled" in
+ 0) a=$regEnabled ;;
+ 1) a=$regEnabled ;;
+ *) a=0 ;;
+esac
+regEnabled=$a
+useAutoReg=`defaults read "${SRC}/gov.llnl.mpagent.plist" autoregEnabled`
+case "$useAutoReg" in
+ 0) b=$useAutoReg ;;
+ 1) b=$useAutoReg ;;
+ *) b=0 ;;
+esac
+useAutoReg=$b
+useParking=`defaults read "${SRC}/gov.llnl.mpagent.plist" clientParkingEnabled`
+case "$useParking" in
+ 0) c=$useParking ;;
+ 1) c=$useParking ;;
+ *) c=0 ;;
+esac
+useParking=$c
 
-# Get SU Server List
-/Library/MacPatch/Client/MPAgent -z
-sleep 1
-
-# Run Client Inventory Scan
-/Library/MacPatch/Client/MPAgent -t All
-sleep 1
-
-# If iLoadAssitant is not running, scan for patches, AV, and inventory
-if [ -z "$(isIload)" ]; then
-
-	# Run Client Vul Scan
-	/Library/MacPatch/Client/MPAgentExec -s
+if [ $regEnabled == 1 ]; then
+	# Check to see if the client is already registered
+	/Library/MacPatch/Client/MPAgent -R
 	sleep 1
-	
-	# Run Client AV Scan
-	/Library/MacPatch/Client/MPAgentExec -a
-	sleep 1
-else
-	CNT=`/usr/libexec/PlistBuddy -c "Print mpTasks" /Library/MacPatch/Client/.tasks/gov.llnl.mp.tasks.plist | grep Dict | wc -l`
-	#loop CNT
-	NXTDAY=$(date -j -v+1d +"%Y-%m-%d")
-	INT=0
-	while [ $INT -lt $CNT ]; do 
-		if [ `/usr/libexec/PlistBuddy -c "Print :mpTasks:$INT:cmd" /Library/MacPatch/Client/.tasks/gov.llnl.mp.tasks.plist` == "kMPVulScan" ]; then
-			/usr/libexec/PlistBuddy -c "Set :mpTasks:$INT:startdate $NXTDAY" /Library/MacPatch/Client/.tasks/gov.llnl.mp.tasks.plist
-		elif [ `/usr/libexec/PlistBuddy -c "Print :mpTasks:$INT:cmd" /Library/MacPatch/Client/.tasks/gov.llnl.mp.tasks.plist` == "kMPVulUpdate" ]; then
-			/usr/libexec/PlistBuddy -c "Set :mpTasks:$INT:startdate $NXTDAY" /Library/MacPatch/Client/.tasks/gov.llnl.mp.tasks.plist
+	if [ $? == 1 ]; then
+		# If reg key file exists we use that
+		# Register Client With Provided Key
+		if [ -f "${SRC}/mpagent.reg" ]; then
+			regFile="${SRC}/mpagent.reg" 
+			regKey=$(<$regFile)
+			/Library/MacPatch/Client/MPAgent -r $regKey
+			sleep 1
+			if [ $? == 0 ]; then
+				runClientActions
+			fi
 		fi
-		INT=`expr $INT + 1`
-	done
+		# If Autoreg is enabled we use it
+		if [ $useAutoReg == 1 ]; then
+			/Library/MacPatch/Client/MPAgent -r
+			sleep 1
+			if [ $? == 0 ]; then
+				runClientActions
+			fi
+		fi
+
+		# If clientParking is enabled we use it
+		# we do not run any of the client actions
+		if [ $useParking == 1 ]; then
+			/Library/MacPatch/Client/MPAgent -r
+			sleep 1
+		fi
+	fi
+else:
+	# Run all of the normal client actions
+	runClientActions
 fi
 
 # ******************************************************************

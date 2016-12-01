@@ -23,17 +23,10 @@
 
 - (BOOL)clientIsRegistered;
 
-- (int)registerClient;
-- (int)registerClient:(NSString *)aRegKey;
-- (int)registerClient:(NSString *)aRegKey hostName:(NSString *)hostName;
+- (int)registerClient:(NSError **)error;
+- (int)registerClient:(NSString *)aRegKey error:(NSError **)error;
 
-// Server Pub Key
-
-- (BOOL)addServerPublicKeyFileToKeychain:(NSString *)aFilePath error:(NSError **)err;
-- (BOOL)addServerPublicKeyStringToKeychain:(NSString *)aPubKeyString error:(NSError **)err;
-
-// Misc
-- (NSDictionary *)generateRegistrationPayload:(NSError **)err;
-- (BOOL)postRegistrationToServer:(NSDictionary *)aRegData regKey:(NSString *)regKey error:(NSError **)err;
+- (int)unregisterClient:(NSError **)error;
+- (int)unregisterClient:(NSString *)aRegKey error:(NSError **)error;
 
 @end

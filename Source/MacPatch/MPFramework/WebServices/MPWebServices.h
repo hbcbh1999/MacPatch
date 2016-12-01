@@ -75,7 +75,7 @@
 
 - (BOOL)postClientAVData:(NSDictionary *)aDict error:(NSError **)err;
 
-- (BOOL)getAgentRegStatus:(NSString *)keyHash error:(NSError **)err;
+- (BOOL)getAgentRegStatusWithKeyHash:(NSString *)keyHash error:(NSError **)err;
 - (BOOL)postAgentReister:(NSDictionary *)aDict regKey:(NSString *)aRegKey error:(NSError **)err;
 
 

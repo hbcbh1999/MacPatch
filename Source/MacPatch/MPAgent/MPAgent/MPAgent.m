@@ -169,6 +169,7 @@ static MPAgent *_instance;
 
 - (NSString *)getClientKey
 {
+    /*
     NSError *err = nil;
     MPKeychain *mpkc = [[MPKeychain alloc] init];
     NSDictionary *clientData = [mpkc dictionaryFromKeychainWithKey:[mpkc serviceLabelForClient] error:&err];
@@ -183,6 +184,8 @@ static MPAgent *_instance;
         logit(lcl_vError,@"Client Key does not exist. Signatures will fail to verify.");
         return @"NA";
     }
+     */
+    return @"NA";
 }
 
 @end
