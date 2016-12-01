@@ -132,7 +132,7 @@ def addClientConfig():
 					"Domain": "Default", "PatchGroup": "Default", "Reboot": "1", "SWDistGroup": "Default",
 					"MPProxyServerAddress": "AUTOFILL", "MPProxyServerPort": "3600", "MPProxyEnabled": "0",
 					"MPServerAddress": "AUTOFILL", "MPServerPort": "3600", "MPServerSSL": "1",
-					"CheckSignatures": "0", "MPServerAllowSelfSigned": "0", "registrationEnabled": "0"
+					"CheckSignatures": "0", "MPServerAllowSelfSigned": "0"
 				}
 
 	# Create UUID

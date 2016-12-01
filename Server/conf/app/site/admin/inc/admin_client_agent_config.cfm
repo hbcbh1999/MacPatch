@@ -385,7 +385,6 @@ table.genTable td
 			<tr><td>MPServerPort:</td><td><input type="text" name="p_MPServerPort" size="40" maxlength="255" value="2600"></td><td>Enforced: <select name="enforced"><option value="1">Yes</option><option value="0" selected>No</option></select></td><td style="padding-left:60px;">MP Master Server Port</td></tr>
 			<tr><td>MPServerSSL:</td><td><input type="text" name="p_MPServerSSL" size="40" maxlength="255" value="1"></td><td>Enforced: <select name="enforced"><option value="1">Yes</option><option value="0" selected>No</option></select></td><td style="padding-left:60px;">Use SSL for client connection</td></tr>
 			<tr><td>MPServerAllowSelfSigned:</td><td><input type="text" name="p_MPServerAllowSelfSigned" size="40" maxlength="255" value="0"></td><td>Enforced: <select name="enforced"><option value="1">Yes</option><option value="0" selected>No</option></select></td><td style="padding-left:60px;">Allow Self Signed Certificate. Use if server is IP based.</td></tr>
-			<tr><td>registrationEnabled:</td><td><input type="text" name="p_registrationEnabled" size="40" maxlength="255" value="0"></td><td>Enforced: <select name="enforced"><option value="1">Yes</option><option value="0" selected>No</option></select></td><td style="padding-left:60px;">Requires clients (agents) to be registered.</td></tr>
 			</table>
 		</fieldset>
 		<fieldset>
@@ -431,7 +430,6 @@ table.genTable td
 			<tr><td>MPServerPort:</td><td><input type="text" name="p_MPServerPort" size="40" maxlength="255" value="#configData.MPServerPort.value#"></td><td>Enforced: #SelectFormOption(configData.MPServerPort.enforced)#</td><td style="padding-left:60px;">MP Master Server Port</td></tr>
 			<tr><td>MPServerSSL:</td><td><input type="text" name="p_MPServerSSL" size="40" maxlength="255" value="#configData.MPServerSSL.value#"></td><td>Enforced: #SelectFormOption(configData.MPServerSSL.enforced)#</td><td style="padding-left:60px;">Use SSL for client connection</td></tr>
 			<tr><td>MPServerAllowSelfSigned:</td><td><input type="text" name="p_MPServerAllowSelfSigned" size="40" maxlength="255" value="#configData.MPServerAllowSelfSigned.value#"></td><td>Enforced: #SelectFormOption(configData.MPServerAllowSelfSigned.enforced)#</td><td style="padding-left:60px;">Allow Self Signed Certificate. Use if server is IP based.</td></tr>
-			<tr><td>registrationEnabled:</td><td><input type="text" name="p_registrationEnabled" size="40" maxlength="255" value="#configData.registrationEnabled.value#"></td><td>Enforced: #SelectFormOption(configData.registrationEnabled.enforced)#</td><td style="padding-left:60px;">Requires clients (agents) to be registered.</td></tr>
 			</table>
 		</fieldset>
 			<div style="margin-top:20px;">
