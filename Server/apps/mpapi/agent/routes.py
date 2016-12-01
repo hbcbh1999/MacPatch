@@ -585,11 +585,14 @@ class GenAgentConfig():
             return None
 
         _autoReg = "0"
+        _parking = "0"
         _regQuery = MpClientsRegistrationSettings.query.first()
         if _regQuery is not None:
             rec = _regQuery.asDict
             if rec['autoreg'] == 1:
                 _autoReg = "1"
+            if rec['client_parking'] == 1:
+                _parking = "1"
 
         masterConf = self.serverDataOfType("Master")
         proxyConf = self.serverDataOfType("Proxy")
@@ -634,6 +637,7 @@ class GenAgentConfig():
                 _default['registrationEnabled'] = '0'
 
             _default['autoregEnabled'] = _autoReg
+            _default['clientParkingEnabled'] = _parking
 
         else:
             _enforced['MPServerAddress'] = masterConf['MPServerAddress']
