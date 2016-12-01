@@ -61,7 +61,7 @@ class Registration(MPResource):
         '''
 
         content = request.get_json(silent=True)
-        if all(key in content for key in ("cKey", "CPubKeyPem", "CPubKeyDer", "ClientHash")):
+        if all(key in content for key in ("cKey", "CPubKeyPem", "ClientHash", "HostName", "SerialNo")):
 
             valid_reg_key   = False
             use_reg_key     = False

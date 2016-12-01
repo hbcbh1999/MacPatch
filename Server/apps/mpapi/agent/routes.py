@@ -1,5 +1,5 @@
 from werkzeug import secure_filename
-from flask import Flask, request, abort
+from flask import Flask, request, abort, current_app
 import flask_restful
 from flask_restful import reqparse
 from sqlalchemy.exc import IntegrityError
@@ -584,6 +584,13 @@ class GenAgentConfig():
             log_Error("[GenAgentConfig][config]: No Agent Config Data Found")
             return None
 
+        _autoReg = "0"
+        _regQuery = MpClientsRegistrationSettings.query.first()
+        if _regQuery is not None:
+            rec = _regQuery.asDict
+            if rec['autoreg'] == 1:
+                _autoReg = "1"
+
         masterConf = self.serverDataOfType("Master")
         proxyConf = self.serverDataOfType("Proxy")
         if masterConf == None and proxyConf == None:
@@ -621,6 +628,13 @@ class GenAgentConfig():
             _default['MPServerPort']    = masterConf['MPServerPort']
             _default['MPServerSSL']     = masterConf['MPServerSSL']
             _default['MPServerAllowSelfSigned'] = masterConf['MPServerAllowSelfSigned']
+            if current_app.config['REQUIRE_SIGNATURES'] == True:
+                _default['registrationEnabled'] = '1'
+            else:
+                _default['registrationEnabled'] = '0'
+
+            _default['autoregEnabled'] = _autoReg
+
         else:
             _enforced['MPServerAddress'] = masterConf['MPServerAddress']
             _enforced['MPServerPort'] = masterConf['MPServerPort']

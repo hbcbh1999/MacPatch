@@ -143,6 +143,8 @@ def writeRegInfoToDatabase(regInfo, decoded_client_key, enable=1):
         setattr(regObj, 'clientKey', decoded_client_key)
         setattr(regObj, 'pubKeyPem', regInfo['CPubKeyPem'])
         setattr(regObj, 'pubKeyPemHash', regInfo['CPubKeyDer'])
+        setattr(regObj, 'hostname', regInfo['HostName'])
+        setattr(regObj, 'serialno', regInfo['SerialNo'])
         setattr(regObj, 'reg_date', datetime.now())
         log_Debug('Add Registration Data Record')
         db.session.add(regObj)
