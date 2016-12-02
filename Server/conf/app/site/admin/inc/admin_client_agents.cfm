@@ -286,7 +286,7 @@
         </div>
         <div id="right">
         To upload a new version of the MacPatch agent please download the MacPatch Agent Uploader.<br>
-        <a class="btn medium gray" href="/mp-content/tools/MMPAgentUploader.dmg" target="_new">Download</a>
+        <a class="btn medium gray" href="/mp-content/tools/MPAgentUploader.zip" target="_new">Download</a>
         </div>
     </div>
 </div>

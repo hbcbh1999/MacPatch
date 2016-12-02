@@ -168,21 +168,21 @@ fi
 # Run Client Check-in
 
 
-regEnabled=`defaults read "${SRC}/gov.llnl.mpagent.plist" registrationEnabled`
+regEnabled=`defaults read "${agentPrefsPlist}" registrationEnabled`
 case "$regEnabled" in
  0) a=$regEnabled ;;
  1) a=$regEnabled ;;
  *) a=0 ;;
 esac
 regEnabled=$a
-useAutoReg=`defaults read "${SRC}/gov.llnl.mpagent.plist" autoregEnabled`
+useAutoReg=`defaults read "${agentPrefsPlist}" autoregEnabled`
 case "$useAutoReg" in
  0) b=$useAutoReg ;;
  1) b=$useAutoReg ;;
  *) b=0 ;;
 esac
 useAutoReg=$b
-useParking=`defaults read "${SRC}/gov.llnl.mpagent.plist" clientParkingEnabled`
+useParking=`defaults read "${agentPrefsPlist}" clientParkingEnabled`
 case "$useParking" in
  0) c=$useParking ;;
  1) c=$useParking ;;
