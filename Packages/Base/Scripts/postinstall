@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -x
 
 # ***************************************************************************************
 # PostFlight Script for MacPatch Client Installer
@@ -193,24 +193,24 @@ useParking=$c
 if [ $regEnabled == 1 ]; then
 	# Check to see if the client is already registered
 	/Library/MacPatch/Client/MPAgent -R
-	sleep 1
 	if [ $? == 1 ]; then
+		sleep 1
 		# If reg key file exists we use that
 		# Register Client With Provided Key
 		if [ -f "${SRC}/mpagent.reg" ]; then
 			regFile="${SRC}/mpagent.reg" 
 			regKey=$(<$regFile)
 			/Library/MacPatch/Client/MPAgent -r $regKey
-			sleep 1
 			if [ $? == 0 ]; then
+				sleep 1
 				runClientActions
 			fi
 		fi
 		# If Autoreg is enabled we use it
 		if [ $useAutoReg == 1 ]; then
 			/Library/MacPatch/Client/MPAgent -r
-			sleep 1
 			if [ $? == 0 ]; then
+				sleep 1
 				runClientActions
 			fi
 		fi
@@ -222,7 +222,7 @@ if [ $regEnabled == 1 ]; then
 			sleep 1
 		fi
 	fi
-else:
+else
 	# Run all of the normal client actions
 	runClientActions
 fi
