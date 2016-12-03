@@ -1,5 +1,4 @@
 from flask import current_app
-from mputil import sendEmailMessage
 
 def log_Crit(logString):
 	current_app.logger.critical(logString)
@@ -18,5 +17,6 @@ def log_Debug(logString):
 	current_app.logger.debug(logString)
 
 def sendMsgOnError(logString):
+	from mputil import sendEmailMessage
 	subject = "[Critical Error] MacPatch Server"
 	sendEmailMessage(subject,logString)
