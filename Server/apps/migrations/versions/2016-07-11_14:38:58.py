@@ -343,9 +343,8 @@ def upgrade():
     sa.PrimaryKeyConstraint('rid')
     )
     op.create_table('mp_inv_state',
-    sa.Column('cuuid', sa.String(length=50), nullable=False),
-    sa.Column('mdate', sa.DateTime(), server_default='1970-01-01 00:00:00', nullable=True),
-    sa.PrimaryKeyConstraint('cuuid')
+    sa.Column('cuuid', sa.String(length=50), nullable=False, primary_key=True),
+    sa.Column('mdate', sa.DateTime(), server_default='1970-01-01 00:00:00', nullable=True)
     )
     op.create_table('mp_os_config_profiles',
     sa.Column('rid', sa.BigInteger(), nullable=False, autoincrement=True),
