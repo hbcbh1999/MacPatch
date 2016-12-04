@@ -215,6 +215,7 @@
 {
     NSUserDefaults *d = [NSUserDefaults standardUserDefaults];
     if ([[d objectForKey:@"MP_REST_WS"] integerValue] == 1) {
+        //[self performSelectorOnMainThread:@selector(authRequestREST) withObject:nil waitUntilDone:NO];
         [self authRequestREST];
     } else {
         [self authRequest];
@@ -223,64 +224,67 @@
 
 -(void)authRequest
 {
-    [authProgressWheel setUsesThreadedAnimation:YES];
-    [authProgressWheel startAnimation:authProgressWheel];
-    [self.authStatus setStringValue:@"Authenticating..."];
-    
-    NSString *_host = serverAddress.stringValue;
-    NSString *_port = serverPort.stringValue;
-    NSString *_ssl = @"https";
-    if (useSSL.state == NSOffState) {
-        _ssl = @"http";
-    } else {
-        _ssl = @"https";
-    }
-    
-    //-- Convert string into URL
-    NSString *urlString = [NSString stringWithFormat:@"%@://%@:%@/%@?method=GetAuthToken&authUser=%@&authPass=%@",_ssl,_host,_port,MPADM_URI,[authUserName.stringValue urlEncode],[authUserPass.stringValue urlEncode]];
-    NSMutableURLRequest *request =[[NSMutableURLRequest alloc] init];
-    [request setURL:[NSURL URLWithString:urlString]];
-    [request setHTTPMethod:@"GET"];
-    
-    NSError *error = nil;
-    NSURLResponse *response;
-    WebRequest *req = [[WebRequest alloc] init];
-    NSData *responseData = [req sendSynchronousRequest:request returningResponse:&response error:&error];
-    if (error)
+    @autoreleasepool
     {
-        qlerror(@"%@",error.localizedDescription);
-        [self.authStatus setStringValue:error.localizedDescription];
-        [self.authStatus setToolTip:error.localizedDescription];
-        [self.authStatus performSelectorOnMainThread:@selector(needsDisplay) withObject:nil waitUntilDone:YES];
-        [authProgressWheel stopAnimation:authProgressWheel];
-        return;
-    }
-    
-    //-- JSON Parsing with response data
-    error = nil;
-    NSDictionary *result = [NSJSONSerialization JSONObjectWithData:responseData options:NSJSONReadingMutableContainers error:&error];
-    qldebug(@"[makeAuthRequest]: %@",result);
-    if ([result objectForKey:@"result"]) {
-        if ([result objectForKey:@"errorno"]) {
-            if ([[result objectForKey:@"errorno"] intValue] == 0)
-            {
-                [self setAuthToken:[result objectForKey:@"result"]];
-            }
-            else
-            {
-                [authStatus setStringValue:[result objectForKey:@"errormsg"]];
-                [authStatus setToolTip:[result objectForKey:@"errormsg"]];
-                [authStatus performSelectorOnMainThread:@selector(needsDisplay) withObject:nil waitUntilDone:YES];
-                [authProgressWheel stopAnimation:authProgressWheel];
-                return;
+        [authProgressWheel setUsesThreadedAnimation:YES];
+        [authProgressWheel startAnimation:authProgressWheel];
+        [self.authStatus setStringValue:@"Authenticating..."];
+        
+        NSString *_host = serverAddress.stringValue;
+        NSString *_port = serverPort.stringValue;
+        NSString *_ssl = @"https";
+        if (useSSL.state == NSOffState) {
+            _ssl = @"http";
+        } else {
+            _ssl = @"https";
+        }
+        
+        //-- Convert string into URL
+        NSString *urlString = [NSString stringWithFormat:@"%@://%@:%@/%@?method=GetAuthToken&authUser=%@&authPass=%@",_ssl,_host,_port,MPADM_URI,[authUserName.stringValue urlEncode],[authUserPass.stringValue urlEncode]];
+        NSMutableURLRequest *request =[[NSMutableURLRequest alloc] init];
+        [request setURL:[NSURL URLWithString:urlString]];
+        [request setHTTPMethod:@"GET"];
+        
+        NSError *error = nil;
+        NSURLResponse *response;
+        WebRequest *req = [[WebRequest alloc] init];
+        NSData *responseData = [req sendSynchronousRequest:request returningResponse:&response error:&error];
+        if (error)
+        {
+            qlerror(@"%@",error.localizedDescription);
+            [self.authStatus setStringValue:error.localizedDescription];
+            [self.authStatus setToolTip:error.localizedDescription];
+            [self.authStatus performSelectorOnMainThread:@selector(needsDisplay) withObject:nil waitUntilDone:YES];
+            [authProgressWheel stopAnimation:authProgressWheel];
+            return;
+        }
+        
+        //-- JSON Parsing with response data
+        error = nil;
+        NSDictionary *result = [NSJSONSerialization JSONObjectWithData:responseData options:NSJSONReadingMutableContainers error:&error];
+        qldebug(@"[makeAuthRequest]: %@",result);
+        if ([result objectForKey:@"result"]) {
+            if ([result objectForKey:@"errorno"]) {
+                if ([[result objectForKey:@"errorno"] intValue] == 0)
+                {
+                    [self setAuthToken:[result objectForKey:@"result"]];
+                }
+                else
+                {
+                    [authStatus setStringValue:[result objectForKey:@"errormsg"]];
+                    [authStatus setToolTip:[result objectForKey:@"errormsg"]];
+                    [authStatus performSelectorOnMainThread:@selector(needsDisplay) withObject:nil waitUntilDone:YES];
+                    [authProgressWheel stopAnimation:authProgressWheel];
+                    return;
+                }
             }
         }
+        
+        [NSApp endSheet:authSheet];
+        [authSheet orderOut:self];
+        [authProgressWheel stopAnimation:authProgressWheel];
+        [self.authStatus setStringValue:@" "];
     }
-    
-    [NSApp endSheet:authSheet];
-    [authSheet orderOut:self];
-    [authProgressWheel stopAnimation:authProgressWheel];
-    [self.authStatus setStringValue:@" "];
 }
 
 - (void)authTextDidChange:(NSNotification *)aNotification
@@ -1086,78 +1090,81 @@
 
 -(void)authRequestREST
 {
-    [authProgressWheel setUsesThreadedAnimation:YES];
-    [authProgressWheel startAnimation:authProgressWheel];
-    [self.authStatus setStringValue:@"Authenticating..."];
-    
-    NSString *_host = serverAddress.stringValue;
-    NSString *_port = serverPort.stringValue;
-    NSString *_ssl = @"https";
-    if (useSSL.state == NSOffState) {
-        _ssl = @"http";
-    } else {
-        _ssl = @"https";
-    }
-    
-    //-- Convert string into URL
-    NSString *urlString = [NSString stringWithFormat:@"%@://%@:%@%@/auth/token",_ssl,_host,_port,MP_BASE_URI];
-    NSDictionary *authDict = @{@"authUser":authUserName.stringValue,@"authPass":authUserPass.stringValue};
-    
-    NSMutableURLRequest *request =[[NSMutableURLRequest alloc] init];
-    [request setURL:[NSURL URLWithString:urlString]];
-    [request setHTTPMethod:@"POST"];
-    
-    NSData *requestData = [NSJSONSerialization dataWithJSONObject:authDict options:0 error:nil];
-    [request setHTTPBody: requestData];
-    [request setValue:[NSString stringWithFormat:@"%d", (int)[requestData length]] forHTTPHeaderField:@"Content-Length"];
-    [request setValue:@"application/json; charset=utf-8" forHTTPHeaderField:@"Content-Type"];
-    
-    
-    NSError *error = nil;
-    NSURLResponse *response;
-    WebRequest *req = [[WebRequest alloc] init];
-    NSData *responseData = [req sendSynchronousRequest:request returningResponse:&response error:&error];
-    if (error)
+    @autoreleasepool
     {
-        qlerror(@"%@",error.localizedDescription);
-        [self.authStatus setStringValue:error.localizedDescription];
-        [self.authStatus setToolTip:error.localizedDescription];
-        [self.authStatus performSelectorOnMainThread:@selector(needsDisplay) withObject:nil waitUntilDone:YES];
-        [authProgressWheel stopAnimation:authProgressWheel];
-        return;
-    }
-    
-    //-- JSON Parsing with response data
-    error = nil;
-    NSDictionary *result = [NSJSONSerialization JSONObjectWithData:responseData options:NSJSONReadingMutableContainers error:&error];
-    qldebug(@"[makeAuthRequest]: %@",result);
-    if ([result objectForKey:@"result"]) {
-        if ([result objectForKey:@"errorno"]) {
-            if ([[result objectForKey:@"errorno"] intValue] == 0)
-            {
-                if ([[result objectForKey:@"result"] objectForKey:@"token"]) {
-                    [self setAuthToken:[[result objectForKey:@"result"] objectForKey:@"token"]];
-                } else {
-                    [authStatus setStringValue:@"Error: token string not found."];
-                    [authStatus setToolTip:@"Error: token string not found."];
+        [authProgressWheel setUsesThreadedAnimation:YES];
+        [authProgressWheel startAnimation:authProgressWheel];
+        [self.authStatus setStringValue:@"Authenticating..."];
+        
+        NSString *_host = serverAddress.stringValue;
+        NSString *_port = serverPort.stringValue;
+        NSString *_ssl = @"https";
+        if (useSSL.state == NSOffState) {
+            _ssl = @"http";
+        } else {
+            _ssl = @"https";
+        }
+        
+        //-- Convert string into URL
+        NSString *urlString = [NSString stringWithFormat:@"%@://%@:%@%@/auth/token",_ssl,_host,_port,MP_BASE_URI];
+        NSDictionary *authDict = @{@"authUser":authUserName.stringValue,@"authPass":authUserPass.stringValue};
+        
+        NSMutableURLRequest *request =[[NSMutableURLRequest alloc] init];
+        [request setURL:[NSURL URLWithString:urlString]];
+        [request setHTTPMethod:@"POST"];
+        
+        NSData *requestData = [NSJSONSerialization dataWithJSONObject:authDict options:0 error:nil];
+        [request setHTTPBody: requestData];
+        [request setValue:[NSString stringWithFormat:@"%d", (int)[requestData length]] forHTTPHeaderField:@"Content-Length"];
+        [request setValue:@"application/json; charset=utf-8" forHTTPHeaderField:@"Content-Type"];
+        
+        
+        NSError *error = nil;
+        NSURLResponse *response;
+        WebRequest *req = [[WebRequest alloc] init];
+        NSData *responseData = [req sendSynchronousRequest:request returningResponse:&response error:&error];
+        if (error)
+        {
+            qlerror(@"%@",error.localizedDescription);
+            [self.authStatus setStringValue:error.localizedDescription];
+            [self.authStatus setToolTip:error.localizedDescription];
+            [self.authStatus performSelectorOnMainThread:@selector(needsDisplay) withObject:nil waitUntilDone:YES];
+            [authProgressWheel stopAnimation:authProgressWheel];
+            return;
+        }
+        
+        //-- JSON Parsing with response data
+        error = nil;
+        NSDictionary *result = [NSJSONSerialization JSONObjectWithData:responseData options:NSJSONReadingMutableContainers error:&error];
+        qldebug(@"[makeAuthRequest]: %@",result);
+        if ([result objectForKey:@"result"]) {
+            if ([result objectForKey:@"errorno"]) {
+                if ([[result objectForKey:@"errorno"] intValue] == 0)
+                {
+                    if ([[result objectForKey:@"result"] objectForKey:@"token"]) {
+                        [self setAuthToken:[[result objectForKey:@"result"] objectForKey:@"token"]];
+                    } else {
+                        [authStatus setStringValue:@"Error: token string not found."];
+                        [authStatus setToolTip:@"Error: token string not found."];
+                        [authStatus performSelectorOnMainThread:@selector(needsDisplay) withObject:nil waitUntilDone:YES];
+                    }
+                }
+                else
+                {
+                    [authStatus setStringValue:[result objectForKey:@"errormsg"]];
+                    [authStatus setToolTip:[result objectForKey:@"errormsg"]];
                     [authStatus performSelectorOnMainThread:@selector(needsDisplay) withObject:nil waitUntilDone:YES];
+                    [authProgressWheel stopAnimation:authProgressWheel];
+                    return;
                 }
             }
-            else
-            {
-                [authStatus setStringValue:[result objectForKey:@"errormsg"]];
-                [authStatus setToolTip:[result objectForKey:@"errormsg"]];
-                [authStatus performSelectorOnMainThread:@selector(needsDisplay) withObject:nil waitUntilDone:YES];
-                [authProgressWheel stopAnimation:authProgressWheel];
-                return;
-            }
         }
+        
+        [NSApp endSheet:authSheet];
+        [authSheet orderOut:self];
+        [authProgressWheel stopAnimation:authProgressWheel];
+        [self.authStatus setStringValue:@" "];
     }
-    
-    [NSApp endSheet:authSheet];
-    [authSheet orderOut:self];
-    [authProgressWheel stopAnimation:authProgressWheel];
-    [self.authStatus setStringValue:@" "];
 }
 
 - (void)postFilesREST:(NSArray *)aFiles

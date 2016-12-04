@@ -51,7 +51,7 @@
     MPSimpleKeychain *skc = [[MPSimpleKeychain alloc] initWithKeychainFile:MP_KEYCHAIN_FILE];
     MPKeyItem *clientKeyItem = [skc retrieveKeyItemForService:kMPClientService error:&err];
     if (err) {
-        NSLog(@"Error: %@",err.localizedDescription);
+        logit(lcl_vError,@"%@",err.localizedDescription);
         return FALSE;
     }
     
@@ -60,14 +60,14 @@
     MPCrypto *mpc = [[MPCrypto alloc] init];
     NSString *keyHash = [mpc getHashFromStringForType:clientKeyItem.secret type:@"SHA1"];
     if (err) {
-        NSLog(@"Error: %@",err.localizedDescription);
+        logit(lcl_vError,@"%@",err.localizedDescription);
         return FALSE;
     }
     
     // Query WebService for answer
     result = [mpws getAgentRegStatusWithKeyHash:keyHash error:&err];
     if (err) {
-        NSLog(@"Error: %@",err.localizedDescription);
+        logit(lcl_vError,@"%@",err.localizedDescription);
         return FALSE;
     }
     

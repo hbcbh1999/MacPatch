@@ -231,6 +231,30 @@ OSStatus extractIdentityAndTrust(CFDataRef inPKCS12Data, SecIdentityRef *outIden
     return 0;
 }
 
+- (NSString *)readClientKey
+{
+    if ([self.clientKey isEqualToString:@"NA"]) {
+        [self setClientKey:[self getClientKeyFromKeychain]];
+        return self.clientKey;
+    } else {
+        return self.clientKey;
+    }
+    
+    return @"NA";
+}
+
+- (NSString *)getClientKeyFromKeychain
+{
+    NSError *err = nil;
+    MPSimpleKeychain *skc = [[MPSimpleKeychain alloc] initWithKeychainFile:MP_KEYCHAIN_FILE];
+    MPKeyItem *keyItem = [skc retrieveKeyItemForService:kMPClientService error:&err];
+    if (err) {
+        logit(lcl_vError,@"getClientKey: %@",err.localizedDescription);
+        return @"NA";
+    }
+    return keyItem.secret;
+}
+
 - (NSURLRequest *)buildRequestForWebServiceMethod:(NSString *)wsMethodName formData:(NSDictionary *)paramDict error:(NSError **)error
 {
     NSError *netErr = nil;
@@ -269,7 +293,7 @@ OSStatus extractIdentityAndTrust(CFDataRef inPKCS12Data, SecIdentityRef *outIden
 
     qldebug(@"%@",bodyDataStr);
     
-    NSString *requestSignature = [self signWebServiceRequest:bodyDataStr timeStamp:ts key:self.clientKey];
+    NSString *requestSignature = [self signWebServiceRequest:bodyDataStr timeStamp:ts key:[self readClientKey]];
     qldebug(@"Signature For Request[%@]: %@",ts ,requestSignature);
     
     [request addValue:requestSignature forHTTPHeaderField:@"X-API-Signature"];
@@ -306,7 +330,7 @@ OSStatus extractIdentityAndTrust(CFDataRef inPKCS12Data, SecIdentityRef *outIden
     theURL = [NSString stringWithFormat:@"%@://%@:%d%@?%@",(mpServer.useHTTPS ? @"https" : @"http"),mpServer.host,(int)mpServer.port,self.apiURI,queryString];
     qldebug(@"%@",theURL);
     
-    NSString *signedData = [self signWebServiceRequest:queryString timeStamp:ts key:self.clientKey];
+    NSString *signedData = [self signWebServiceRequest:queryString timeStamp:ts key:[self readClientKey]];
     qldebug(@"Signature For Get Request[%@]: %@",ts ,signedData);
     
     NSString *properlyEscapedURL = [theURL stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
@@ -413,7 +437,7 @@ OSStatus extractIdentityAndTrust(CFDataRef inPKCS12Data, SecIdentityRef *outIden
             }
             
             NSString *jString = [[NSMutableString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-            signedData = [self signWebServiceRequest:jString timeStamp:ts key:self.clientKey];
+            signedData = [self signWebServiceRequest:jString timeStamp:ts key:[self readClientKey]];
             qldebug(@"Signature For POST Request[%@]: %@",ts ,signedData);
             
             [request setHTTPBody:jsonData];
@@ -421,12 +445,12 @@ OSStatus extractIdentityAndTrust(CFDataRef inPKCS12Data, SecIdentityRef *outIden
         }
         else
         {
-            signedData = [self signWebServiceRequest:aURI timeStamp:ts key:self.clientKey];
+            signedData = [self signWebServiceRequest:aURI timeStamp:ts key:[self readClientKey]];
         }
     }
     else
     {
-        signedData = [self signWebServiceRequest:aURI timeStamp:ts key:self.clientKey];
+        signedData = [self signWebServiceRequest:aURI timeStamp:ts key:[self readClientKey]];
     }
     
     NSString *properlyEscapedURL = [theURL stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
@@ -460,7 +484,7 @@ OSStatus extractIdentityAndTrust(CFDataRef inPKCS12Data, SecIdentityRef *outIden
     
     if ([aHttpMethod isEqualToString:@"POST"])
     {
-        signedData = [self signWebServiceRequest:aBody timeStamp:ts key:self.clientKey];
+        signedData = [self signWebServiceRequest:aBody timeStamp:ts key:[self readClientKey]];
         qldebug(@"Signature For POST Request[%@]: %@",ts ,signedData);
         
         [request setHTTPBody:[aBody dataUsingEncoding:NSUTF8StringEncoding]];
@@ -468,7 +492,7 @@ OSStatus extractIdentityAndTrust(CFDataRef inPKCS12Data, SecIdentityRef *outIden
     }
     else
     {
-        signedData = [self signWebServiceRequest:aURI timeStamp:ts key:self.clientKey];
+        signedData = [self signWebServiceRequest:aURI timeStamp:ts key:[self readClientKey]];
     }
     
     NSString *properlyEscapedURL = [theURL stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
@@ -864,7 +888,13 @@ OSStatus extractIdentityAndTrust(CFDataRef inPKCS12Data, SecIdentityRef *outIden
 
 - (NSString *)signWebServiceRequest:(NSString *)aData timeStamp:(NSString *)aTimeStamp key:(NSString *)aKey
 {
+    qldebug(@"Key for Signature: (%@)",aKey);
+    qldebug(@"Data for Signature: (%@)",aData);
+    qldebug(@"Time Stamp for Signature: (%@)",aTimeStamp);
+    
     NSString *aStrToSign = [NSString stringWithFormat:@"%@-%@",aData,aTimeStamp];
+    
+    qldebug(@"String to Sign: (%@)",aStrToSign);
     
     const char *cKey  = [aKey cStringUsingEncoding:NSASCIIStringEncoding];
     const char *cData = [aStrToSign cStringUsingEncoding:NSASCIIStringEncoding];
@@ -873,7 +903,7 @@ OSStatus extractIdentityAndTrust(CFDataRef inPKCS12Data, SecIdentityRef *outIden
     CCHmac(kCCHmacAlgSHA256, cKey, strlen(cKey), cData, strlen(cData), cHMAC);
     
     NSData *resData = [[NSData alloc] initWithBytes:cHMAC length:sizeof(cHMAC)];
-    NSString *resStr = [[NSString alloc] initWithData:resData encoding:NSUTF8StringEncoding];
+    //NSString *resStr = [[NSString alloc] initWithData:resData encoding:NSUTF8StringEncoding];
     
     NSString *result = [resData description];
     result = [result stringByReplacingOccurrencesOfString:@" " withString:@""];

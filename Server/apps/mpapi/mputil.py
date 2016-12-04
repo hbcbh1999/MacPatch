@@ -22,6 +22,7 @@ from itsdangerous import TimedJSONWebSignatureSerializer as Serializer, BadSigna
 
 from . import db
 from . model import MPAgentRegistration, MpClient, AdmGroupUsers, AdmUsers, AdmUsersInfo
+from . mplogger import log_Debug, log_Info, log_Error
 
 # ----------------------------------------------------------------------------
 '''
@@ -70,7 +71,15 @@ def isValidSignature(Signature, ClientID, Data, TimeStamp):
         message_str = '%s-%s' %(str(Data), TimeStamp)
         message = bytes(message_str).encode('utf-8')
 
+        log_Debug('[isValidSignature][secret]: %s' % (secret[-4:]))
+        log_Debug('[isValidSignature][message_str]: %s' % (message_str))
+        log_Debug('[isValidSignature][message]: %s' % (message))
+
         xSigHash = hmac.new(secret, message, hashlib.sha256).hexdigest()
+
+        log_Debug('[isValidSignature][Signature]: %s' % (Signature))
+        log_Debug('[isValidSignature][xSigHash]: %s' % (xSigHash))
+
         if xSigHash.lower() == Signature.lower():
             print "Verified"
             return True

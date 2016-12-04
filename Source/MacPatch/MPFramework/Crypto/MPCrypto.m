@@ -263,9 +263,9 @@ done:
     NSString *_keychain = [NSTemporaryDirectory() stringByAppendingPathComponent:_keychainFileName];
     const char *pass = [_keyID UTF8String];
     logit(lcl_vDebug,@"Create temporary keychain for rsa key gen.");
-    logit(lcl_vDebug,@"keyID:",_keyID);
-    logit(lcl_vDebug,@"keychainFileName:",_keychainFileName);
-    logit(lcl_vDebug,@"keychain:",_keychain);
+    logit(lcl_vDebug,@"keyID: %@",_keyID);
+    logit(lcl_vDebug,@"keychainFileName: %@",_keychainFileName);
+    logit(lcl_vDebug,@"keychain: %@",_keychain);
     
     err = SecKeychainCreate([_keychain UTF8String], (UInt32)strlen(pass), pass, FALSE, NULL, &keychain);
     

@@ -374,7 +374,7 @@
     [infoButton    setEnabled:NO];
 	
     NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
-    [nc addObserver:self selector:@selector(installOutputFromProxy:) name:@"installSoftwareNote" object:nil];
+    //[nc addObserver:self selector:@selector(installOutputFromProxy:) name:@"installSoftwareNote" object:nil];
 
     
     [self setTableColEdit:YES];

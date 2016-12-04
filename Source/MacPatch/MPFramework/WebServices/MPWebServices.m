@@ -59,9 +59,9 @@
     {
         [self set_cuuid:[MPSystemInfo clientUUID]];
         [self set_osver:[[MPSystemInfo osVersionOctets] objectForKey:@"minor"]];
-        [self setClientKey:@"NA"];
         MPDefaults *d = [[MPDefaults alloc] init];
         [self set_defaults:[d defaults]];
+        [self setClientKey:@"NA"];
 	}
     return self;
 }

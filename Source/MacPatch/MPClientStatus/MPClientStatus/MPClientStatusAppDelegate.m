@@ -220,17 +220,26 @@ NSString *const kRefreshStatusIconNotification      = @"kRefreshStatusIconNotifi
     
     NSMenu *menu = [timer userInfo];
     
+    
     if (!menuItem15 && !menuItem16) {
         // View Batch Jobs...
-        menuItem15 = [menu itemAtIndex:15];
-        menuItem16 = [menu itemAtIndex:16];
+        //menuItem15 = [menu itemAtIndex:15];
+        //menuItem16 = [menu itemAtIndex:16];
+        menuItem15 = [menu itemAtIndex:([menu numberOfItems] - 2)];
+        menuItem16 = [menu itemAtIndex:([menu numberOfItems] -1)];
     }
     
     if (!isShowing && optionKeyIsPressed) {
-        [menu insertItem:menuItem15 atIndex:15];
+        
+        NSInteger menuCount = [menu numberOfItems];
+        NSLog(@"menu COunt: %d",(int)menuCount);
+        
+        //[menu insertItem:menuItem15 atIndex:([menu numberOfItems] - 2)];
+        [menu addItem:menuItem15];
         [menuItem15 setEnabled:YES];
         [menuItem15 setHidden:NO];
-        [menu insertItem:menuItem16 atIndex:16];
+        //[menu insertItem:menuItem16 atIndex:([menu numberOfItems] - 1)];
+        [menu addItem:menuItem16];
         [menuItem16 setEnabled:YES];
         [menuItem16 setHidden:NO];
         isShowing = YES;

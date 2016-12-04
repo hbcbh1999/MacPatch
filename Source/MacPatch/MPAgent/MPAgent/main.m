@@ -312,6 +312,8 @@ int main (int argc, char * argv[])
                 printf("Warning: Agent is not registered.\n");
                 exit(1);
             }
+            
+            exit(1);
         
         // Post OS Migration Info
         } else if (osMigration) {

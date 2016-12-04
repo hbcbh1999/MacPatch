@@ -124,7 +124,12 @@ BUILD_NO=`date +%Y%m%d-%H%M%S`
 sed -i '' "s/\[BUILD_NO\]/$BUILD_NO/g" "${BUILDROOT}/Combined/Resources/Welcome.rtf"
 sed -i '' "s/\[STATE\]/$PKG_STATE/g" "${BUILDROOT}/Combined/Resources/Welcome.rtf"
 
+#mkdir -p ${BUILDROOT}/Combined/PKGPlugins
+#open ${BUILDROOT}/Combined/PKGPlugins
+#sleep 20
+
 # Create the almost final package
+# --plugins ${BUILDROOT}/Combined/PKGPlugins \
 productbuild --distribution ${BUILDROOT}/Combined/Distribution \
 --resources ${BUILDROOT}/Combined/Resources \
 --package-path ${BUILDROOT}/Combined/Packages \
