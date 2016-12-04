@@ -59,10 +59,7 @@ class AddInventoryData(MPResource):
                             json_string = json.dumps(jData)
                             log_Debug('[AddInventoryData][Post]: json_string = %s' % (json_string))
                             outfile.write(json_string)
-                            #json.dump(json_string, outfile)
-                        #f = open(_file_Path,"w")
-                        #json.dump(jData, f)
-                        #f.close()
+
                         log_Info('[AddInventoryData][Post]: Writing inventory file (%s) to disk.' % (_file_Name))
 
                     return {"result": '', "errorno": 0, "errormsg": ''}, 201

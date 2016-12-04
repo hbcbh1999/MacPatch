@@ -203,16 +203,16 @@ class PatchScanData(MPResource):
                 return {"result": '', "errorno": 424, "errormsg": 'Failed to verify ClientID'}, 424
 
             if not isValidSignature(self.req_signature, cuuid, request.data, self.req_ts):
-                log_Error('[PatchScanData][Get]: Failed to verify Signature for client (%s)' % (cuuid))
+                log_Error('[PatchScanData][Post]: Failed to verify Signature for client (%s)' % (cuuid))
                 return {"result": '', "errorno": 424, "errormsg": 'Failed to verify Signature'}, 424
 
             if patch_type == "0":
-                log_Error('[PatchScanData][Get][%s]: Type (%s) not accepted ' % (cuuid, patch_type))
+                log_Error('[PatchScanData][Post][%s]: Type (%s) not accepted ' % (cuuid, patch_type))
                 return {"result": '', "errorno": 404, "errormsg": "Type not accepted"}, 404
 
             elif patch_type == "1":
                 # Apple Patches
-                log_Debug('[PatchScanData][Get][%s]: Type (%s) selected' % (cuuid, patch_type))
+                log_Debug('[PatchScanData][Post][%s]: Type (%s) selected' % (cuuid, patch_type))
                 MpClientPatchesApple.query.filter(MpClientPatchesApple.cuuid == cuuid).delete()
                 db.session.commit()
 
@@ -229,19 +229,19 @@ class PatchScanData(MPResource):
                         setattr(apple_object, 'cuuid', cuuid)
 
                         try:
-                            log_Debug('[PatchScanData][Get][%s]: Adding Apple: %s' % (cuuid, apple_object.asDict))
+                            log_Debug('[PatchScanData][Post][%s]: Adding Apple: %s' % (cuuid, apple_object.asDict))
                             db.session.add(apple_object)
                             db.session.commit()
                         except IntegrityError, exc:
                             db.session.rollback()
-                            log_Error('[PatchScanData][Get][%s]: Error adding apple record. %s' % (cuuid, exc.message))
+                            log_Error('[PatchScanData][Post][%s]: Error adding apple record. %s' % (cuuid, exc.message))
                             return {"result": '', "errorno": 0, "errormsg": exc.message}, 406
 
                     # Rows have been added
                     return {"result": '', "errorno": 0, "errormsg": 'none'}, 201
             elif patch_type == "2":
                 # Custom Patches
-                log_Debug('[PatchScanData][Get][%s]: Type (%s) selected' % (cuuid, patch_type))
+                log_Debug('[PatchScanData][Post][%s]: Type (%s) selected' % (cuuid, patch_type))
                 MpClientPatchesThird.query.filter(MpClientPatchesThird.cuuid == cuuid).delete()
                 db.session.commit()
 
@@ -258,18 +258,18 @@ class PatchScanData(MPResource):
                         setattr(third_object, 'cuuid', cuuid)
 
                         try:
-                            log_Debug('[PatchScanData][Get][%s]: Adding Custom: %s' % (cuuid, third_object.asDict))
+                            log_Debug('[PatchScanData][Post][%s]: Adding Custom: %s' % (cuuid, third_object.asDict))
                             db.session.add(third_object)
                             db.session.commit()
                         except IntegrityError, exc:
                             db.session.rollback()
-                            log_Error('[PatchScanData][Get][%s]: Error adding custom record. %s' % (cuuid, exc.message))
+                            log_Error('[PatchScanData][Post][%s]: Error adding custom record. %s' % (cuuid, exc.message))
                             return {"result": '', "errorno": 0, "errormsg": exc.message}, 406
 
                     # Rows have been added
                     return {"result": '', "errorno": 0, "errormsg": 'none'}, 201
             else:
-                log_Error('[PatchScanData][Get][%s]: Type (%s) not found' % (cuuid, patch_type))
+                log_Error('[PatchScanData][Post][%s]: Type (%s) not found' % (cuuid, patch_type))
                 return {"result": '', "errorno": 404, "errormsg": "Type not found"}, 404
 
 
@@ -308,7 +308,7 @@ class PatchInstallData(MPResource):
             if patch_type.lower() == "apple" or patch_type == '1':
                 _patchType = 0
                 _patchTypeName = "apple"
-                log_Debug('[PatchInstallData][Get][%s]: Adding Apple Patch: %s' % (cuuid, patch))
+                log_Debug('[PatchInstallData][Post][%s]: Adding Apple Patch: %s' % (cuuid, patch))
 
             if patch_type.lower() == "third" or patch_type == '2':
                 _patchType = 1

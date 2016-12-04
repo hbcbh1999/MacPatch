@@ -41,9 +41,9 @@
 		]},
 		{"title": "Registration", "expanded": false, "folder": true, "icon": "gear.png",
 		"children": [
-            {"title": "Registration Config", "icon": "keys.png", 		"href": "/admin/inc/mp_agent_keys.cfm"},
-            {"title": "Registered Clients", "icon": "keys.png", 		"href": "/admin/inc/mp_agent_keys.cfm"},
-            {"title": "Parked Clients", "icon": "computer.png",		"href": "/admin/inc/admin_agents_parked.cfm"}
+            {"title": "Registration Config",	"icon": "keys.png", 		"href": "/admin/inc/mp_agent_keys.cfm"},
+            {"title": "Registered Clients", 	"icon": "computer.png", 	"href": "/admin/inc/admin_reg_clients.cfm"},
+            {"title": "Parked Clients", 		"icon": "computer.png",		"href": "/admin/inc/admin_agents_parked.cfm"}
 		]},
 		{"title": "Accounts", 		"icon": "text-list.png",	"href": "/admin/inc/admin_accounts.cfm" }
     ]}

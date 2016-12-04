@@ -30,18 +30,18 @@ class AVData(MPResource):
             _body = request.get_json(silent=True)
 
             if not isValidClientID(cuuid):
-                log_Error('Failed to verify ClientID (' + cuuid + ')')
+                log_Error('[AVData][Post]: Failed to verify ClientID (' + cuuid + ')')
                 return {"result": '', "errorno": 424, "errormsg": 'Failed to verify ClientID'}, 424
 
             if not isValidSignature(self.req_signature, cuuid, request.data, self.req_ts):
-                log_Error('Failed to verify Signature for client (' + cuuid + ')')
+                log_Error('[AVData][Post]: Failed to verify Signature for client (' + cuuid + ')')
                 return {"result": '', "errorno": 424, "errormsg": 'Failed to verify Signature'}, 424
 
             av_obj = AvInfo.query.filter_by(cuuid=cuuid).first()
 
             if av_obj:
                 # Update
-                log_Info('Updating AV data for client (' + cuuid + ')')
+                log_Info('[AVData][Post]: Updating AV data for client (' + cuuid + ')')
                 for col in av_obj.columns:
                     if col == 'mdate':
                         setattr(av_obj, col, datetime.now())
@@ -52,7 +52,7 @@ class AVData(MPResource):
                 return {"result": '', "errorno": 0, "errormsg": 'none'}, 201
             else:
                 # Add
-                log_Info('Adding AV data for client (' + cuuid + ')')
+                log_Info('[AVData][Post]: Adding AV data for client (' + cuuid + ')')
                 av_new_obj = AvInfo()
 
                 av_new_obj.cuuid = cuuid
@@ -88,21 +88,21 @@ class AVDefs(MPResource):
             _body = request.get_json(silent=True)
 
             if not isValidClientID(cuuid):
-                log_Error('Failed to verify ClientID (' + cuuid + ')')
+                log_Error('[AVDefs][GET]: Failed to verify ClientID (' + cuuid + ')')
                 return {"result": '', "errorno": 424, "errormsg": 'Failed to verify ClientID'}, 424
 
             if not isValidSignature(self.req_signature, cuuid, request.data, self.req_ts):
-                log_Error('Failed to verify Signature for client (' + cuuid + ')')
+                log_Error('[AVDefs][GET]: Failed to verify Signature for client (' + cuuid + ')')
                 return {"result": '', "errorno": 424, "errormsg": 'Failed to verify Signature'}, 424
 
             avdefs = AvDefs.filter(AvDefs.engine == av_engine, AvDefs.current == 'YES').first()
 
             if avdefs:
                 av_data = {'defsUpdate': avdefs.file}
-                log_Debug('[AVDefs]: Defs Data: %s Client: %s' % (av_data, cuuid))
+                log_Debug('[AVDefs][GET]: Defs Data: %s Client: %s' % (av_data, cuuid))
                 return {"result": av_data, "errorno": 0, "errormsg": 'none'}, 200
             else:
-                log_Error('AV Engine Not found. for client (' + cuuid + ')')
+                log_Error('[AVDefs][GET]: AV Engine Not found. for client (' + cuuid + ')')
                 return {"result": '', "errorno": 404, "errormsg": 'AV Engine Not found.'}, 404
 
         except IntegrityError, exc:

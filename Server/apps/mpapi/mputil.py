@@ -63,18 +63,20 @@ def isValidSignature(Signature, ClientID, Data, TimeStamp):
         rec = qGet.asDict
         cKey = rec['clientKey']
 
+        log_Debug('[isValidSignature][Data]: (%s)' % (str(Data)))
+        log_Debug('[isValidSignature][Time]: (%s)' % (TimeStamp))
+
         secret = bytes(cKey).encode('utf-8')
         message_str = '%s-%s' %(str(Data), TimeStamp)
         message = bytes(message_str).encode('utf-8')
 
-        log_Debug('[isValidSignature][secret]: %s' % (secret[-4:]))
-        log_Debug('[isValidSignature][message_str]: %s' % (message_str))
-        log_Debug('[isValidSignature][message]: %s' % (message))
+        log_Debug('[isValidSignature][secret]: (%s)' % (secret[-4:]))
+        log_Debug('[isValidSignature][message_str]: (%s)' % (message_str))
 
         xSigHash = hmac.new(secret, message, hashlib.sha256).hexdigest()
 
-        log_Debug('[isValidSignature][Signature]: %s' % (Signature))
-        log_Debug('[isValidSignature][xSigHash]: %s' % (xSigHash))
+        log_Debug('[isValidSignature][Signature][Expected]: %s' % (Signature))
+        log_Debug('[isValidSignature][Signature][Verified]: %s' % (xSigHash))
 
         if xSigHash.lower() == Signature.lower():
             print "Verified"

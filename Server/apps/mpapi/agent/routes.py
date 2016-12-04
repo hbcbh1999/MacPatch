@@ -31,24 +31,24 @@ class MP_AgentUpdate(MPResource):
             args = self.reqparse.parse_args()
 
             if not isValidClientID(cuuid):
-                log_Error('Failed to verify ClientID (' + cuuid + ')')
+                log_Error('[AgentUpdate][GET]: Failed to verify ClientID (' + cuuid + ')')
                 return {"result": '', "errorno": 424, "errormsg": 'Failed to verify ClientID'}, 424
 
             if not isValidSignature(self.req_signature, cuuid, self.req_uri, self.req_ts):
-                log_Error('Failed to verify Signature for client (' + cuuid + ')')
+                log_Error('[AgentUpdate][GET]: Failed to verify Signature for client (' + cuuid + ')')
                 return {"result": '', "errorno": 424, "errormsg": 'Failed to verify Signature'}, 424
 
             _at = AgentUpdates()
-            log_Info('Checking if update to Agent is needed for CUUID: %s AGENTVER: %s' % (cuuid, agentver))
+            log_Info('[AgentUpdate][GET]: Checking if update to Agent is needed for CUUID: %s AGENTVER: %s' % (cuuid, agentver))
             _update = _at.agentUpdates(cuuid, agentver, agentbuild)
 
             if _update is not None:
-                log_Info('Update is needed for CUUID: %s' % (cuuid))
-                log_Debug('Update CUUID: %s DICT: %s' % (cuuid, _update))
+                log_Info('[AgentUpdate][GET]: Update is needed for CUUID: %s' % (cuuid))
+                log_Debug('[AgentUpdate][GET]: Update CUUID: %s DICT: %s' % (cuuid, _update))
 
                 return {"result": _update, "errorno": 0, "errormsg": 'none'}, 200
             else:
-                log_Info('No update is needed for CUUID: %s' %(cuuid))
+                log_Info('[AgentUpdate][GET]: No update is needed for CUUID: %s' %(cuuid))
 
                 return {"result": {}, "errorno": 0, "errormsg": 'none'}, 202
 
@@ -73,24 +73,24 @@ class MP_AgentUpdaterUpdate(MPResource):
             args = self.reqparse.parse_args()
 
             if not isValidClientID(cuuid):
-                log_Error('Failed to verify ClientID (' + cuuid + ')')
+                log_Error('[AgentUpdaterUpdate][GET]: Failed to verify ClientID (' + cuuid + ')')
                 return {"result": '', "errorno": 424, "errormsg": 'Failed to verify ClientID'}, 424
 
             if not isValidSignature(self.req_signature, cuuid, self.req_uri, self.req_ts):
-                log_Error('Failed to verify Signature for client (' + cuuid + ')')
+                log_Error('[AgentUpdaterUpdate][GET]: Failed to verify Signature for client (' + cuuid + ')')
                 return {"result": '', "errorno": 424, "errormsg": 'Failed to verify Signature'}, 424
 
             _at = AgentUpdates()
-            log_Info('Checking if update to Updater is needed for CUUID: %s AGENTVER: %s' % (cuuid, agentver))
+            log_Info('[AgentUpdaterUpdate][GET]: Checking if update to Updater is needed for CUUID: %s AGENTVER: %s' % (cuuid, agentver))
             _update = _at.agentUpdates(cuuid, agentver)
 
             if _update is not None:
-                log_Info('Update is needed for CUUID: %s' % (cuuid))
-                log_Debug('Update CUUID: %s DICT: %s' % (cuuid, _update))
+                log_Info('[AgentUpdaterUpdate][GET]: Update is needed for CUUID: %s' % (cuuid))
+                log_Debug('[AgentUpdaterUpdate][GET]: Update CUUID: %s DICT: %s' % (cuuid, _update))
 
                 return {"result": _update, "errorno": 0, "errormsg": 'none'}, 200
             else:
-                log_Info('No update is needed for CUUID: %s' % (cuuid))
+                log_Info('[AgentUpdaterUpdate][GET]: No update is needed for CUUID: %s' % (cuuid))
 
                 return {"result": {}, "errorno": 0, "errormsg": 'none'}, 202
 
@@ -115,23 +115,23 @@ class MP_PluginHash(MPResource):
             args = self.reqparse.parse_args()
 
             if not isValidClientID(cuuid):
-                log_Error('Failed to verify ClientID (' + cuuid + ')')
+                log_Error('[PluginHash][GET]: Failed to verify ClientID (' + cuuid + ')')
                 return {"result": '', "errorno": 424, "errormsg": 'Failed to verify ClientID'}, 424
 
             if not isValidSignature(self.req_signature, cuuid, self.req_uri, self.req_ts):
-                log_Error('Failed to verify Signature for client (' + cuuid + ')')
+                log_Error('[PluginHash][GET]: Failed to verify Signature for client (' + cuuid + ')')
                 return {"result": '', "errorno": 424, "errormsg": 'Failed to verify Signature'}, 424
 
-            log_Info('Verifying Plugin (%s) for CUUID: %s' % (plugin_name, cuuid))
+            log_Info('[PluginHash][GET]: Verifying Plugin (%s) for CUUID: %s' % (plugin_name, cuuid))
             q_result = MPPluginHash.query.filter(MPPluginHash.pluginName == plugin_name, MPPluginHash.pluginBundleID == plugin_bundle, MPPluginHash.pluginVersion == plugin_version).first()
             #bresult = MPPluginHash.query.filter(MPPluginHash.pluginName == plugin_name).all()
 
             if q_result is not None:
-                log_Info('Plugin (%s) is verified for CUUID: %s' % (plugin_name, cuuid))
-                log_Debug('Plugin HASH Result %s for CUUID: %s' % (q_result.asDict, cuuid))
+                log_Info('[PluginHash][GET]: Plugin (%s) is verified for CUUID: %s' % (plugin_name, cuuid))
+                log_Debug('[PluginHash][GET]: Plugin HASH Result %s for CUUID: %s' % (q_result.asDict, cuuid))
                 return {"result": q_result.hash, "errorno": 0, "errormsg": 'none'}, 200
             else:
-                log_Error('Plugin (%s) hash could not be found.' % (plugin_name))
+                log_Error('[PluginHash][GET]: Plugin (%s) hash could not be found.' % (plugin_name))
                 return {"result": {}, "errorno": 404, "errormsg": 'Plugin hash could not be found.'}, 404
 
         except IntegrityError, exc:
@@ -157,16 +157,16 @@ class MP_ConfigData(MPResource):
             if token != '0': # DEBUG, remove in prod
                 _user = verify_auth_token(token)
                 if not _user or (_user == "BadSignature" or _user == "SignatureExpired"):
-                    log_Error('Failed to verify token')
+                    log_Error('[MP_ConfigData][GET]: Failed to verify token')
                     return {"result": '', "errorno": 424, "errormsg": 'Failed to verify token'}, 424
 
                 if not isValidAdminUser(_user):
-                    log_Error( 'Failed to verify user (%s) rights' % (_user))
+                    log_Error('[MP_ConfigData][GET]: Failed to verify user (%s) rights' % (_user))
                     return {"result": '', "errorno": 424, "errormsg": 'Failed to verify user rights'}, 424
 
             config = GenAgentConfig().config()
             if config == None:
-                log_Error("Error getting agent config.")
+                log_Error("[MP_ConfigData][GET]: Error getting agent config.")
                 return {"result": {}, "errorno": 425, "errormsg": "Error getting agent config."}, 425
 
             _srv_pub_key = "NA"
@@ -177,7 +177,7 @@ class MP_ConfigData(MPResource):
                 _srv_pub_key_hash = res.pubKeyHash
 
             configPlist = plistlib.writePlistToString(config)
-            log_Debug("Agent Config Result: %s" % (configPlist))
+            log_Debug("[MP_ConfigData][GET]: Agent Config Result: %s" % (configPlist))
             resData = {'plist': configPlist, 'pubKey':_srv_pub_key, 'pubKeyHash':_srv_pub_key_hash}
             return {"result": resData, "errorno": 0, "errormsg": ""}, 200
 
@@ -205,11 +205,11 @@ class MP_UploadAgentPackage(MPResource):
             if token != '0': # DEBUG, remove in prod
                 _user = verify_auth_token(token)
                 if not _user or (_user == "BadSignature" or _user == "SignatureExpired"):
-                    log_Error('Failed to verify token')
+                    log_Error('[MP_UploadAgentPackage][GET]: Failed to verify token')
                     return {"result": '', "errorno": 424, "errormsg": 'Failed to verify token'}, 424
 
                 if not isValidAdminUser(_user):
-                    log_Error( 'Failed to verify user (%s) rights' % (_user))
+                    log_Error('[MP_UploadAgentPackage][GET]: Failed to verify user (%s) rights' % (_user))
                     return {"result": '', "errorno": 424, "errormsg": 'Failed to verify user rights'}, 424
 
             r = request
@@ -223,7 +223,7 @@ class MP_UploadAgentPackage(MPResource):
             fUpdateHash = ""
             fAgent = r.files['fComplete']
             if not fBase or not fUpdate or not fAgent:
-                log_Error('Failed to verify uploaded files. User: %s' % (_user))
+                log_Error('[MP_UploadAgentPackage][GET]: Failed to verify uploaded files. User: %s' % (_user))
                 return {"result": '', "errorno": 425, "errormsg": 'Failed to verify uploaded files.'}, 425
 
             # Verify if Agent already exists
@@ -233,7 +233,7 @@ class MP_UploadAgentPackage(MPResource):
                                                    MpClientAgent.version == app_ver,
                                                    MpClientAgent.type == "app").first()
             if haveAgent:
-                log_Error('Agent(AGENT VER: %s, APP VER: %s) Already Exists User: %s' % (agent_ver, app_ver, _user))
+                log_Error('[MP_UploadAgentPackage][GET]: Agent(AGENT VER: %s, APP VER: %s) Already Exists User: %s' % (agent_ver, app_ver, _user))
                 return {"result": '', "errorno": 426, "errormsg": 'Agent Already Exists'}, 426
 
             # Save uploaded files
@@ -258,11 +258,11 @@ class MP_UploadAgentPackage(MPResource):
                     fUpdateHash = fileHashSHA1(_pkg_file_path)
 
 
-            log_Debug('fBaseHash: %s' % (fBaseHash))
-            log_Debug('fUpdateHash: %s' % (fUpdateHash))
+            #log_Debug('fBaseHash: %s' % (fBaseHash))
+            #log_Debug('fUpdateHash: %s' % (fUpdateHash))
 
             # Save Agent Data to database
-            log_Debug('Create Base Agent Data Record')
+            log_Debug('[MP_UploadAgentPackage][GET]: Create Base Agent Data Record')
             agentObjApp = MpClientAgent()
             setattr(agentObjApp, 'puuid', agent_id)
             setattr(agentObjApp, 'type', 'app')
@@ -275,10 +275,10 @@ class MP_UploadAgentPackage(MPResource):
             setattr(agentObjApp, 'pkg_hash', fBaseHash)
             setattr(agentObjApp, 'cdate', datetime.now())
             setattr(agentObjApp, 'mdate', datetime.now())
-            log_Debug('Add Base Agent Data Record')
+            log_Debug('[MP_UploadAgentPackage][GET]: Add Base Agent Data Record')
             db.session.add(agentObjApp)
 
-            log_Debug('Create Updater Agent Data Record')
+            log_Debug('[MP_UploadAgentPackage][GET]: Create Updater Agent Data Record')
             agentObjUpdt = MpClientAgent()
             setattr(agentObjUpdt, 'puuid', agent_id)
             setattr(agentObjUpdt, 'type', 'update')
@@ -291,7 +291,7 @@ class MP_UploadAgentPackage(MPResource):
             setattr(agentObjUpdt, 'pkg_hash', fUpdateHash)
             setattr(agentObjUpdt, 'cdate', datetime.now())
             setattr(agentObjUpdt, 'mdate', datetime.now())
-            log_Debug('Add Updater Agent Data Record')
+            log_Debug('[MP_UploadAgentPackage][GET]: Add Updater Agent Data Record')
             db.session.add(agentObjUpdt)
             db.session.commit()
 
