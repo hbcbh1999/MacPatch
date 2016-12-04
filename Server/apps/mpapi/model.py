@@ -561,7 +561,7 @@ class AvDefs(CommonBase):
 # mp_inv_state
 class MpInvState(CommonBase):
     __tablename__ = 'mp_inv_state'
-
+    rid = Column(BigInteger, primary_key=True, autoincrement=True)
     cuuid = Column(String(50), ForeignKey('mp_clients.cuuid', ondelete='CASCADE', onupdate='NO ACTION'), nullable=False, index=True, unique=True)
     mdate = Column(DateTime, server_default='1970-01-01 00:00:00')
 
