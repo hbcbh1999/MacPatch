@@ -614,63 +614,6 @@ OSStatus extractIdentityAndTrust(CFDataRef inPKCS12Data, SecIdentityRef *outIden
     return securityError;
 }
 
-/*
-- (BOOL)authIdentity:(SecIdentityRef *)authIdentity
-{
-    SecIdentityRef identity = NULL;
-    SecTrustRef trust = NULL;
-    NSString *p12File = [NSString stringWithFormat:@"%@/.certs/client.p12",MP_ROOT_CLIENT];
-    if ([fm fileExistsAtPath:p12File]) {
-        NSData *PKCS12Data = [NSData dataWithContentsOfFile:p12File];
-        if ([self extractIdentity:&identity andTrust:&trust fromPKCS12Data:PKCS12Data]) {
-            *authIdentity = identity;
-            return YES;
-        } else {
-            return NO;
-        }
-    } else {
-        qlerror(@"Unable to locate client auth certificate.");
-        return NO;
-    }
-}
-
-- (BOOL)extractIdentity:(SecIdentityRef *)outIdentity andTrust:(SecTrustRef *)outTrust fromPKCS12Data:(NSData *)inPKCS12Data
-{
-
-	OSStatus securityError = errSecSuccess;
-#if MAC_OS_X_VERSION_MIN_REQUIRED == MAC_OS_X_VERSION_10_7
-	NSDictionary *optionsDictionary = [NSDictionary dictionaryWithObject:[MPSystemInfo clientUUID] forKey:(id)kSecImportExportPassphrase];
-#else
-    NSDictionary *optionsDictionary = [NSDictionary dictionaryWithObject:[MPSystemInfo clientUUID] forKey:@"passphrase"];
-#endif
-	CFArrayRef items = CFArrayCreate(NULL, 0, 0, NULL);
-	securityError = SecPKCS12Import((CFDataRef)inPKCS12Data,(CFDictionaryRef)optionsDictionary,&items);
-
-	if (securityError == 0) {
-		CFDictionaryRef myIdentityAndTrust = CFArrayGetValueAtIndex (items, 0);
-		const void *tempIdentity = NULL;
-#if MAC_OS_X_VERSION_MIN_REQUIRED == MAC_OS_X_VERSION_10_7
-		tempIdentity = CFDictionaryGetValue (myIdentityAndTrust, kSecImportItemIdentity);
-#else
-        tempIdentity = CFDictionaryGetValue (myIdentityAndTrust, "identity");
-#endif
-		*outIdentity = (SecIdentityRef)tempIdentity;
-		const void *tempTrust = NULL;
-#if MAC_OS_X_VERSION_MIN_REQUIRED == MAC_OS_X_VERSION_10_7
-		tempTrust = CFDictionaryGetValue (myIdentityAndTrust, kSecImportItemTrust);
-#else
-        tempTrust = CFDictionaryGetValue (myIdentityAndTrust, "trust");
-#endif
-		*outTrust = (SecTrustRef)tempTrust;
-	} else {
-		qlerror(@"Extracting identity failed with error code %d",(int)securityError);
-		return NO;
-	}
-	return YES;
-}
-*/
- 
-
 // Code Example Taken & Modified from MKNetworkKit
 - (void)connection:(NSURLConnection *)connection willSendRequestForAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge
 {
@@ -888,13 +831,13 @@ OSStatus extractIdentityAndTrust(CFDataRef inPKCS12Data, SecIdentityRef *outIden
 
 - (NSString *)signWebServiceRequest:(NSString *)aData timeStamp:(NSString *)aTimeStamp key:(NSString *)aKey
 {
-    qldebug(@"Key for Signature: (%@)",aKey);
+    qldebug(@"Key for Signature: (%@)",[aKey substringFromIndex:MAX((int)[aKey length]-4, 0)]);
     qldebug(@"Data for Signature: (%@)",aData);
     qldebug(@"Time Stamp for Signature: (%@)",aTimeStamp);
     
     NSString *aStrToSign = [NSString stringWithFormat:@"%@-%@",aData,aTimeStamp];
     
-    qldebug(@"String to Sign: (%@)",aStrToSign);
+    qltrace(@"String to Sign: (%@)",aStrToSign);
     
     const char *cKey  = [aKey cStringUsingEncoding:NSASCIIStringEncoding];
     const char *cData = [aStrToSign cStringUsingEncoding:NSASCIIStringEncoding];
