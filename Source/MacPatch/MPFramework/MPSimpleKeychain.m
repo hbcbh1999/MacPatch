@@ -318,6 +318,7 @@
     SecTrustedApplicationRef SelfPatch = NULL;
     SecTrustedApplicationRef MPClientStatus = NULL;
     SecTrustedApplicationRef MPLoginAgent = NULL;
+    SecTrustedApplicationRef MPUpdateAgent = NULL;
     
     result = SecTrustedApplicationCreateFromPath(NULL, &me);
     result = SecTrustedApplicationCreateFromPath("/Library/MacPatch/Client/MPAgent", &MPAgent);
@@ -327,10 +328,12 @@
     result = SecTrustedApplicationCreateFromPath("/Library/MacPatch/Client/Self Patch.app", &SelfPatch);
     result = SecTrustedApplicationCreateFromPath("/Library/MacPatch/Client/MPClientStatus.app", &MPClientStatus);
     result = SecTrustedApplicationCreateFromPath("/Library/PrivilegedHelperTools/MPLoginAgent.app", &MPLoginAgent);
+    result = SecTrustedApplicationCreateFromPath("/Library/MacPatch/Updater/MPAgentUp2Date", &MPUpdateAgent);
     
     NSArray *trustedApplications = [NSArray arrayWithObjects:(__bridge_transfer id)me, (__bridge_transfer id)MPAgent,
-                                    (__bridge_transfer id)MPAgentExec, (__bridge_transfer id)MPWorker,(__bridge_transfer id)MPCatalog,
-                                    (__bridge_transfer id)SelfPatch,(__bridge_transfer id)MPClientStatus,(__bridge_transfer id)MPLoginAgent,nil];
+                                    (__bridge_transfer id)MPAgentExec, (__bridge_transfer id)MPWorker, (__bridge_transfer id)MPCatalog,
+                                    (__bridge_transfer id)SelfPatch, (__bridge_transfer id)MPClientStatus, (__bridge_transfer id)MPLoginAgent,
+                                    (__bridge_transfer id)MPUpdateAgent, nil];
     
     SecAccessRef accessObj = NULL;
     result = SecAccessCreate((__bridge CFStringRef)label, (__bridge CFArrayRef)trustedApplications, &accessObj);
