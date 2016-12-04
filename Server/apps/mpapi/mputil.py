@@ -53,10 +53,6 @@ class MPResource(flask_restful.Resource):
 
 def isValidSignature(Signature, ClientID, Data, TimeStamp):
 
-    #print "Signature: " + Signature
-    #print "ClientID: " + ClientID
-    #print "TimeStamp: " + TimeStamp
-
     if current_app.config['REQUIRE_SIGNATURES'] == False:
         # REQUIRE_SIGNATURES is false, return true on signature
         # evaluation
