@@ -30,8 +30,7 @@
 		"children": [
 			{"title": "Deploy",       "icon": "deploy.png", 	"href": "/admin/inc/admin_client_agents.cfm"},
 			{"title": "Configure",    "icon": "settings.png", 	"href": "/admin/inc/admin_client_agent_config.cfm"},
-            {"title": "Plugins",      "icon": "extension.png",  "href": "/admin/inc/admin_agent_plugins.cfm"},
-            {"title": "Registration", "icon": "keys.png", 		"href": "/admin/inc/mp_agent_keys.cfm"}
+            {"title": "Plugins",      "icon": "extension.png",  "href": "/admin/inc/admin_agent_plugins.cfm"}
 		]},
 		{"title": "Server", "folder": true, "icon": "gear.png",
 		"children": [
@@ -40,7 +39,12 @@
 			{"title": "Datasources",	  		"icon": "text-list.png", "href": "/admin/inc/admin_db_config.cfm"},
 			{"title": "Jobs",	  				"icon": "text-list.png", "href": "/admin/inc/admin_server_jobs.cfm"}
 		]},
-		{"title": "Accounts", 		"icon": "text-list.png",	"href": "/admin/inc/admin_accounts.cfm" },
-		{"title": "Parked Clients", "icon": "computer.png",		"href": "/admin/inc/admin_agents_parked.cfm"}
+		{"title": "Registration", "expanded": false, "folder": true, "icon": "gear.png",
+		"children": [
+            {"title": "Registration Config", "icon": "keys.png", 		"href": "/admin/inc/mp_agent_keys.cfm"},
+            {"title": "Registered Clients", "icon": "keys.png", 		"href": "/admin/inc/mp_agent_keys.cfm"},
+            {"title": "Parked Clients", "icon": "computer.png",		"href": "/admin/inc/admin_agents_parked.cfm"}
+		]},
+		{"title": "Accounts", 		"icon": "text-list.png",	"href": "/admin/inc/admin_accounts.cfm" }
     ]}
 ]
