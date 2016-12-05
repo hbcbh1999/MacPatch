@@ -16,7 +16,7 @@
 # -------------------------------------------------------------
 
 SCRIPT_PARENT=$(dirname $(dirname $0))
-SRCROOT="$SCRIPT_PARENT/source"
+SRCROOT="$SCRIPT_PARENT/Source"
 PKGROOT="$SCRIPT_PARENT/Packages"
 BUILDROOT="/private/tmp/MP/Client"
 BASEPKGVER="3.0.0.0"
@@ -124,6 +124,9 @@ BUILD_NO=`date +%Y%m%d-%H%M%S`
 sed -i '' "s/\[BUILD_NO\]/$BUILD_NO/g" "${BUILDROOT}/Combined/Resources/Welcome.rtf"
 sed -i '' "s/\[STATE\]/$PKG_STATE/g" "${BUILDROOT}/Combined/Resources/Welcome.rtf"
 
+BUILD_FILE="${BUILDROOT}/Combined/MP-$BASEPKGVER-$BUILD_NO$PKG_STATE"
+echo "MP-$BASEPKGVER-$BUILD_NO$PKG_STATE" > "${BUILD_FILE}"
+
 #mkdir -p ${BUILDROOT}/Combined/PKGPlugins
 #open ${BUILDROOT}/Combined/PKGPlugins
 #sleep 20
@@ -155,5 +158,17 @@ rm -rf ${BUILDROOT}/Combined/.MPClientInstall
 
 # Compress for upload
 ditto -c -k ${BUILDROOT}/Combined/MPClientInstall.pkg ${BUILDROOT}/Combined/MPClientInstall.pkg.zip
+
+echo
+read -p "Would you like to copy the installer to repo location for a pull request? (Y/N)? [N]: " COPYINSTALLPKG
+COPYINSTALLPKG=${COPYINSTALLPKG:-N}
+
+if [ "$COPYINSTALLPKG" == "y" ] || [ "$COPYINSTALLPKG" == "Y" ]; then
+	rm -rf "${SRCROOT}/Agent"
+	mkdir "${SRCROOT}/Agent"
+	cp "${BUILDROOT}/Combined/MPClientInstall.pkg.zip" "${SRCROOT}/Agent/"
+	cp "$BUILD_FILE" "${SRCROOT}/Agent/InstallerBuildInfo.txt"
+fi
+
 
 open ${BUILDROOT}
