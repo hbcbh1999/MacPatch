@@ -659,7 +659,11 @@ class MPDatabase:
 	def writeFlaskConfig(self, key, value):
 		keyVal = "%s=\"%s\"\n" % (key,value)
 		f = open(MPDatabase.ws_alt_conf,'a')
-		f.write(keyVal)
+		if(os.path.getsize(MPDatabase.ws_alt_conf) > 0):
+			f.write("\n"+keyVal)
+		else:
+			f.write(keyVal)
+			
 		f.close()
 
 
@@ -906,7 +910,11 @@ class MPConfigDefaults:
 			keyVal = "%s=\"%s\"\n" % (key,value)
 		
 		f = open(self.ws_alt_conf,'a')
-		f.write(keyVal)
+		if(os.path.getsize(self.ws_alt_conf) > 0):
+			f.write("\n"+keyVal)
+		else:
+			f.write(keyVal)
+
 		f.close()
 
 	def configAgentRequirements(self):
@@ -962,22 +970,22 @@ def main():
 		repairPermissions()
 		return
 
-	if args.config-mpadmin != False:
+	if args.config_mpadmin != False:
 		_adm = MPAdmin()
 		_adm.configAdminUser()
 		sys.exit()
 	
-	if args.config-database != False:
+	if args.config_database != False:
 		_db = MPDatabase()
 		_db.configDatabase()
 		sys.exit()
 
-	if args.config-ldap != False:
+	if args.config_ldap != False:
 		_ldap = MPLdap()
 		_ldap.configLdap()
 		sys.exit()
 
-	if args.config-api != False:
+	if args.config_api != False:
 		_api = MPConfigDefaults()
 		_api.configAgentRequirements()
 		sys.exit()
