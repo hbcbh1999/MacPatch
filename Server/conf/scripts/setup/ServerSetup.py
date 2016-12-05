@@ -39,6 +39,7 @@ import grp
 import shutil
 import json
 import getpass
+import types
 from distutils.version import LooseVersion
 import ConfigParser
 import sys
@@ -899,13 +900,16 @@ class MPConfigDefaults:
  		self.writeConfig(conf)			
 
  	def writeFlaskConfig(self, key, value):
-		keyVal = "%s=\"%s\"\n" % (key,value)
-		f = open(MPConfigDefaults.ws_alt_conf,'a')
+ 		if type(value) == types.BooleanType:
+			keyVal = "%s=%s\n" % (key,value)		
+		else:
+			keyVal = "%s=\"%s\"\n" % (key,value)
+		
+		f = open(self.ws_alt_conf,'a')
 		f.write(keyVal)
 		f.close()
 
 	def configAgentRequirements(self):
-		system_name = platform.uname()[1]
 
 		os.system('clear')
 		print "Configure Agent Connection Settings..."
@@ -932,7 +936,7 @@ class MPConfigDefaults:
 				self.writeFlaskConfig('REQUIRE_SIGNATURES',False)
 			
 		else:
-			return self.configDatabase()
+			return self.configAgentRequirements()
 
 # ----------------------------------------------------------------------------
 # Main
