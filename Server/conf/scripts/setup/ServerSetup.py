@@ -839,8 +839,11 @@ class MPAdmin:
 
 class MPConfigDefaults:
 
+	ws_alt_conf = MP_SRV_BASE+"/apps/conf_wsapi.cfg"
+
 	def __init__(self):
 		MPConfigDefaults.config_file = MP_CONF_FILE
+		MPConfigDefaults.ws_alt_conf = MP_SRV_BASE+"/apps/config.cfg"
 
 	def loadConfig(self):
 		config = {}
@@ -898,6 +901,42 @@ class MPConfigDefaults:
 		print "Write MPConfigDefaults"
 		print conf["settings"]["server"]
  		self.writeConfig(conf)			
+
+ 	def writeFlaskConfig(self, key, value):
+		keyVal = "%s=\"%s\"\n" % (key,value)
+		f = open(MPConfigDefaults.ws_alt_conf,'a')
+		f.write(keyVal)
+		f.close()
+
+	def configAgentRequirements(self):
+		system_name = platform.uname()[1]
+
+		os.system('clear')
+		print "Configure Agent Connection Settings..."
+		print ""
+		print ""
+		print "Verify the client id is a valid client id before processing request."
+		verify_clientid = raw_input("Verify Client ID on requests [Y]?:").upper() or "Y"
+		print ""
+		print ""
+		print "Verify client signature on api requests. Client must be registered in order to work."
+		verify_signature = raw_input("Verify request signatures [Y]?:").upper() or "Y"
+		print ""
+		print ""
+		save_answer = raw_input("Would you like the save these settings [Y]?:").upper() or "Y"
+		if save_answer == "Y":
+			if verify_clientid == "Y":
+				self.writeFlaskConfig('VERIFY_CLIENTID',True)
+			else:
+				self.writeFlaskConfig('VERIFY_CLIENTID',False)
+
+			if verify_signature == "Y":
+				self.writeFlaskConfig('REQUIRE_SIGNATURES',True)
+			else:
+				self.writeFlaskConfig('REQUIRE_SIGNATURES',False)
+			
+		else:
+			return self.configDatabase()
 
 # ----------------------------------------------------------------------------
 # Main
