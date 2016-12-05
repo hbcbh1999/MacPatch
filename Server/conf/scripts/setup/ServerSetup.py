@@ -840,7 +840,7 @@ class MPConfigDefaults:
 
 	def __init__(self):
 		MPConfigDefaults.config_file = MP_CONF_FILE
-		MPConfigDefaults.ws_alt_conf = MP_SRV_BASE+"/apps/config.cfg"
+		MPConfigDefaults.ws_alt_conf = MP_SRV_BASE+"/apps/conf_wsapi.cfg"
 
 	def loadConfig(self):
 		config = {}
