@@ -635,10 +635,8 @@ class MPDatabase:
 	ws_alt_conf = MP_SRV_BASE+"/apps/config.cfg"
 
 	def __init__(self):
-		
-		if sys.platform.startswith('linux'):
-			MPDatabase.config_file = MP_SRV_BASE+"/etc/siteconfig.json" 
-			MPDatabase.ws_alt_conf = MP_SRV_BASE+"/apps/config.cfg"
+		MPDatabase.config_file = MP_SRV_BASE+"/etc/siteconfig.json" 
+		MPDatabase.ws_alt_conf = MP_SRV_BASE+"/apps/config.cfg"
 
 	def loadConfig(self):
 		config = {}
@@ -715,8 +713,7 @@ class MPLdap:
 
 	def __init__(self):
 		
-		if sys.platform.startswith('linux'):
-			MPLdap.config_file = MP_SRV_BASE+"/etc/siteconfig.json" 
+		MPLdap.config_file = MP_SRV_BASE+"/etc/siteconfig.json" 
 
 	def loadConfig(self):
 		config = {}
@@ -792,7 +789,6 @@ class MPAdmin:
 		self.mp_adm_name = "mpadmin"
 		self.mp_adm_pass = "*mpadmin*"
 		MPAdmin.config_file = MP_CONF_FILE
-			
 
 	def loadConfig(self):
 		config = {}
@@ -948,6 +944,10 @@ def main():
 	parser = argparse.ArgumentParser(description='Process some args.')
 	group = parser.add_mutually_exclusive_group(required=True)
 	group.add_argument('--setup', help="Setup Services", required=False, action='store_true')
+	group.add_argument('--config-mpadmin', help="Setup MPAdmin", required=False, action='store_true')
+	group.add_argument('--config-database', help="Setup Database", required=False, action='store_true')
+	group.add_argument('--config-ldap', help="Setup LDAP/AD", required=False, action='store_true')
+	group.add_argument('--config-api', help="Setup API Requirements", required=False, action='store_true')
 	group.add_argument('--load', help="Load/Start Services", required=False)
 	group.add_argument('--cron', help="Load/Start Cron Services", required=False)
 	group.add_argument('--unload', help='Unload/Stop Services', required=False)
@@ -973,6 +973,8 @@ def main():
 
 		ldap = MPLdap()
 		ldap.configLdap()
+
+		srvconf.configAgentRequirements()
 
 		os.system('clear')
 		srvList = setupServices()
