@@ -961,6 +961,26 @@ def main():
 	if args.permissions == True:
 		repairPermissions()
 		return
+
+	if args.config-mpadmin != False:
+		_adm = MPAdmin()
+		_adm.configAdminUser()
+		sys.exit()
+	
+	if args.config-database != False:
+		_db = MPDatabase()
+		_db.configDatabase()
+		sys.exit()
+
+	if args.config-ldap != False:
+		_ldap = MPLdap()
+		_ldap.configLdap()
+		sys.exit()
+
+	if args.config-api != False:
+		_api = MPConfigDefaults()
+		_api.configAgentRequirements()
+		sys.exit()
 	
 	if args.setup != False:
 		# First Repair permissions
