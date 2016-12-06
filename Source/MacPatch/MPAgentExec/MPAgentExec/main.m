@@ -274,16 +274,19 @@ void usage(void) {
     // Scan & Update
 	printf(" -s \tScan for patches.\n");
 	printf(" -u \tScan & Update approved patches.\n");
+    printf("\n    \tOverrides configuration which prevents client from being updated.\n");
+    printf(" -C \tAllowClient override.\n");
+    printf(" -S \tAllowServer override.\n\n");
     // Symantec Antivirus
 	printf(" -a \tScan for AV info.\n");
-	printf(" -U \tScan for AV info and update outdated AV defs.\n");
+	printf(" -U \tScan for AV info and update outdated AV defs.\n\n");
     // Agent Updates
     printf(" -G \tScan for Agent updates and update if needed.\n");
-	printf(" -i \tScan & Update approved patches in iLoad output mode.\n");
+	printf(" -i \tScan & Update approved patches in iLoad output mode.\n\n");
     // Software Dist
     printf(" -g \t[Software Group Name] Install Software in group.\n");
     printf(" -d \tInstall software using TaskID\n");
-    printf(" -P \t[Software Plist] Install software using plist.\n");
+    printf(" -P \t[Software Plist] Install software using plist.\n\n");
     // Misc
 	printf(" -e \tEcho logging data to console.\n");
 	printf(" -V \tVerbose logging.\n");
