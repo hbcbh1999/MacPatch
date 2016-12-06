@@ -186,17 +186,14 @@ def repairPermissions():
 def linuxLoadServices(service):
 
 	_services = list()
-	#_servicesC = list()
 	
 	if hasattr(service, 'lower'):
 		if service.lower() == "all":
 			_services = lnxServices
-			#_servicesC = lnxCronSrvs
+
 		else:
 			if service in lnxServices:
 				_services.append(service)
-			#elif service in lnxCronSrvs:
-			#	_servicesC.append(service)
 	else:
 		_services = service['services']
 
@@ -205,26 +202,18 @@ def linuxLoadServices(service):
 	if _services != None:
 		for srvs in _services:
 			linuxLoadInitServices(srvs)
-	
-	# Load Cron Services
-	#if _servicesC != None:
-	#	for srvs in _servicesC:
-	#		linuxLoadCronServices(srvs)
 
 def linuxUnLoadServices(service):
 
 	_services = list()
-	#_servicesC = list()
 	
 	if hasattr(service, 'lower'):
 		if service.lower() == "all":
 			_services = lnxServices
-			#_servicesC = lnxCronSrvs
+			
 		else:
 			if service in lnxServices:
 				_services.append(service)
-			#elif service in lnxCronSrvs:
-			#	_servicesC.append(service)
 	else:
 		_services = service['services']
 
@@ -232,11 +221,6 @@ def linuxUnLoadServices(service):
 	if _services != None:
 		for srvs in _services:
 			linuxUnLoadInitServices(srvs)
-	
-	# Load Cron Services
-	#if _servicesC != None:
-	#	for srvs in _servicesC:
-	#		removeCronJob(srvs)
 
 def linuxLoadInitServices(service):
 	
@@ -333,7 +317,7 @@ def removeCronJob(comment):
 
 	for job in cron:
 		if job.comment == comment:
-			print "Removing Cron Job" + comment
+			print "\nRemoving Cron Job" + comment
 			cJobRm = raw_input('Are you sure you want to remove this cron job (Y/N)?')
 			if cJobRm.lower() == "y" or cJobRm.lower() == "yes":
 				cron.remove (job)
@@ -432,7 +416,7 @@ def setupPatchLoader():
 	_srvPort = "3600"
 	_srvUSSL = "Y"
 	
-	srvHost = raw_input('Master server address [127.0.0.1]: ')
+	srvHost = raw_input('\nMaster server address [127.0.0.1]: ')
 	srvHost = srvHost or _srvHost
 
 	srvPort = raw_input('Master server port [3600]: ')
@@ -481,6 +465,7 @@ def setupServices():
 
 	# Web Services
 	_WEBSERVICES = 'Y' 
+	print ""
 	webService = raw_input('Enable Web Services [%s]' % _WEBSERVICES)
 	webService = webService or _WEBSERVICES
 	jData = readJSON(MP_CONF_FILE)
@@ -511,7 +496,8 @@ def setupServices():
 	
 	# Web Admin Console
 	
-	_ADMINCONSOLE = 'Y' if masterType else 'N'  
+	_ADMINCONSOLE = 'Y' if masterType else 'N'
+	print ""
 	adminConsole = raw_input('Enable Admin Console Application [%s]' % _ADMINCONSOLE)
 	adminConsole = adminConsole or _ADMINCONSOLE
 	jData = readJSON(MP_CONF_FILE)
@@ -538,6 +524,7 @@ def setupServices():
 
 	# Content Sync
 	_CONTENT = 'Y' if masterType else 'N'  
+	print ""
 	print "Content sync allows distribution servers to sync from the master server."
 	cRsync = raw_input('Start Content Sync Service (Master Only) [%s]' % _CONTENT)
 	cRsync = cRsync or _CONTENT
@@ -552,6 +539,7 @@ def setupServices():
 
 	# Patch Loader
 	_PATCHLOAD = 'Y' if masterType else 'N'
+	print ""
 	patchLoader = raw_input('ASUS Patch Content Loader [%s]' % _PATCHLOAD)
 	patchLoader = patchLoader or _PATCHLOAD
 	if patchLoader.lower() == 'y':
@@ -562,6 +550,7 @@ def setupServices():
 	# Sync From Master
 	if masterType == False:
 		_RSYNC = 'Y'
+		print ""
 		mpRsync = raw_input('Sync Content from Master server (Recommended) [%s]' % _RSYNC)
 		mpRsync = mpRsync or _RSYNC
 		if mpRsync.lower() == 'y':
