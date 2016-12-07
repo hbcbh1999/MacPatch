@@ -38,12 +38,13 @@ class BaseConfig:
     LOGGING_LOCATION    = '/opt/MacPatch/Server/apps/log'
 
     # MacPatch App Options
-    SITECONFIG_FILE     = '/opt/MacPatch/Server/etc/siteconfig.json'
-    VERIFY_CLIENTID     = True
-    REQUIRE_SIGNATURES  = True
-    CONTENT_DIR         = '/opt/MacPatch/Content'
-    AGENT_CONTENT_DIR   = '/opt/MacPatch/Content/Web/clients'
-    PATCH_CONTENT_DIR   = '/opt/MacPatch/Content/Web/patches'
+    SITECONFIG_FILE         = '/opt/MacPatch/Server/etc/siteconfig.json'
+    VERIFY_CLIENTID         = True
+    REQUIRE_SIGNATURES      = True
+    ALLOW_MIXED_SIGNATURES  = True
+    CONTENT_DIR             = '/opt/MacPatch/Content'
+    AGENT_CONTENT_DIR       = '/opt/MacPatch/Content/Web/clients'
+    PATCH_CONTENT_DIR       = '/opt/MacPatch/Content/Web/patches'
 
 
 class DevelopmentConfig(BaseConfig):
