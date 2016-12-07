@@ -77,7 +77,8 @@ GetAdminPassword()
    fi
 }
 
-existsAndDelete () {
+existsAndDelete () 
+{
 	if [ -f "$1" ]; then
 		echo "Removing (rm -f) file $1"
 		rm -f "$1" 2>/dev/null
@@ -87,11 +88,13 @@ existsAndDelete () {
 	fi
 }
 
-findAndDelete () {
+findAndDelete ()
+{
 	find $1 -name $2 -exec rm {} \;
 }
 
-stopLaunchDItem () {
+stopLaunchDItem () 
+{
 	# Stop Running Services
 	echo "Stopping $1"
 	/bin/launchctl remove "$1" 2>/dev/null
@@ -186,6 +189,7 @@ if [ -d $mpBaseDir ]; then
 	
 	# Delete Client Data
 	existsAndDelete "/Library/Application Support/MPClientStatus"
+	existsAndDelete "/Library/Application Support/MacPatch/SW_Data"
 	
 	# Older Framework
 	existsAndDelete "/Library/Frameworks/MPFramework.framework"
