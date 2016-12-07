@@ -30,8 +30,11 @@ class AgentBase(MPResource):
             _body = request.get_json(silent=True)
 
             if not isValidSignature(self.req_signature, cuuid, request.data, self.req_ts):
-                log_Error('[AgentBase][Post]: Failed to verify Signature for client (%s)' % (cuuid))
-                return {"result": '', "errorno": 424, "errormsg": 'Failed to verify Signature'}, 424
+                if current_app.config['ALLOW_MIXED_SIGNATURES'] == True:
+                    log_Info('[AgentBase][Post]: ALLOW_MIXED_SIGNATURES is enabled.')
+                else:
+                    log_Error('[AgentBase][Post]: Failed to verify Signature for client (%s)' % (cuuid))
+                    return {"result": '', "errorno": 424, "errormsg": 'Failed to verify Signature'}, 424
 
             client_obj = MpClient.query.filter_by(cuuid=cuuid).first()
             log_Debug('[AgentBase][Post]: Client (%s) Data %s' % (cuuid, _body))
@@ -95,8 +98,11 @@ class AgentPlist(MPResource):
                 return {"result": '', "errorno": 424, "errormsg": 'Failed to verify ClientID'}, 424
 
             if not isValidSignature(self.req_signature, cuuid, request.data, self.req_ts):
-                log_Error('[AgentPlist][Post]: Failed to verify Signature for client (%s)' % (cuuid))
-                return {"result": '', "errorno": 424, "errormsg": 'Failed to verify Signature'}, 424
+                if current_app.config['ALLOW_MIXED_SIGNATURES'] == True:
+                    log_Info('[AgentPlist][Post]: ALLOW_MIXED_SIGNATURES is enabled.')
+                else:
+                    log_Error('[AgentPlist][Post]: Failed to verify Signature for client (%s)' % (cuuid))
+                    return {"result": '', "errorno": 424, "errormsg": 'Failed to verify Signature'}, 424
 
             client_obj = MpClientPlist.query.filter_by(cuuid=cuuid).first()
             log_Debug('[AgentPlist][Post]: Client (%s) Data %s' % (cuuid, _body))
@@ -155,8 +161,11 @@ class AgentStatus(MPResource):
                 return {"result": '', "errorno": 424, "errormsg": 'Failed to verify ClientID'}, 424
 
             if not isValidSignature(self.req_signature, cuuid, self.req_uri, self.req_ts):
-                log_Error('[AgentStatus][Get]: Failed to verify Signature for client (%s)' % (cuuid))
-                return {"result": '', "errorno": 424, "errormsg": 'Failed to verify Signature'}, 424
+                if current_app.config['ALLOW_MIXED_SIGNATURES'] == True:
+                    log_Info('[AgentStatus][Get]: ALLOW_MIXED_SIGNATURES is enabled.')
+                else:
+                    log_Error('[AgentStatus][Get]: Failed to verify Signature for client (%s)' % (cuuid))
+                    return {"result": '', "errorno": 424, "errormsg": 'Failed to verify Signature'}, 424
 
             client_obj = MpClient.query.filter_by(cuuid=cuuid).first()
 

@@ -30,9 +30,12 @@ class SoftwareTasksForGroup(MPResource):
                 log_Error('[SoftwareTasksForGroup][Get]: Failed to verify ClientID (%s)' % (cuuid))
                 return {"result": '', "errorno": 424, "errormsg": 'Failed to verify ClientID'}, 424
 
-            if not isValidSignature(self.req_signature, cuuid, self.req_uri, self.req_ts):
-                log_Error('[SoftwareTasksForGroup][Get]: Failed to verify Signature for client (%s)' % (cuuid))
-                return {"result": '', "errorno": 424, "errormsg": 'Failed to verify Signature'}, 424
+            if self.req_agent == 'iLoad':
+                log_Info("[SoftwareTasksForGroup][Get]: iLoad Request from %s" % (cuuid))
+            else:
+                if not isValidSignature(self.req_signature, cuuid, self.req_uri, self.req_ts):
+                    log_Error('[SoftwareTasksForGroup][Get]: Failed to verify Signature for client (%s)' % (cuuid))
+                    return {"result": '', "errorno": 424, "errormsg": 'Failed to verify Signature'}, 424
 
             log_Debug("[SoftwareTasksForGroup][Get][%s]: Args: groupName=%s, osver=%s" % (cuuid, groupName, osver))
 
@@ -227,9 +230,12 @@ class SoftwareDistributionGroups(MPResource):
                 log_Error('[SoftwareDistributionGroups][Get]: Failed to verify ClientID (%s)' % (cuuid))
                 return {"result": '', "errorno": 424, "errormsg": 'Failed to verify ClientID'}, 424
 
-            if not isValidSignature(self.req_signature, cuuid, self.req_uri, self.req_ts):
-                log_Error('[SoftwareDistributionGroups][Get]: Failed to verify Signature for client (%s)' % (cuuid))
-                return {"result": '', "errorno": 424, "errormsg": 'Failed to verify Signature'}, 424
+            if self.req_agent == 'iLoad':
+                log_Info("[SoftwareDistributionGroups][Get]: iLoad Request from %s" % (cuuid))
+            else:
+                if not isValidSignature(self.req_signature, cuuid, self.req_uri, self.req_ts):
+                    log_Error('[SoftwareDistributionGroups][Get]: Failed to verify Signature for client (%s)' % (cuuid))
+                    return {"result": '', "errorno": 424, "errormsg": 'Failed to verify Signature'}, 424
 
             if int(state) == 1 or int(state) == 2:
                 q_sw_groups = MpSoftwareGroup.query.filter(MpSoftwareGroup.state == state).all()
@@ -381,6 +387,8 @@ software_api.add_resource(SoftwareTasksForGroup,         '/sw/tasks/<string:cuui
 software_api.add_resource(SoftwareTasksForGroup,         '/sw/tasks/<string:cuuid>/<string:groupName>/<string:osver>',endpoint='swTasksFilter')
 
 software_api.add_resource(SoftwareTaskForTaskID,         '/sw/task/<string:cuuid>/<string:taskID>')
+
 software_api.add_resource(SoftwareDistributionGroups,    '/sw/groups/<string:cuuid>', endpoint='woState')
 software_api.add_resource(SoftwareDistributionGroups,    '/sw/groups/<string:cuuid>/<string:state>', endpoint='wState')
+
 software_api.add_resource(SoftwareInstallResult,         '/sw/installed/<string:cuuid>')

@@ -29,8 +29,11 @@ class SUSCatalogs(MPResource):
                 return {"result": '', "errorno": 424, "errormsg": 'Failed to verify ClientID'}, 424
 
             if not isValidSignature(self.req_signature, cuuid, self.req_uri, self.req_ts):
-                log_Error('[SUSCatalogs][Get]: Failed to verify Signature for client (%s)' % (cuuid))
-                return {"result": '', "errorno": 424, "errormsg": 'Failed to verify Signature'}, 424
+                if current_app.config['ALLOW_MIXED_SIGNATURES'] == True:
+                    log_Info('[SUSCatalogs][Get]: ALLOW_MIXED_SIGNATURES is enabled.')
+                else:
+                    log_Error('[SUSCatalogs][Get]: Failed to verify Signature for client (%s)' % (cuuid))
+                    return {"result": '', "errorno": 424, "errormsg": 'Failed to verify Signature'}, 424
 
             q_catalogs = MpAsusCatalog.query.filter(MpAsusCatalog.os_major == int(osmajor),
                                                     MpAsusCatalog.os_minor == int(osminor)).order_by(MpAsusCatalog.c_order.asc()).all()
@@ -90,8 +93,11 @@ class SUServerList(MPResource):
                 return {"result": '', "errorno": 424, "errormsg": 'Failed to verify ClientID'}, 424
 
             if not isValidSignature(self.req_signature, cuuid, self.req_uri, self.req_ts):
-                log_Error('[SUServerList][Get]: Failed to verify Signature for client (%s)' % (cuuid))
-                return {"result": '', "errorno": 424, "errormsg": 'Failed to verify Signature'}, 424
+                if current_app.config['ALLOW_MIXED_SIGNATURES'] == True:
+                    log_Info('[SUServerList][Get]: ALLOW_MIXED_SIGNATURES is enabled.')
+                else:
+                    log_Error('[SUServerList][Get]: Failed to verify Signature for client (%s)' % (cuuid))
+                    return {"result": '', "errorno": 424, "errormsg": 'Failed to verify Signature'}, 424
 
             q_catalog_list = MpAsusCatalogList.query.filter(MpAsusCatalogList.name == "Default").first()
             if q_catalog_list is not None:
@@ -149,8 +155,11 @@ class SUSListVersion(MPResource):
                 return {"result": '', "errorno": 424, "errormsg": 'Failed to verify ClientID'}, 424
 
             if not isValidSignature(self.req_signature, cuuid, self.req_uri, self.req_ts):
-                log_Error('[SUSListVersion][Get]: Failed to verify Signature for client (%s)' % (cuuid))
-                return {"result": '', "errorno": 424, "errormsg": 'Failed to verify Signature'}, 424
+                if current_app.config['ALLOW_MIXED_SIGNATURES'] == True:
+                    log_Info('[SUSListVersion][Get]: ALLOW_MIXED_SIGNATURES is enabled.')
+                else:
+                    log_Error('[SUSListVersion][Get]: Failed to verify Signature for client (%s)' % (cuuid))
+                    return {"result": '', "errorno": 424, "errormsg": 'Failed to verify Signature'}, 424
 
             _result = 404
             _server = {"version": 0, "listid": 0}
@@ -191,8 +200,11 @@ class ServerList(MPResource):
                 return {"result": '', "errorno": 424, "errormsg": 'Failed to verify ClientID'}, 424
 
             if not isValidSignature(self.req_signature, cuuid, self.req_uri, self.req_ts):
-                log_Error('[ServerList][Get]: Failed to verify Signature for client (%s)' % (cuuid))
-                return {"result": '', "errorno": 424, "errormsg": 'Failed to verify Signature'}, 424
+                if current_app.config['ALLOW_MIXED_SIGNATURES'] == True:
+                    log_Info('[ServerList][Get]: ALLOW_MIXED_SIGNATURES is enabled.')
+                else:
+                    log_Error('[ServerList][Get]: Failed to verify Signature for client (%s)' % (cuuid))
+                    return {"result": '', "errorno": 424, "errormsg": 'Failed to verify Signature'}, 424
 
             _serverObj = ServerInfo()
             _serverList = []
@@ -244,8 +256,11 @@ class ServerListVersion(MPResource):
                 return {"result": '', "errorno": 424, "errormsg": 'Failed to verify ClientID'}, 424
 
             if not isValidSignature(self.req_signature, cuuid, self.req_uri, self.req_ts):
-                log_Error('[ServerListVersion][Get]: Failed to verify Signature for client (%s)' % (cuuid))
-                return {"result": '', "errorno": 424, "errormsg": 'Failed to verify Signature'}, 424
+                if current_app.config['ALLOW_MIXED_SIGNATURES'] == True:
+                    log_Info('[ServerListVersion][Get]: ALLOW_MIXED_SIGNATURES is enabled.')
+                else:
+                    log_Error('[ServerListVersion][Get]: Failed to verify Signature for client (%s)' % (cuuid))
+                    return {"result": '', "errorno": 424, "errormsg": 'Failed to verify Signature'}, 424
 
             _result = 404
             _server = {"version": 0, "listid": 0}
@@ -309,7 +324,6 @@ class Server(object):
         _keys = ['server', 'port', 'useSSL', 'allowSelfSignedCert', 'useSSLAuth']
 
         for idx, key in enumerate(_my_keys):
-            #print"%s - %s" % (key, row[_keys[idx]])
             setattr(self, key, row[_keys[idx]])
 
         if int(row['isMaster']) == 1:

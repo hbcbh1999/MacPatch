@@ -35,8 +35,11 @@ class MP_AgentUpdate(MPResource):
                 return {"result": '', "errorno": 424, "errormsg": 'Failed to verify ClientID'}, 424
 
             if not isValidSignature(self.req_signature, cuuid, self.req_uri, self.req_ts):
-                log_Error('[AgentUpdate][GET]: Failed to verify Signature for client (' + cuuid + ')')
-                return {"result": '', "errorno": 424, "errormsg": 'Failed to verify Signature'}, 424
+                if current_app.config['ALLOW_MIXED_SIGNATURES'] == True:
+                    log_Info('[AgentUpdate][GET]: ALLOW_MIXED_SIGNATURES is enabled.')
+                else:
+                    log_Error('[AgentUpdate][GET]: Failed to verify Signature for client (' + cuuid + ')')
+                    return {"result": '', "errorno": 424, "errormsg": 'Failed to verify Signature'}, 424
 
             _at = AgentUpdates()
             log_Info('[AgentUpdate][GET]: Checking if update to Agent is needed for CUUID: %s AGENTVER: %s' % (cuuid, agentver))
@@ -77,8 +80,11 @@ class MP_AgentUpdaterUpdate(MPResource):
                 return {"result": '', "errorno": 424, "errormsg": 'Failed to verify ClientID'}, 424
 
             if not isValidSignature(self.req_signature, cuuid, self.req_uri, self.req_ts):
-                log_Error('[AgentUpdaterUpdate][GET]: Failed to verify Signature for client (' + cuuid + ')')
-                return {"result": '', "errorno": 424, "errormsg": 'Failed to verify Signature'}, 424
+                if current_app.config['ALLOW_MIXED_SIGNATURES'] == True:
+                    log_Info('[MP_AgentUpdaterUpdate][GET]: ALLOW_MIXED_SIGNATURES is enabled.')
+                else:
+                    log_Error('[AgentUpdaterUpdate][GET]: Failed to verify Signature for client (' + cuuid + ')')
+                    return {"result": '', "errorno": 424, "errormsg": 'Failed to verify Signature'}, 424
 
             _at = AgentUpdates()
             log_Info('[AgentUpdaterUpdate][GET]: Checking if update to Updater is needed for CUUID: %s AGENTVER: %s' % (cuuid, agentver))
