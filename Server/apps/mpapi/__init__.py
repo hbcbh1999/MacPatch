@@ -101,6 +101,9 @@ def register_blueprints(app):
 	from .patches import patches as bp_patches
 	app.register_blueprint(bp_patches, url_prefix=app.config['URL_PREFIX'])
 
+	from .provisioning import provisioning as bp_provisioning
+	app.register_blueprint(bp_provisioning, url_prefix=app.config['URL_PREFIX'])
+
 	from .register import register as bp_register
 	app.register_blueprint(bp_register, url_prefix=app.config['URL_PREFIX'])
 
