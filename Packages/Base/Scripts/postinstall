@@ -46,6 +46,17 @@ function setOwnerAndPerms {
 	fi
 }
 
+existsAndDelete () 
+{
+	if [ -f "$1" ]; then
+		echo "Removing (rm -f) file $1"
+		rm -f "$1" 2>/dev/null
+	elif [ -d "$1" ]; then
+		echo "Removing (rm -rf) directory $1"
+		rm -rf "$1" 2>/dev/null
+	fi
+}
+
 function runClientActions {
 
 	/Library/MacPatch/Client/MPAgent -c
@@ -87,6 +98,11 @@ function runClientActions {
 			INT=`expr $INT + 1`
 		done
 	fi
+}
+
+function removeOldRegFiles {
+	existsAndDelete "/Library/Application Support/MacPatch/MacPatch.keychain"
+	existsAndDelete "/Library/Application Support/MacPatch/.keys"
 }
 
 # ******************************************************************
@@ -195,10 +211,11 @@ if [ $regEnabled == 1 ]; then
 	/Library/MacPatch/Client/MPAgent -R
 	if [ $? == 1 ]; then
 		sleep 1
+		removeOldRegFiles
 		# If reg key file exists we use that
 		# Register Client With Provided Key
-		if [ -f "${SRC}/mpagent.reg" ]; then
-			regFile="${SRC}/mpagent.reg" 
+		if [ -f "${SRC}/.mpreg.key" ]; then
+			regFile="${SRC}/.mpreg.key" 
 			regKey=$(<$regFile)
 			/Library/MacPatch/Client/MPAgent -r $regKey
 			if [ $? == 0 ]; then
