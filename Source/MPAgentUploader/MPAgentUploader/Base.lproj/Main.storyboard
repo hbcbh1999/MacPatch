@@ -4,7 +4,6 @@
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11542"/>
         <capability name="box content view" minToolsVersion="7.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
-        <capability name="system font weights other than Regular or Bold" minToolsVersion="7.0"/>
     </dependencies>
     <scenes>
         <!--Application-->
@@ -13,11 +12,11 @@
                 <application id="hnw-xV-0zn" sceneMemberID="viewController">
                     <menu key="mainMenu" title="Main Menu" systemMenu="main" id="AYu-sK-qS6">
                         <items>
-                            <menuItem title="MPAgentUploder" id="1Xt-HY-uBw">
+                            <menuItem title="MPAgentUploader" id="1Xt-HY-uBw">
                                 <modifierMask key="keyEquivalentModifierMask"/>
-                                <menu key="submenu" title="MPAgentUploder" systemMenu="apple" id="uQy-DD-JDr">
+                                <menu key="submenu" title="MPAgentUploader" systemMenu="apple" id="uQy-DD-JDr">
                                     <items>
-                                        <menuItem title="About MPAgentUploder" id="5kV-Vb-QxS">
+                                        <menuItem title="About MPAgentUploader" id="5kV-Vb-QxS">
                                             <modifierMask key="keyEquivalentModifierMask"/>
                                             <connections>
                                                 <action selector="orderFrontStandardAboutPanel:" target="Ady-hI-5gd" id="Exp-CZ-Vem"/>
@@ -35,7 +34,7 @@
                                             <menu key="submenu" title="Services" systemMenu="services" id="hz9-B4-Xy5"/>
                                         </menuItem>
                                         <menuItem isSeparatorItem="YES" id="4je-JR-u6R"/>
-                                        <menuItem title="Hide MPAgentUploder" keyEquivalent="h" id="Olw-nP-bQN">
+                                        <menuItem title="Hide MPAgentUploader" keyEquivalent="h" id="Olw-nP-bQN">
                                             <connections>
                                                 <action selector="hide:" target="Ady-hI-5gd" id="PnN-Uc-m68"/>
                                             </connections>
@@ -53,7 +52,7 @@
                                             </connections>
                                         </menuItem>
                                         <menuItem isSeparatorItem="YES" id="kCx-OE-vgT"/>
-                                        <menuItem title="Quit MPAgentUploder" keyEquivalent="q" id="4sb-4s-VLi">
+                                        <menuItem title="Quit MPAgentUploader" keyEquivalent="q" id="4sb-4s-VLi">
                                             <connections>
                                                 <action selector="terminate:" target="Ady-hI-5gd" id="Te7-pn-YzF"/>
                                             </connections>
@@ -653,7 +652,7 @@
                                             </connections>
                                         </menuItem>
                                         <menuItem isSeparatorItem="YES" id="U5f-n5-HuM"/>
-                                        <menuItem title="MPAgentUploder Help" keyEquivalent="?" id="jDg-zy-Sja">
+                                        <menuItem title="MPAgentUploader Help" keyEquivalent="?" id="jDg-zy-Sja">
                                             <connections>
                                                 <action selector="showHelp:" target="Ady-hI-5gd" id="3cl-OO-ydu"/>
                                             </connections>
@@ -667,7 +666,7 @@
                         <outlet property="delegate" destination="Voe-Tx-rLC" id="PrD-fu-P6m"/>
                     </connections>
                 </application>
-                <customObject id="Voe-Tx-rLC" customClass="AppDelegate" customModule="MPAgentUploder" customModuleProvider="target"/>
+                <customObject id="Voe-Tx-rLC" customClass="AppDelegate" customModule="MPAgentUploader" customModuleProvider="target"/>
                 <customObject id="Ady-hI-5gd" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="-659" y="-821"/>
@@ -694,7 +693,7 @@
         <!--Auth View Controller-->
         <scene sceneID="OXB-e1-obK">
             <objects>
-                <viewController storyboardIdentifier="AuthViewController" id="Xlq-ok-1pY" customClass="AuthViewController" customModule="MPAgentUploder" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="AuthViewController" id="Xlq-ok-1pY" customClass="AuthViewController" customModule="MPAgentUploader" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" id="OcH-TB-zTX">
                         <rect key="frame" x="0.0" y="0.0" width="529" height="147"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -809,7 +808,7 @@ Gw
         <!--View Controller-->
         <scene sceneID="hIz-AP-VOD">
             <objects>
-                <viewController id="XfG-lQ-9wD" customClass="ViewController" customModule="MPAgentUploder" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="XfG-lQ-9wD" customClass="ViewController" customModule="MPAgentUploader" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" autoresizesSubviews="NO" wantsLayer="YES" id="m2S-Jp-Qdl">
                         <rect key="frame" x="0.0" y="0.0" width="547" height="647"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -854,7 +853,7 @@ Gw
                                         <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="VL7-z6-9hZ">
                                             <rect key="frame" x="59" y="14" width="358" height="22"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" title="3600" drawsBackground="YES" id="4hX-GQ-zdH">
+                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" title="3600" placeholderString="3600" drawsBackground="YES" id="4hX-GQ-zdH">
                                                 <font key="font" metaFont="system"/>
                                                 <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1166,7 +1165,7 @@ Gw
                                     </subviews>
                                 </view>
                             </box>
-                            <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="bpA-fw-7T9" customClass="HeaderView" customModule="MPAgentUploder" customModuleProvider="target">
+                            <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="bpA-fw-7T9" customClass="HeaderView" customModule="MPAgentUploader" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="567" width="547" height="80"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <subviews>
@@ -1176,10 +1175,10 @@ Gw
                                         <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyUpOrDown" image="AppIcon" id="Ucf-oP-his"/>
                                     </imageView>
                                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="YqD-Gm-bAf">
-                                        <rect key="frame" x="94" y="20" width="320" height="29"/>
+                                        <rect key="frame" x="94" y="20" width="322" height="29"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="MacPatch - Agent Uploader" id="Wg5-IO-ed0">
-                                            <font key="font" metaFont="systemSemibold" size="24"/>
+                                            <font key="font" size="24" name="HelveticaNeue-Bold"/>
                                             <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                         </textFieldCell>
@@ -1242,7 +1241,7 @@ Gw
                 <customObject id="rPt-NT-nkU" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
                 <userDefaultsController id="YOh-Ne-xki"/>
             </objects>
-            <point key="canvasLocation" x="-136.5" y="623.5"/>
+            <point key="canvasLocation" x="138" y="585"/>
         </scene>
     </scenes>
     <resources>

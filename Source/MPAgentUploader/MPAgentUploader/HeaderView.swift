@@ -1,7 +1,11 @@
 //
-//  MPCrypto.h
+//  HeaderView.swift
+//  MPAgentUploder
+//
+//  Created by Charles Heizer on 12/12/16.
+//
 /*
- Copyright (c) 2013, Lawrence Livermore National Security, LLC.
+ Copyright (c) 2016, Lawrence Livermore National Security, LLC.
  Produced at the Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  Written by Charles Heizer <heizer1 at llnl.gov>.
  LLNL-CODE-636469 All rights reserved.
@@ -23,17 +27,13 @@
  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#import <Cocoa/Cocoa.h>
+import Foundation
 
-
-@interface MPCrypto : NSObject {
-
+class HeaderView : NSView {
+    
+    override func draw(_ dirtyRect: NSRect) {
+        
+        let gradient = NSGradient.init(starting: NSColor.darkGray, ending: NSColor.black)
+        gradient?.draw(from: NSMakePoint(0,0), to: NSMakePoint(0,self.frame.size.height), options: .drawsAfterEndingLocation)
+    }
 }
-
-- (NSString *)getHashForFileForType:(NSString *)aFile type:(NSString *)aType;
-- (NSString *)getHashFromStringForType:(NSString *)inputStr type:(NSString *)aType;
-
-- (NSString *)md5HashForFile:(NSString *)aFilePath;
-- (NSString *)sha1HashForFile:(NSString *)aFilePath;
-
-@end
