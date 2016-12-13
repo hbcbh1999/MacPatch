@@ -326,6 +326,12 @@
         if (err != NULL) *err = error;
         return nil;
     }
+    error = nil;
+    [hashOfKey writeToFile:MP_AGENT_HASH atomically:NO encoding:NSUTF8StringEncoding error:&error];
+    if (error) {
+        if (err != NULL) *err = error;
+        return nil;
+    }
     
     // Create the dictionary to send to Web service
     @try {

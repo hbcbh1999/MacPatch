@@ -70,6 +70,7 @@ NSString * const kMPInventory               = @".mpInventoryRunning";
 NSString * const kMPAVUpdate                = @".mpAVUpdateRunning";
 
 NSString * const MP_KEYCHAIN_FILE           = @"/Library/Application Support/MacPatch/.MacPatch.keychain";
+NSString * const MP_AGENT_HASH              = @"/Library/Application Support/MacPatch/.keyHash";
 
 @implementation Constants
 

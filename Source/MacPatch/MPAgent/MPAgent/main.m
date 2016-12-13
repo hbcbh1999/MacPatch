@@ -52,6 +52,7 @@ int main (int argc, char * argv[])
         BOOL doRegistration     = NO;
         BOOL readRegInfo        = NO;
         NSString *regKeyArg     = @"999999999";
+        NSString *regKeyHash    = @"999999999";
         
         // Inventory
         NSString *invArg        = NULL;
@@ -88,7 +89,7 @@ int main (int argc, char * argv[])
 				{"version"			,no_argument		,0, 'v'},
 				{"help"				,no_argument		,0, 'h'},
                 {"register"		    ,optional_argument	,0, 'r'},
-                {"regInfo"		    ,no_argument        ,0, 'R'},
+                {"regInfo"		    ,optional_argument  ,0, 'R'},
                 // Inventory, not documented yet
                 {"type"                 ,required_argument	,0, 't'},
                 {"Audit"                ,no_argument		,0, 'A'},
@@ -101,7 +102,7 @@ int main (int argc, char * argv[])
 			};
 			// getopt_long stores the option index here.
 			int option_index = 0;
-			c = getopt_long (argc, argv, "dqDTcsuiaUGSpwnzeVvhr::Rt:ACk:l:m:", long_options, &option_index);
+			c = getopt_long (argc, argv, "dqDTcsuiaUGSpwnzeVvhr::R::t:ACk:l:m:", long_options, &option_index);
 			
 			// Detect the end of the options.
 			if (c == -1)
@@ -203,6 +204,9 @@ int main (int argc, char * argv[])
 					break;
                 case 'R':
                     readRegInfo = YES;
+                    if (optarg) {
+                        regKeyHash = [NSString stringWithUTF8String:optarg];
+                    }
                     break;
 				case 'h':
 				case '?':
@@ -305,12 +309,24 @@ int main (int argc, char * argv[])
         } else if (readRegInfo) {
             
             MPAgentRegister *mpar = [[MPAgentRegister alloc] init];
-            if ([mpar clientIsRegistered]) {
-                printf("\nAgent is registered.\n");
-                exit(0);
+            
+            if (![regKeyHash isEqualToString:@"999999999"]) {
+                if ([mpar clientIsRegistered]) {
+                    printf("\nAgent is registered.\n");
+                    exit(0);
+                } else {
+                    printf("Warning: Agent is not registered.\n");
+                    exit(1);
+                }
             } else {
-                printf("Warning: Agent is not registered.\n");
-                exit(1);
+                // Will add additional check
+                if ([mpar clientIsRegistered]) {
+                    printf("\nAgent is registered.\n");
+                    exit(0);
+                } else {
+                    printf("Warning: Agent is not registered.\n");
+                    exit(1);
+                }
             }
             
             exit(1);

@@ -103,6 +103,7 @@ function runClientActions {
 function removeOldRegFiles {
 	existsAndDelete "/Library/Application Support/MacPatch/MacPatch.keychain"
 	existsAndDelete "/Library/Application Support/MacPatch/.keys"
+	existsAndDelete "/Library/Application Support/MacPatch/.keyHash"
 }
 
 # ******************************************************************
