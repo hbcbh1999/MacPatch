@@ -740,7 +740,7 @@ table.genTable td
 				user_email = <cfqueryparam value="#form.user_email#">,
 				email_notification = <cfqueryparam value="#form.email_notification#">
 				<cfif session.IsAdmin IS true>
-				,group_id = <cfqueryparam value="#decrypt(form.GROUP,session.usrKey,'AES/CBC/PKCS5Padding','base64')#" cfsqltype="cf_sql_integer">
+					,group_id = <cfqueryparam value="#decrypt(form.GROUP,session.usrKey,'AES/CBC/PKCS5Padding','base64')#" cfsqltype="cf_sql_integer">
 				</cfif>
 			WHERE rid = #Val(form.rid)#
 		</cfquery>
@@ -753,9 +753,12 @@ table.genTable td
 					user_email = <cfqueryparam value="#form.user_email#">,
 					email_notification = <cfqueryparam value="#form.email_notification#">
 					<cfif session.IsAdmin IS true>
-					
+						,admin = <cfqueryparam value="#decrypt(form.radmin,session.usrKey,'AES/CBC/PKCS5Padding','base64')#">,
+						autopkg = <cfqueryparam value="#decrypt(form.rautopkg,session.usrKey,'AES/CBC/PKCS5Padding','base64')#">,
+						agentUpload = <cfqueryparam value="#decrypt(form.ragentupload,session.usrKey,'AES/CBC/PKCS5Padding','base64')#">,
+						apiAccess = <cfqueryparam value="#decrypt(form.rapi,session.usrKey,'AES/CBC/PKCS5Padding','base64')#">
 					</cfif>
-				WHERE rid = #Val(form.rid)#
+				WHERE user_id = <cfqueryparam value="#form.user_id#">
 
 			<cfelse>
 
