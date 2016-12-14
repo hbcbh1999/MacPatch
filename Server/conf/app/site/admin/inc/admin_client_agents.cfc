@@ -115,30 +115,13 @@
 					SET
 						osver = <cfqueryparam value="#Arguments.osver#">,
 						version = <cfqueryparam value="#Arguments.version#">,
+						build = <cfqueryparam value="#Arguments.build#">,
 						active = <cfqueryparam value="#Arguments.active#" cfsqltype="cf_sql_integer">,
 						pkg_url = <cfqueryparam value="#Arguments.pkg_url#">
 					WHERE
 						rid = <cfqueryparam value="#Arguments.id#">
 				</cfquery>
                 
-                <cfquery name="qIfBothActive" datasource="#session.dbsource#">
-                	Select active From mp_client_agents WHERE puuid = <cfqueryparam value="#_pid#">
-            	</cfquery>
-                <cfset _pCount = 0>
-                <cfoutput query="qIfBothActive">
-                	<cfset _pCount = _pCount + active>
-                </cfoutput>
-                
-                <cfif _pCount EQ 2>                
-                	<!--- Move Main Installer Into Production --->
-                    <cfset _mainPkg = #pkgBaseLoc# & "/MPClientInstall.pkg.zip">
-                    <cfset _newMainPkg = #pkgBaseLoc# & "/updates/" & #_pid# & "/MPClientInstall.pkg.zip">
-                    <cfif FileExists(_mainPkg)>
-                    	<cfset _rm = FileDelete(_mainPkg)>
-                    </cfif>    
-                    <cfset _cp = FileCopy(_newMainPkg,_mainPkg)>
-                </cfif>
-
                 <cfcatch type="any">
                     <!--- Error, return message --->
                     <cfset strMsgType = "Error">
@@ -157,7 +140,7 @@
 				</cfquery>
                 
                 <!--- Remove the Files from FileSystem --->
-				<cfset pkgDir = #pkgBaseLoc# & "/updates/" & _pid>
+				<cfset pkgDir = #pkgBaseLoc# & "/" & _pid>
                 <cfif directoryexists(pkgDir) EQ True>
                     <cfdirectory action="delete" directory="#pkgDir#" recurse="true">
                 </cfif>

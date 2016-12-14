@@ -13,8 +13,14 @@
         select puuid from mp_client_agents
         WHERE type = 'app' AND active = '1'
     </cfquery>
-    <cfif qAgent.RecordCount EQ 1>
-        <cfset agent_id = qAgent.puuid />
+    <cfquery name="qUpdater" datasource="#datasource#" result="res">
+        select puuid from mp_client_agents
+        WHERE type = 'update' AND active = '1'
+    </cfquery>
+    <cfif qAgent.RecordCount EQ 1 AND qUpdater.RecordCount EQ 1>
+        <cfif qAgent.puuid EQ qUpdater.puuid>
+            <cfset agent_id = qAgent.puuid />
+        </cfif>
     </cfif>
 </cfsilent>
 <body>
