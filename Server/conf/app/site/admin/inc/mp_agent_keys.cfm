@@ -76,8 +76,9 @@
 					}
 				}
 			);
+			<cfif session.IsAdmin IS true>
 			$("#regConfig").jqGrid('navGrid',"#pagerConfig",{edit:true,add:false,del:false},{closeOnEscape:true,reloadAfterSubmit:true,width:600, align:"left"},{reloadAfterSubmit:true,width:600},{});
-
+			</cfif>
 			var lastsel=-1;
 			$("#list").jqGrid(
 			{
