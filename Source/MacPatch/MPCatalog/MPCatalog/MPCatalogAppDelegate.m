@@ -373,10 +373,9 @@
     [cancelButton  setEnabled:NO];
     [infoButton    setEnabled:NO];
 	
-    NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+    //NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
     //[nc addObserver:self selector:@selector(installOutputFromProxy:) name:@"installSoftwareNote" object:nil];
 
-    
     [self setTableColEdit:YES];
     
     // Connect to Helper

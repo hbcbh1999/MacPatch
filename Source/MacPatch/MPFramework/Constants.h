@@ -70,6 +70,7 @@ extern NSString * const kMPInventory;
 extern NSString * const kMPAVUpdate;
 
 extern NSString * const MP_KEYCHAIN_FILE;
+extern NSString * const MP_AGENT_HASH;
 
 @interface Constants : NSObject {
 

@@ -328,9 +328,7 @@ int main (int argc, char * argv[])
                     exit(1);
                 }
             }
-            
-            exit(1);
-        
+
         // Post OS Migration Info
         } else if (osMigration) {
             
