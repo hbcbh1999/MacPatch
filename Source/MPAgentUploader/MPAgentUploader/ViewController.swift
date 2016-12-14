@@ -207,14 +207,18 @@ class ViewController: NSViewController, AuthViewControllerDelegate
             log.info("Download Agent Configuration Data")
             self.agentConfigImage.image = NSImage.init(named: NSImageNameRemoveTemplate)
             let res = self.getAgentConfigurationData(token: self.api_token)
-            if (res == nil) {
+            if (res == nil || (res?.isEmpty)!) {
                 log.error("Error getting agent configuration.")
-                self.agentConfigImage.image = NSImage.init(named: "RedDot")
-                self.agentConfigStatus.stringValue = "Error getting agent configuration."
-                self.toggleUIEnd()
+                DispatchQueue.main.async {
+                    self.agentConfigImage.image = NSImage.init(named: "RedDot")
+                    self.agentConfigStatus.stringValue = "Error getting agent configuration."
+                    self.toggleUIEnd()
+                }
                 return;
             } else {
-                self.agentConfigImage.image = NSImage.init(named: "GreenDot")
+                DispatchQueue.main.async {
+                    self.agentConfigImage.image = NSImage.init(named: "GreenDot")
+                }
             }
             let agent_config = res?["plist"] as? String
             
@@ -224,12 +228,16 @@ class ViewController: NSViewController, AuthViewControllerDelegate
             log.info("Unzip and extract package")
             self.extractAgentImage.image = NSImage.init(named: NSImageNameRemoveTemplate)
             if (self.extractAgentPKG(package: self.agentPackage.stringValue)) {
-                self.extractAgentImage.image = NSImage.init(named: "GreenDot")
+                DispatchQueue.main.async {
+                    self.extractAgentImage.image = NSImage.init(named: "GreenDot")
+                }
             } else {
                 log.error("Error unarchiving and extracting package.")
-                self.extractAgentImage.image = NSImage.init(named: "RedDot")
-                self.extractStatus.stringValue = "Error unarchiving and extracting package."
-                self.toggleUIEnd()
+                DispatchQueue.main.async {
+                    self.extractAgentImage.image = NSImage.init(named: "RedDot")
+                    self.extractStatus.stringValue = "Error unarchiving and extracting package."
+                    self.toggleUIEnd()
+                }
                 return
             }
             
@@ -246,26 +254,32 @@ class ViewController: NSViewController, AuthViewControllerDelegate
             var packages: [String] = self.getPackagesFromArchiveDir(path: base_dir)!
             if (packages.isEmpty) {
                 log.error("Error no packages in archive.")
-                self.writeConfigImage.image = NSImage.init(named: "RedDot")
-                self.writeConfigStatus.stringValue = "Error no pkgs in archive"
+                DispatchQueue.main.async {
+                    self.writeConfigImage.image = NSImage.init(named: "RedDot")
+                    self.writeConfigStatus.stringValue = "Error no pkgs in archive"
+                }
             }
             
             // Write Server Public Key to Base.pkg
             log.info("Write Server Public Key to Base.pkg")
             if (!self.writeServerPubKeyToPackage(packages: packages, pubKey: res?["pubKey"] as! String, keyHash: res?["pubKeyHash"] as! String)) {
                 log.error("Error writing server keys.")
-                self.writeConfigImage.image = NSImage.init(named: "RedDot")
-                self.writeConfigStatus.stringValue = "Error writing server keys."
-                self.toggleUIEnd()
+                DispatchQueue.main.async {
+                    self.writeConfigImage.image = NSImage.init(named: "RedDot")
+                    self.writeConfigStatus.stringValue = "Error writing server keys."
+                    self.toggleUIEnd()
+                }
                 return
             }
             // Write config plist to packages
             log.info("Write config plist to packages")
             if (!self.writePlistToPackage(packages: packages, plist: agent_config!)) {
                 log.error("Error writing config plist to package.")
-                self.writeConfigImage.image = NSImage.init(named: "RedDot")
-                self.writeConfigStatus.stringValue = "Error writing config plist to package."
-                self.toggleUIEnd()
+                DispatchQueue.main.async {
+                    self.writeConfigImage.image = NSImage.init(named: "RedDot")
+                    self.writeConfigStatus.stringValue = "Error writing config plist to package."
+                    self.toggleUIEnd()
+                }
                 return
             }
             
@@ -274,9 +288,11 @@ class ViewController: NSViewController, AuthViewControllerDelegate
             if (!self.pluginsPath.stringValue.isEmpty) {
                 if (!self.writePluginsToPackage(packages: packages, plugins_directory: self.pluginsPath.stringValue)) {
                     log.error("Error writing plugins to package.")
-                    self.writeConfigImage.image = NSImage.init(named: "RedDot")
-                    self.writeConfigStatus.stringValue = "Error writing plugins to package."
-                    self.toggleUIEnd()
+                    DispatchQueue.main.async {
+                        self.writeConfigImage.image = NSImage.init(named: "RedDot")
+                        self.writeConfigStatus.stringValue = "Error writing plugins to package."
+                        self.toggleUIEnd()
+                    }
                     return
                 }
             }
@@ -287,9 +303,11 @@ class ViewController: NSViewController, AuthViewControllerDelegate
             for pkg in packages {
                 if (!self.writeVersionInfoToPackage(package: pkg, version_file: ver_info)) {
                     log.error("Error writing version info to packages.")
-                    self.writeConfigImage.image = NSImage.init(named: "RedDot")
-                    self.writeConfigStatus.stringValue = "Error writing version info to packages."
-                    self.toggleUIEnd()
+                    DispatchQueue.main.async {
+                        self.writeConfigImage.image = NSImage.init(named: "RedDot")
+                        self.writeConfigStatus.stringValue = "Error writing version info to packages."
+                        self.toggleUIEnd()
+                    }
                     return
                 }
             }
@@ -299,9 +317,11 @@ class ViewController: NSViewController, AuthViewControllerDelegate
             if (!self.registrationKey.stringValue.isEmpty) {
                 if (!self.writeRegKeyToPackage(packages: packages, regKey: self.registrationKey.stringValue)) {
                     log.error("Error writing registration key to packages.")
-                    self.writeConfigImage.image = NSImage.init(named: "RedDot")
-                    self.writeConfigStatus.stringValue = "Error writing registration key to packages."
-                    self.toggleUIEnd()
+                    DispatchQueue.main.async {
+                        self.writeConfigImage.image = NSImage.init(named: "RedDot")
+                        self.writeConfigStatus.stringValue = "Error writing registration key to packages."
+                        self.toggleUIEnd()
+                    }
                     return
                 }
             }
@@ -310,10 +330,14 @@ class ViewController: NSViewController, AuthViewControllerDelegate
             log.info("Apply Background image.")
             if (!self.changeBackgroundImageToDoneImage(path: base_dir)) {
                 log.error("Error changing background image.")
-                self.writeConfigStatus.stringValue = "Error changing background image."
+                DispatchQueue.main.async {
+                    self.writeConfigStatus.stringValue = "Error changing background image."
+                }
             }
             
-            self.writeConfigImage.image = NSImage.init(named: "GreenDot")
+            DispatchQueue.main.async {
+                self.writeConfigImage.image = NSImage.init(named: "GreenDot")
+            }
             
             // ---------------------------------
             // Flatten Packages
@@ -326,12 +350,16 @@ class ViewController: NSViewController, AuthViewControllerDelegate
             flattend_packages = self.flattenPackages(packages: packages, working_dir: self.pkg_tmp_dir)
             if (flattend_packages.count <= 0) {
                 log.error("Error flattening packages.")
-                self.flattenPackageImage.image = NSImage.init(named: "RedDot")
-                self.flattenPackageStatus.stringValue = "Error flattening packages."
-                self.toggleUIEnd()
+                DispatchQueue.main.async {
+                    self.flattenPackageImage.image = NSImage.init(named: "RedDot")
+                    self.flattenPackageStatus.stringValue = "Error flattening packages."
+                    self.toggleUIEnd()
+                }
                 return
             } else {
-                self.flattenPackageImage.image = NSImage.init(named: "GreenDot")
+                DispatchQueue.main.async {
+                    self.flattenPackageImage.image = NSImage.init(named: "GreenDot")
+                }
             }
             
             // ---------------------------------
@@ -350,9 +378,11 @@ class ViewController: NSViewController, AuthViewControllerDelegate
                 
                 if (!self.compressPackage(package: xFpkg)){
                     log.error("Error archiving package.")
-                    self.compressPackageImage.image = NSImage.init(named: "RedDot")
-                    self.compressPackageStatus.stringValue = "Error archiving package."
-                    self.toggleUIEnd()
+                    DispatchQueue.main.async {
+                        self.compressPackageImage.image = NSImage.init(named: "RedDot")
+                        self.compressPackageStatus.stringValue = "Error archiving package."
+                        self.toggleUIEnd()
+                    }
                     return
                 }
             }
@@ -371,13 +401,17 @@ class ViewController: NSViewController, AuthViewControllerDelegate
                 let fdata: [String: Any] = ["app":self.agent_dictionary,"update":self.updater_dictionary]
                 if(!self.uploadPackagesToServer(packages: xp, formData: fdata)) {
                     log.error("Error posting packages.")
-                    self.postPackageImage.image = NSImage.init(named: "RedDot")
-                    self.postPackageStatus.stringValue = "Error posting packages."
-                    self.toggleUIEnd()
+                    DispatchQueue.main.async {
+                        self.postPackageImage.image = NSImage.init(named: "RedDot")
+                        self.postPackageStatus.stringValue = "Error posting packages."
+                        self.toggleUIEnd()
+                    }
                     return
                 }
                 
-                self.postPackageImage.image = NSImage.init(named: "GreenDot")
+                DispatchQueue.main.async {
+                    self.postPackageImage.image = NSImage.init(named: "GreenDot")
+                }
             } else {
                 log.debug("Upload is disabled, opening working dir.")
                 NSWorkspace.shared().openFile(base_dir)
@@ -470,7 +504,7 @@ class ViewController: NSViewController, AuthViewControllerDelegate
             log.debug("result: \(result)")
             return result["result"] as? Bool ?? false
         case .failure(let error):
-            log.error(error as! String)
+            log.error("\(error)")
             return false
         }
     }
@@ -488,14 +522,15 @@ class ViewController: NSViewController, AuthViewControllerDelegate
         let _ssl = (useSSL.state == NSOnState) ? "https" : "http"
         let _url = "\(_ssl)://\(mpServerHost.stringValue):\(mpServerPort.stringValue)\(URI_PREFIX)/agent/config/\(token)"
         
-        let response = MPAlamofire.request(_url).responseJSON()
+        let response = MPAlamofire.request(_url).validate(statusCode: 200..<300).responseJSON()
+        
         switch response.result {
         case .success(let JSON):
             let result = JSON as! NSDictionary
             log.debug("result: \(result)")
             return result["result"] as? [String:Any]
         case .failure(let error):
-            log.error(error as! String)
+            log.error("\(error)")
             return nil
         }
     }
@@ -563,7 +598,7 @@ class ViewController: NSViewController, AuthViewControllerDelegate
                 log.debug(str)
             }
         } catch {
-            log.error(error as! String)
+            log.error("\(error)")
             return false
         }
         
@@ -579,7 +614,7 @@ class ViewController: NSViewController, AuthViewControllerDelegate
             }
             try fm.removeItem(atPath: pkgName)
         } catch {
-            log.error(error as! String)
+            log.error("\(error)")
             return false
         }
         
@@ -648,7 +683,7 @@ class ViewController: NSViewController, AuthViewControllerDelegate
                         try plist.write(toFile: plistFile, atomically: false, encoding: String.Encoding.utf8)
                         return true
                     } catch {
-                        log.error(error as! String)
+                        log.error("\(error)")
                         return false
                     }
                 }
@@ -686,7 +721,7 @@ class ViewController: NSViewController, AuthViewControllerDelegate
                             }
                             return true
                         } catch {
-                            log.error(error as! String)
+                            log.error("\(error)")
                             return false
                         }
                     }
@@ -804,7 +839,7 @@ class ViewController: NSViewController, AuthViewControllerDelegate
                         try regKey.write(toFile: regFile, atomically: false, encoding: String.Encoding.utf8)
                         return true
                     } catch {
-                        log.error(error as! String)
+                        log.error("\(error)")
                         return false
                     }
                 }
@@ -832,7 +867,7 @@ class ViewController: NSViewController, AuthViewControllerDelegate
                 try fm.moveItem(atPath: image_done, toPath: image)
                 return true
             } catch {
-                log.error(error as! String)
+                log.error("\(error)")
                 return false
             }
         }
@@ -906,7 +941,7 @@ class ViewController: NSViewController, AuthViewControllerDelegate
             }
             return true
         } catch {
-            log.error(error as! String)
+            log.error("\(error)")
             return false
         }
     }
@@ -929,7 +964,7 @@ class ViewController: NSViewController, AuthViewControllerDelegate
             try fm.removeItem(atPath: package)
             return true
         } catch {
-            log.error(error as! String)
+            log.error("\(error)")
             return false
         }
     }
@@ -950,7 +985,7 @@ class ViewController: NSViewController, AuthViewControllerDelegate
             }
             return true
         } catch {
-            log.error(error as! String)
+            log.error("\(error)")
             return false
         }
     }
@@ -1002,7 +1037,6 @@ class ViewController: NSViewController, AuthViewControllerDelegate
             let res = req.responseJSON()
             
             if res.response == nil {
-                log.error(res.result as! String)
                 return false
             } else {
                 return true
