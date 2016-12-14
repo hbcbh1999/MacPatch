@@ -711,21 +711,25 @@ class ViewController: NSViewController, AuthViewControllerDelegate
         for p in packages {
             if (p.lastPathComponent == "Base.pkg") {
                 let plugins_dir = p.stringByAppendingPathComponent(path: "Scripts/Plugins")
-                if fm.fileExists(atPath: plugins_dir) {
-                    let plugins_array: [String] = self.getPluginsFromDirectory(path: plugins_dir)!
-                    if (!plugins_array.isEmpty) {
-                        do {
-                            log.debug("Write plugins to \(plugins_dir)")
-                            for plugin in plugins_array {
-                                try fm.copyItem(atPath: plugin, toPath: plugins_dir)
-                            }
-                            return true
-                        } catch {
-                            log.error("\(error)")
-                            return false
+                
+                if (!fm.fileExists(atPath: plugins_dir)) {
+                    try! fm.createDirectory(atPath: plugins_dir, withIntermediateDirectories: true, attributes: [:])
+                }
+                
+                let plugins_array: [String] = self.getPluginsFromDirectory(path: plugins_directory)!
+                if (!plugins_array.isEmpty) {
+                    do {
+                        log.debug("Write plugins to \(plugins_dir)")
+                        for plugin in plugins_array {
+                            try fm.copyItem(atPath: plugin, toPath: plugins_dir.stringByAppendingPathComponent(path: plugin.lastPathComponent))
                         }
+                        return true
+                    } catch {
+                        log.error("\(error)")
+                        return false
                     }
                 }
+                
             }
         }
         
@@ -741,7 +745,7 @@ class ViewController: NSViewController, AuthViewControllerDelegate
      */
     func getPluginsFromDirectory(path: String) -> [String]?
     {
-        var dir_files: [String]!
+        var dir_files: [String] = []
         let pkgPredicate = NSPredicate(format: "self ENDSWITH '.bundle'")
         let dir_files_pre = try! fm.contentsOfDirectory(atPath: path) as [String]
         let filtered_results = dir_files_pre.filter { pkgPredicate.evaluate(with: $0) }
