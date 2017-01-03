@@ -235,8 +235,10 @@ class MP_UploadAgentPackage(MPResource):
             # Verify if Agent already exists
             agent_ver = fData['app']['agent_ver']
             app_ver = fData['app']['version']
+            app_build = fData['app']['build']
             haveAgent = MpClientAgent.query.filter(MpClientAgent.agent_ver == agent_ver,
                                                    MpClientAgent.version == app_ver,
+                                                   MpClientAgent.build == app_build,
                                                    MpClientAgent.type == "app").first()
             if haveAgent:
                 log_Error('[MP_UploadAgentPackage][GET]: Agent(AGENT VER: %s, APP VER: %s) Already Exists User: %s' % (agent_ver, app_ver, _user))
