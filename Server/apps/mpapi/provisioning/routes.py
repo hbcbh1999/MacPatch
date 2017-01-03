@@ -24,13 +24,13 @@ class PatchGroups(MPResource):
             args = self.reqparse.parse_args()
             _body = request.get_json(silent=True)
 
-            if not isValidClientID(cuuid):
-                log_Error('[PatchGroups][Get]: Failed to verify ClientID (%s)' % (cuuid))
-                return {"result": '', "errorno": 424, "errormsg": 'Failed to verify ClientID'}, 424
-
             if self.req_agent == 'iLoad':
                 log_Info("[PatchGroups][Get]: iLoad Request from %s" % (cuuid))
             else:
+                if not isValidClientID(cuuid):
+                    log_Error('[PatchGroups][Get]: Failed to verify ClientID (%s)' % (cuuid))
+                    return {"result": '', "errorno": 424, "errormsg": 'Failed to verify ClientID'}, 424
+                
                 if not isValidSignature(self.req_signature, cuuid, self.req_uri, self.req_ts):
                     log_Error('[PatchGroups][Get]: Failed to verify Signature for client (%s)' % (cuuid))
                     return {"result": '', "errorno": 424, "errormsg": 'Failed to verify Signature'}, 424
@@ -66,15 +66,15 @@ class ClientGroups(MPResource):
     def get(self,cuuid):
         try:
             args = self.reqparse.parse_args()
-            _body = request.get_json(silent=True)
-
-            if not isValidClientID(cuuid):
-                log_Error('[ClientGroups][Get]: Failed to verify ClientID (%s)' % (cuuid))
-                return {"result": '', "errorno": 424, "errormsg": 'Failed to verify ClientID'}, 424
+            _body = request.get_json(silent=True)            
 
             if self.req_agent == 'iLoad':
                 log_Info("[ClientGroups][Get]: iLoad Request from %s" % (cuuid))
             else:
+                if not isValidClientID(cuuid):
+                    log_Error('[ClientGroups][Get]: Failed to verify ClientID (%s)' % (cuuid))
+                    return {"result": '', "errorno": 424, "errormsg": 'Failed to verify ClientID'}, 424
+
                 if not isValidSignature(self.req_signature, cuuid, self.req_uri, self.req_ts):
                     log_Error('[ClientGroups][Get]: Failed to verify Signature for client (%s)' % (cuuid))
                     return {"result": '', "errorno": 424, "errormsg": 'Failed to verify Signature'}, 424

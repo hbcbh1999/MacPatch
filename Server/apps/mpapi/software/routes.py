@@ -26,13 +26,13 @@ class SoftwareTasksForGroup(MPResource):
         try:
             args = self.reqparse.parse_args()
 
-            if not isValidClientID(cuuid):
-                log_Error('[SoftwareTasksForGroup][Get]: Failed to verify ClientID (%s)' % (cuuid))
-                return {"result": '', "errorno": 424, "errormsg": 'Failed to verify ClientID'}, 424
-
             if self.req_agent == 'iLoad':
                 log_Info("[SoftwareTasksForGroup][Get]: iLoad Request from %s" % (cuuid))
             else:
+                if not isValidClientID(cuuid):
+                    log_Error('[SoftwareTasksForGroup][Get]: Failed to verify ClientID (%s)' % (cuuid))
+                    return {"result": '', "errorno": 424, "errormsg": 'Failed to verify ClientID'}, 424
+                
                 if not isValidSignature(self.req_signature, cuuid, self.req_uri, self.req_ts):
                     log_Error('[SoftwareTasksForGroup][Get]: Failed to verify Signature for client (%s)' % (cuuid))
                     return {"result": '', "errorno": 424, "errormsg": 'Failed to verify Signature'}, 424
@@ -226,13 +226,13 @@ class SoftwareDistributionGroups(MPResource):
         try:
             args = self.reqparse.parse_args()
 
-            if not isValidClientID(cuuid):
-                log_Error('[SoftwareDistributionGroups][Get]: Failed to verify ClientID (%s)' % (cuuid))
-                return {"result": '', "errorno": 424, "errormsg": 'Failed to verify ClientID'}, 424
-
             if self.req_agent == 'iLoad':
                 log_Info("[SoftwareDistributionGroups][Get]: iLoad Request from %s" % (cuuid))
             else:
+                if not isValidClientID(cuuid):
+                    log_Error('[SoftwareDistributionGroups][Get]: Failed to verify ClientID (%s)' % (cuuid))
+                    return {"result": '', "errorno": 424, "errormsg": 'Failed to verify ClientID'}, 424
+
                 if not isValidSignature(self.req_signature, cuuid, self.req_uri, self.req_ts):
                     log_Error('[SoftwareDistributionGroups][Get]: Failed to verify Signature for client (%s)' % (cuuid))
                     return {"result": '', "errorno": 424, "errormsg": 'Failed to verify Signature'}, 424
