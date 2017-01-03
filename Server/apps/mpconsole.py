@@ -14,7 +14,7 @@ from flask.exthook import ExtDeprecationWarning
 warnings.simplefilter('ignore', ExtDeprecationWarning)
 
 from mpconsole import create_app
-from mpconsole.models import *
+from mpconsole.model import *
 
 # Create app -----------------------------------------------------------------
 app = create_app()

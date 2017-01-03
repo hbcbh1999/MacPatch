@@ -9,7 +9,7 @@ from datetime import datetime
 
 from . import reports
 from .. import login_manager
-from .. models import *
+from .. model import *
 from .. import db
 
 @reports.route('/new')
