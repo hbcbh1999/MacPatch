@@ -41,7 +41,21 @@ class AlamofireSynchronous
             
             switch res {
                 case .success(let upload, _, _):
-                    result = upload
+                    upload.validate(statusCode: 200...299)
+                        .validate(contentType: ["application/json"])
+                        .response { response in
+                            upload.responseJSON {res2 in
+                                if(res2.result.isSuccess) {
+                                    result = upload
+                                    //let response = res.result.value as! NSDictionary
+                                    //success
+                                    //var jsonData = JSON(response)
+                                    //print(jsonData)
+                                }
+                            }
+                        }
+            
+                    //result = upload
                 case .failure( _):
                     break
             }
