@@ -37,7 +37,7 @@ case "$1" in
  start)
 	if [ -f $MP_SCRIPT/MPInventoryD.py ]; then
 	    echo $"Starting MacPatch Inventory"
-		$MP_SCRIPT/MPInventoryD.py --config /opt/MacPatch/etc/siteconfig.json --files $MP_INVDIR &
+		$MP_SCRIPT/MPInventoryD.py --config $MP_HOME/etc/siteconfig.json --files $MP_INVDIR &
     fi
 	;;
  stop)
