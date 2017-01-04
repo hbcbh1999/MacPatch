@@ -42,7 +42,20 @@ def create_app(config_object=DefaultConfig):
 		subprocess.call(['chmod', '2775', app.config['LOGGING_LOCATION']])
 
     handler = logging.handlers.TimedRotatingFileHandler(log_file, when='midnight', interval=1, backupCount=30)
-    handler.setLevel(app.config['LOGGING_LEVEL'])
+	
+	if app.config['LOGGING_LEVEL'].lower() == 'info':
+		handler.setLevel(logging.INFO)
+	elif app.config['LOGGING_LEVEL'].lower() == 'debug':
+		handler.setLevel(logging.DEBUG)
+	elif app.config['LOGGING_LEVEL'].lower() == 'warning':
+		handler.setLevel(logging.WARNING)
+	elif app.config['LOGGING_LEVEL'].lower() == 'error':
+		handler.setLevel(logging.ERROR)
+	elif app.config['LOGGING_LEVEL'].lower() == 'critical':
+		handler.setLevel(logging.CRITICAL)
+	else:
+		handler.setLevel(logging.INFO)
+    
     formatter = logging.Formatter(app.config['LOGGING_FORMAT'])
     handler.setFormatter(formatter)
     app.logger.addHandler(handler)
