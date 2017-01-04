@@ -51,7 +51,7 @@ class AddInventoryData(MPResource):
 
                     if os.path.exists(_file_Dir):
                         log_Debug('[AddInventoryData][Post]: Save Inventory Data to file')
-                        _file_str = ( str(_dt), str(_table), ".mpd")
+                        _file_str = ( str(_dt), jData['table'], ".mpd")
                         _file_Name = "_".join( _file_str )
                         _file_Path = os.path.join(_file_Dir, _file_Name)
                         log_Debug('[AddInventoryData][Post]: file = %s' % (_file_Path))
