@@ -50,24 +50,9 @@
 '''
 
 import argparse
-import sys
-import os
-import time
-import glob
-import json
-import pprint
-import re
 import mysql.connector as mydb
 from mysql.connector import errorcode
-from operator import itemgetter
 from datetime import datetime
-from urlparse import urlparse
-#import xml.etree.ElementTree as ET
-#from uuid import UUID
-import shutil
-import json
-import os.path
-import platform
 import getpass
 
 
