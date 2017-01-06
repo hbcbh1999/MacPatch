@@ -51,7 +51,7 @@ if [ "`whoami`" != "root" ] ; then   # If not root user,
    exit 1;
 fi
 
-DBNAME="MacPatchDB"
+DBNAME="MacPatchDB3"
 MPUSER="mpdbadm"
 MPROUSR="mpdbro"
 MPUSRPAS=""

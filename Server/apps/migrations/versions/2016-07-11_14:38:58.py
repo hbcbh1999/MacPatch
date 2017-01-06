@@ -162,7 +162,7 @@ def upgrade():
     op.create_table('mp_apple_patch_criteria',
     sa.Column('rid', sa.BigInteger(), nullable=False, autoincrement=True),
     sa.Column('puuid', sa.String(length=50), server_default='1', nullable=False),
-    sa.Column('supatchname', sa.String(length=255), nullable=False),
+    sa.Column('supatchname', sa.String(length=255), nullable=True),
     sa.Column('type', sa.String(length=25), nullable=True),
     sa.Column('type_data', mysql.MEDIUMTEXT(), nullable=True),
     sa.Column('type_action', mysql.INTEGER(display_width=1, unsigned=True), server_default='0', nullable=True),
@@ -282,7 +282,7 @@ def upgrade():
     sa.Column('rid', sa.BigInteger(), nullable=False, autoincrement=True),
     sa.Column('cuuid', sa.String(length=50), server_default='', nullable=False),
     sa.Column('rhash', sa.String(length=50), server_default='', nullable=False),
-    sa.Column('mdate', sa.DateTime(), server_default='1970-01-01 00:00:00', nullable=False),
+    sa.Column('mdate', sa.DateTime(), server_default='1970-01-01 00:00:00', nullable=True),
     sa.Column('EnableASUS', sa.String(length=255), server_default='NA', nullable=True),
     sa.Column('MPDLTimeout', sa.String(length=255), server_default='NA', nullable=True),
     sa.Column('AllowClient', sa.String(length=255), server_default='NA', nullable=True),
@@ -344,8 +344,9 @@ def upgrade():
     )
     op.create_table('mp_inv_state',
     sa.Column('rid', sa.BigInteger(), nullable=False, autoincrement=True),
-    sa.Column('cuuid', sa.String(length=50), nullable=False, primary_key=True),
-    sa.Column('mdate', sa.DateTime(), server_default='1970-01-01 00:00:00', nullable=True)
+    sa.Column('cuuid', sa.String(length=50), nullable=False),
+    sa.Column('mdate', sa.DateTime(), server_default='1970-01-01 00:00:00', nullable=True),
+    sa.PrimaryKeyConstraint('rid')
     )
     op.create_table('mp_os_config_profiles',
     sa.Column('rid', sa.BigInteger(), nullable=False, autoincrement=True),
@@ -833,6 +834,7 @@ def downgrade():
     op.drop_table('mp_agent_config_data')
     op.drop_table('mp_agent_config')
     op.drop_table('mp_adm_users')
+    op.drop_table('mp_adm_users_info')
     op.drop_table('mp_adm_groups')
     op.drop_table('mp_adm_group_users')
     op.drop_table('mp_adhoc_reports')

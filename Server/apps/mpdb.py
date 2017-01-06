@@ -11,6 +11,8 @@ from mpapi.model import MpAsusCatalogList
 from mpapi.model import MpServer, MpServerList
 from mpapi.model import MpSoftwareGroup, MpSoftwareGroupPrivs
 
+from sqlalchemy import *
+
 def addDefaultData():
 	addRegConfig()
 	addSiteKeys()
@@ -270,3 +272,5 @@ def addDefaultServerList():
 	# Add Agent Config
 	db.session.add(MpServerList(listid='1', name="Default", version="0"))
 	db.session.commit()
+
+# Testing ---------------------------------------------------------------------

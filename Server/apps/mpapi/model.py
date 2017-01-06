@@ -61,6 +61,19 @@ class CommonBase(db.Model):
 
         return result
 
+
+def get_class_by_tablename(tablename):
+    """Return class reference mapped to table.
+
+    :param tablename: String with name of table.
+    :return: Class reference or None.
+    """
+    for c in CommonBase._decl_class_registry.values():
+        if hasattr(c, '__tablename__') and c.__tablename__ == tablename:
+            return c
+
+    return None
+
 ''' Database Tables '''
 
 # LDAP
@@ -201,7 +214,7 @@ class MpClientPlist(CommonBase):
 
     rid                 = Column(BigInteger, primary_key=True, autoincrement=True)
     cuuid               = Column(String(50), ForeignKey('mp_clients.cuuid', ondelete='CASCADE', onupdate='NO ACTION'), nullable=False, index=True, unique=True)
-    mdate               = Column(DateTime, nullable=False, server_default='1970-01-01 00:00:00')
+    mdate               = Column(DateTime, nullable=True, server_default='1970-01-01 00:00:00')
     EnableASUS          = Column(String(255), server_default='NA')
     MPDLTimeout         = Column(String(255), server_default='NA')
     AllowClient         = Column(String(255), server_default='NA')
@@ -373,7 +386,7 @@ class ApplePatchCriteria(CommonBase):
 
     rid         = Column(BigInteger, primary_key=True, autoincrement=True)
     puuid       = Column(String(50), nullable=False, server_default='1')
-    supatchname = Column(String(255), nullable=False)
+    supatchname = Column(String(255), nullable=True)
     type        = Column(String(25))
     type_data   = Column(MEDIUMTEXT())
     type_action = Column(INTEGER(1, unsigned=True), server_default='0')
