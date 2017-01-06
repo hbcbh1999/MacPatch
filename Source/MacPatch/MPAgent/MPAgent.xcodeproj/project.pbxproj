@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		8F2D4F2C188EFFB50008853B /* Profiles.m in Sources */ = {isa = PBXBuildFile; fileRef = 8F2D4F2B188EFFB50008853B /* Profiles.m */; };
 		8F2E697F1922C330001BF9D6 /* PostFailedWSRequests.m in Sources */ = {isa = PBXBuildFile; fileRef = 8F2E697E1922C330001BF9D6 /* PostFailedWSRequests.m */; };
+		8F2FC03E1E205523004710C7 /* MPFirmware.m in Sources */ = {isa = PBXBuildFile; fileRef = 8F2FC03D1E205523004710C7 /* MPFirmware.m */; };
 		8F315B9819212A920031FF73 /* GetServerListOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 8F315B9719212A920031FF73 /* GetServerListOperation.m */; };
 		8F3665111DE4F90D00899BCC /* MPAgentUpdater.m in Sources */ = {isa = PBXBuildFile; fileRef = 8FE03DD01B600C5A005D39EE /* MPAgentUpdater.m */; };
 		8F3665121DE4F90D00899BCC /* CHDiskInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 8FA6A8641B9621BF006A329B /* CHDiskInfo.m */; };
@@ -155,6 +156,8 @@
 		8F2D4F2B188EFFB50008853B /* Profiles.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Profiles.m; sourceTree = "<group>"; };
 		8F2E697D1922C330001BF9D6 /* PostFailedWSRequests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PostFailedWSRequests.h; sourceTree = "<group>"; };
 		8F2E697E1922C330001BF9D6 /* PostFailedWSRequests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PostFailedWSRequests.m; sourceTree = "<group>"; };
+		8F2FC03C1E205523004710C7 /* MPFirmware.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPFirmware.h; sourceTree = "<group>"; };
+		8F2FC03D1E205523004710C7 /* MPFirmware.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPFirmware.m; sourceTree = "<group>"; };
 		8F315B9619212A920031FF73 /* GetServerListOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GetServerListOperation.h; sourceTree = "<group>"; };
 		8F315B9719212A920031FF73 /* GetServerListOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GetServerListOperation.m; sourceTree = "<group>"; };
 		8F3665511DE4F90D00899BCC /* MPAgent_signed_dev */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = MPAgent_signed_dev; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -484,6 +487,8 @@
 				8F9C2B521DDA1D0E002A39D2 /* MPAppStore.m */,
 				8F9C2B541DDA1D17002A39D2 /* CKSoftwareProduct+ASProduct.h */,
 				8F9C2B551DDA1D17002A39D2 /* CKSoftwareProduct+ASProduct.m */,
+				8F2FC03C1E205523004710C7 /* MPFirmware.h */,
+				8F2FC03D1E205523004710C7 /* MPFirmware.m */,
 			);
 			path = Inventory;
 			sourceTree = "<group>";
@@ -654,6 +659,7 @@
 				8FE03DD11B600C5A005D39EE /* MPAgentUpdater.m in Sources */,
 				8FA6A8791B9621BF006A329B /* CHDiskInfo.m in Sources */,
 				8F4B1EF016DD77BD00E15A9E /* main.m in Sources */,
+				8F2FC03E1E205523004710C7 /* MPFirmware.m in Sources */,
 				8FE03DD91B601AC6005D39EE /* AVSoftware.m in Sources */,
 				8F530FFD1B42EEAC00B8D893 /* FMDatabase.m in Sources */,
 				8F4B1F0616DD77FF00E15A9E /* MPAgent.m in Sources */,
