@@ -71,6 +71,7 @@
 - (NSArray *)parseAppStoreData;
 - (NSArray *)parseAgentServerInfo;
 - (NSArray *)parseAgentServerList;
+- (NSArray *)parseFirmwarePasswordData;
 
 // Helpers for Directory Data from Daniel
 - (NSDictionary *)stringToDict:(NSString *)theString theDelimiter:(NSString *)theDelimiter;

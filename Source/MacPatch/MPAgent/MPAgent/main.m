@@ -406,6 +406,7 @@ void usage(void)
     printf(" \t\tAppStoreApps\n");
     printf(" \t\tMPServerList\n");
     printf(" \t\tPlugins\n");
+    printf(" \t\tFirmwarePasswordInfo\n");
     printf(" -A \tCollect Audit data.\n\n");
     printf(" -C \tDisplay client ID.\n");
 	printf(" -e \t --Echo \t\t\tEcho logging data to console.\n");

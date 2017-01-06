@@ -39,17 +39,14 @@
 #import "MPServerEntry.h"
 #import "MPInventoryPlugin.h"
 #import "InventoryPlugin.h"
+#import "MPFirmware.h"
 
 #define kSP_DATA_Dir			@"/private/tmp/.mpData"
 #define kSP_APP                 @"/usr/sbin/system_profiler"
-#define kINV_SUPPORTED_TYPES	@"SPHardwareDataType,SPSoftwareDataType,SPNetworkDataType,SPApplicationsDataType,SPFrameworksDataType,DirectoryServices,InternetPlugins,AppUsage,ClientTasks,DiskInfo,Users,Groups,FileVault,PowerManagment,BatteryInfo,ConfigProfiles,SINetworkInfo,AppStoreApps,MPServerList,MPServerListInfo,Plugins"
+#define kINV_SUPPORTED_TYPES	@"SPHardwareDataType,SPSoftwareDataType,SPNetworkDataType,SPApplicationsDataType,SPFrameworksDataType,DirectoryServices,InternetPlugins,AppUsage,ClientTasks,DiskInfo,Users,Groups,FileVault,PowerManagment,BatteryInfo,ConfigProfiles,SINetworkInfo,AppStoreApps,MPServerList,MPServerListInfo,Plugins,FirmwarePasswordInfo"
 #define kTasksPlist             @"/Library/MacPatch/Client/.tasks/gov.llnl.mp.tasks.plist"
 #define kInvHashData            @"/Library/MacPatch/Client/Data/.gov.llnl.mp.inv.data.plist"
 
-/*
-#define LIBXML_SCHEMAS_ENABLED
-#include <libxml/xmlschemastypes.h>
-*/
 
 @interface MPInv ()
 
@@ -246,6 +243,8 @@
                 tmpArr = [self parseAgentServerList];
             } else if ([[item objectForKey:@"type"] isEqual:@"MPServerListInfo"]) {
                 tmpArr = [self parseAgentServerInfo];
+            } else if ([[item objectForKey:@"type"] isEqual:@"FirmwarePasswordInfo"]) {
+                tmpArr = [self parseFirmwarePasswordData];
             }
 
 			if (tmpArr) {
@@ -329,13 +328,6 @@
         logit(lcl_vError,@"Results for %@ not posted.",[invNode objectForKey:@"wstype"]);
     }
     
-    /* Debug
-    [dataMgrJSON writeToFile:[@"/private/tmp" stringByAppendingPathComponent:[invNode objectForKey:@"wstype"]]
-                  atomically:YES
-                    encoding:NSUTF8StringEncoding
-                       error:NULL];
-    
-     */
     return YES;
 }
 
@@ -1706,6 +1698,18 @@ done:
 
     mpServers = [NSArray arrayWithArray:serverItems];
     return mpServers;
+}
+
+- (NSArray *)parseFirmwarePasswordData
+{
+    MPFirmware *fw = [[MPFirmware alloc] init];
+    NSMutableDictionary *fwDict = [[NSMutableDictionary alloc] init];
+    [fwDict setObject:[NSString stringWithFormat:@"%d",[fw state]] forKey:@"state" defaultObject:@"0"];
+    [fwDict setObject:[fw mode] forKey:@"mode" defaultObject:@"na"];
+    [fwDict setObject:[fw options] forKey:@"options" defaultObject:@"na"];
+    
+    NSArray *res = [NSArray arrayWithObject:(NSDictionary *)fwDict];
+    return res;
 }
 
 #pragma mark Helper
