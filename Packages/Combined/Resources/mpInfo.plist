@@ -5,26 +5,26 @@
 	<key>Agent</key>
 	<dict>
 		<key>version</key>
-		<string>3.0.0.0</string>
+		<string>@AGENTVER@</string>
 		<key>agent_version</key>
-		<string>3.0.0</string>
+		<string>@APPVER@</string>
 		<key>osver</key>
-		<string>*</string>
+		<string>@AMINOS@</string>
 		<key>build</key>
-		<string>10</string>
+		<string>@ABUILD@</string>
 		<key>pkg</key>
 		<string>Base.pkg</string>
 	</dict>
 	<key>Updater</key>
 	<dict>
 		<key>version</key>
-		<string>3.0.0.0</string>
+		<string>@UPDATEVER@</string>
 		<key>agent_version</key>
-		<string>3.0.0</string>
+		<string>@APPVER@</string>
 		<key>osver</key>
-		<string>*</string>
+		<string>@UMINOS@</string>
 		<key>build</key>
-		<string>10</string>
+		<string>@UBUILD@</string>
 		<key>pkg</key>
 		<string>Base.pkg</string>
 	</dict>

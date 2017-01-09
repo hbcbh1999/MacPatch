@@ -23,9 +23,10 @@ BASEPKGVER="3.0.0.0"
 UPDTPKGVER="3.0.0.0"
 PKG_STATE=""
 CODESIGNIDENTITY="*"
-CODESIGNIDENTITYPLIST="/Library/Preferences/mp.build.client.plist"
-if [ -f "$CODESIGNIDENTITYPLIST" ]; then
-	CODESIGNIDENTITYALT=`defaults read ${CODESIGNIDENTITYPLIST} name`
+MIN_OS="10.8"
+BUILDPLIST="/Library/Preferences/mp.build.client.plist"
+if [ -f "$BUILDPLIST" ]; then
+	CODESIGNIDENTITYALT=`defaults read ${BUILDPLIST} name`
 fi
 
 if [ -d "$BUILDROOT" ]; then
@@ -34,6 +35,59 @@ else
 	mkdir -p ${BUILDROOT}	
 fi	
 
+# Set Client Version
+AGENT_VERS="1.0.0"
+if [ -f "$BUILDPLIST" ]; then
+	AGENT_VERS=`defaults read ${BUILDPLIST} client_version`
+	if (($? > 0)); then
+		AGENT_VERS="1.0.0"
+	fi
+fi
+echo
+echo " - Set overall MacPatch Client version ( e.g. 2.9.0 ) "
+read -p "Set MacPatch Client version [$AGENT_VERS]: " AGENT_VER
+AGENT_VER=${AGENT_VER:-$AGENT_VERS}
+
+# Set Client Build Number
+AGENT_BUILDS="1"
+if [ -f "$BUILDPLIST" ]; then
+	AGENT_BUILDS=`defaults read ${BUILDPLIST} client_build`
+	if (($? > 0)); then
+		AGENT_BUILDS=1
+	fi
+fi
+echo
+echo " - Set overall MacPatch Client build number "
+echo " use \"i\" to increment or type in a number "
+read -p "Set MacPatch Client build number (current $AGENT_BUILDS),  [i]: " AGENT_BUILD
+AGENT_BUILD=${AGENT_BUILD:-$AGENT_BUILDS}
+
+BUILD_NO=0
+if [ "$AGENT_BUILD" == "i" ] || [ "$AGENT_BUILD" == "I" ]; then
+	let "BUILD_NO=AGENT_BUILDS+1"
+else
+	BUILD_NO=$AGENT_BUILD
+fi
+
+re='^[0-9]+$'
+if ! [[ $BUILD_NO =~ $re ]] ; then
+   echo "Error: Build number is not a number" >&2; exit 1
+fi
+
+# Set Min OS Version
+MIN_OS_VAR=$MIN_OS
+if [ -f "$BUILDPLIST" ]; then
+	MIN_OS_VAR=`defaults read ${BUILDPLIST} min_os`
+	if (($? > 0)); then
+		MIN_OS_VAR=$MIN_OS
+	fi
+fi
+echo
+echo " - Set overall MacPatch Client minimum os version "
+read -p "Set MacPatch Client minimum os version [$MIN_OS_VAR]: " MIN_OS_VARS
+MIN_OS=${MIN_OS_VARS:-$MIN_OS_VAR}
+
+# MacPatch Client Release Level
 echo
 read -p "Please choose the desired state (R[elease]/B[eta]/A[lpha])? [R]: " PKGSTATE
 PKGSTATE=${PKGSTATE:-R}
@@ -46,6 +100,7 @@ else
 fi
 
 #statements
+echo
 echo "A valid code siginging identidy is required."
 read -p "Would you like to code sign all binaries (Y/N)? [N]: " SIGNCODE
 SIGNCODE=${SIGNCODE:-N}
@@ -57,7 +112,7 @@ if [ "$SIGNCODE" == "n" ] || [ "$SIGNCODE" == "N" ] || [ "$SIGNCODE" == "y" ] ||
 		read -p "Please enter your code sigining identity [$CODESIGNIDENTITYALT]: " CODESIGNIDENTITY
 		CODESIGNIDENTITY=${CODESIGNIDENTITY:-$CODESIGNIDENTITYALT}
 		if [ "$CODESIGNIDENTITY" != "$CODESIGNIDENTITYALT" ]; then
-			defaults write ${CODESIGNIDENTITYPLIST} name "${CODESIGNIDENTITY}"
+			defaults write ${BUILDPLIST} name "${CODESIGNIDENTITY}"
 		fi
 		
 		#if [ "${CODESIGNIDENTITY}" == "*" ]; then
@@ -93,6 +148,39 @@ mv ${BUILDROOT}/Release/MPAgentUp2Date ${BUILDROOT}/Updater/Files/Library/MacPat
 mv ${BUILDROOT}/Release/MPLoginAgent.app ${BUILDROOT}/Base/Files/Library/PrivilegedHelperTools/
 cp -R ${BUILDROOT}/Release/* ${BUILDROOT}/Base/Files/Library/MacPatch/Client/
 
+# Get Versions
+agent_ver=`${BUILDROOT}/Base/Files/Library/MacPatch/Client/MPAgent -v`
+update_ver=`${BUILDROOT}/Updater/Files/Library/MacPatch/Updater/MPAgentUp2Date -v`
+
+# Agent
+# @AGENTVER@
+sed -i '' "s/@AGENTVER@/$agent_ver/g" "${BUILDROOT}/Combined/Resources/mpInfo.ini"
+sed -i '' "s/@AGENTVER@/$agent_ver/g" "${BUILDROOT}/Combined/Resources/mpInfo.plist"
+# @APPVER@
+sed -i '' "s/@APPVER@/$AGENT_VER/g" "${BUILDROOT}/Combined/Resources/mpInfo.ini"
+sed -i '' "s/@APPVER@/$AGENT_VER/g" "${BUILDROOT}/Combined/Resources/mpInfo.plist"
+# @AMINOS@
+sed -i '' "s/@AMINOS@/$MIN_OS/g" "${BUILDROOT}/Combined/Resources/mpInfo.ini"
+sed -i '' "s/@AMINOS@/$MIN_OS/g" "${BUILDROOT}/Combined/Resources/mpInfo.plist"
+# @ABUILD@
+sed -i '' "s/@ABUILD@/$BUILD_NO/g" "${BUILDROOT}/Combined/Resources/mpInfo.ini"
+sed -i '' "s/@ABUILD@/$BUILD_NO/g" "${BUILDROOT}/Combined/Resources/mpInfo.plist"
+
+# Updater
+# @UPDATEVER@
+sed -i '' "s/@UPDATEVER@/$update_ver/g" "${BUILDROOT}/Combined/Resources/mpInfo.ini"
+sed -i '' "s/@UPDATEVER@/$update_ver/g" "${BUILDROOT}/Combined/Resources/mpInfo.plist"
+# @APPVER@
+sed -i '' "s/@APPVER@/$AGENT_VER/g" "${BUILDROOT}/Combined/Resources/mpInfo.ini"
+sed -i '' "s/@APPVER@/$AGENT_VER/g" "${BUILDROOT}/Combined/Resources/mpInfo.plist"
+# @UMINOS@
+sed -i '' "s/@UMINOS@/$MIN_OS/g" "${BUILDROOT}/Combined/Resources/mpInfo.ini"
+sed -i '' "s/@UMINOS@/$MIN_OS/g" "${BUILDROOT}/Combined/Resources/mpInfo.plist"
+# @UBUILD@
+sed -i '' "s/@UBUILD@/$BUILD_NO/g" "${BUILDROOT}/Combined/Resources/mpInfo.ini"
+sed -i '' "s/@UBUILD@/$BUILD_NO/g" "${BUILDROOT}/Combined/Resources/mpInfo.plist"
+
+
 # Find and remove .mpRM files, these are here as place holders so that GIT will keep the
 # directory structure
 find ${BUILDROOT} -name ".mpRM" -print | xargs -I{} rm -rf {}
@@ -120,12 +208,12 @@ pkgbuild --root ${BUILDROOT}/Updater/Files/Library \
 ${BUILDROOT}/Combined/Packages/Updater.pkg
 
 
-BUILD_NO=`date +%Y%m%d-%H%M%S`
-sed -i '' "s/\[BUILD_NO\]/$BUILD_NO/g" "${BUILDROOT}/Combined/Resources/Welcome.rtf"
+BUILD_NO_STR=`date +%Y%m%d-%H%M%S`
+sed -i '' "s/\[BUILD_NO\]/$BUILD_NO_STR/g" "${BUILDROOT}/Combined/Resources/Welcome.rtf"
 sed -i '' "s/\[STATE\]/$PKG_STATE/g" "${BUILDROOT}/Combined/Resources/Welcome.rtf"
 
-BUILD_FILE="${BUILDROOT}/Combined/MP-$BASEPKGVER-$BUILD_NO$PKG_STATE"
-echo "MP-$BASEPKGVER-$BUILD_NO$PKG_STATE" > "${BUILD_FILE}"
+BUILD_FILE="${BUILDROOT}/Combined/MP-$BASEPKGVER-$BUILD_NO_STR$PKG_STATE"
+echo "MP-$BASEPKGVER-$BUILD_NO_STR$PKG_STATE" > "${BUILD_FILE}"
 
 #mkdir -p ${BUILDROOT}/Combined/PKGPlugins
 #open ${BUILDROOT}/Combined/PKGPlugins
@@ -158,6 +246,11 @@ rm -rf ${BUILDROOT}/Combined/.MPClientInstall
 
 # Compress for upload
 ditto -c -k ${BUILDROOT}/Combined/MPClientInstall.pkg ${BUILDROOT}/Combined/MPClientInstall.pkg.zip
+
+# Write Version info to plist
+defaults write ${BUILDPLIST} client_version "$AGENT_VER"
+defaults write ${BUILDPLIST} client_build "$BUILD_NO"
+defaults write ${BUILDPLIST} min_os "$MIN_OS"
 
 echo
 read -p "Would you like to copy the installer to repo location for a pull request? (Y/N)? [N]: " COPYINSTALLPKG
