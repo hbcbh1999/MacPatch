@@ -7,7 +7,7 @@ Create Date: 2016-07-11 14:38:58.898031
 """
 
 # revision identifiers, used by Alembic.
-revision = '8e25a122fa51'
+revision = '100001'
 down_revision = None
 
 from alembic import op
@@ -68,6 +68,7 @@ def upgrade():
     sa.Column('last_scan', sa.DateTime(), server_default='1970-01-01 00:00:00', nullable=True),
     sa.PrimaryKeyConstraint('rid')
     )
+    op.create_index(op.f('ix_av_info_cuuid'), 'av_info', ['cuuid'], unique=True)
     op.create_table('mp_adhoc_reports',
     sa.Column('rid', sa.BigInteger(), nullable=False, autoincrement=True),
     sa.Column('name', sa.String(length=255), nullable=False),
@@ -216,34 +217,32 @@ def upgrade():
     sa.Column('attribute_condition', sa.String(length=10), nullable=False),
     sa.PrimaryKeyConstraint('rid')
     )
-    op.create_table('mp_client_patches_apple',
+    op.create_table('mp_client_group_admin',
     sa.Column('rid', sa.BigInteger(), nullable=False, autoincrement=True),
-    sa.Column('cuuid', sa.String(length=50), nullable=False),
-    sa.Column('mdate', sa.DateTime(), server_default='1970-01-01 00:00:00', nullable=True),
-    sa.Column('patch', sa.String(length=255), nullable=False),
-    sa.Column('type', sa.String(length=255), nullable=False),
-    sa.Column('description', sa.String(length=255), nullable=False),
-    sa.Column('size', sa.String(length=255), nullable=False),
-    sa.Column('recommended', sa.String(length=255), nullable=False),
-    sa.Column('restart', sa.String(length=255), nullable=False),
-    sa.Column('version', sa.String(length=255), nullable=True),
+    sa.Column('group_id', sa.String(length=50), nullable=False),
+    sa.Column('group_admin', sa.String(length=255), nullable=False),
     sa.PrimaryKeyConstraint('rid')
     )
-    op.create_table('mp_client_patches_third',
+    op.create_index(op.f('ix_mp_client_group_admin_group_admin'), 'mp_client_group_admin', ['group_admin'], unique=True)
+    op.create_index(op.f('ix_mp_client_group_admin_group_id'), 'mp_client_group_admin', ['group_id'], unique=True)
+    op.create_table('mp_client_group_members',
     sa.Column('rid', sa.BigInteger(), nullable=False, autoincrement=True),
-    sa.Column('cuuid', sa.String(length=50), nullable=False),
-    sa.Column('mdate', sa.DateTime(), server_default='1970-01-01 00:00:00', nullable=True),
-    sa.Column('patch', sa.String(length=255), nullable=False),
-    sa.Column('type', sa.String(length=255), nullable=False),
-    sa.Column('description', sa.String(length=255), nullable=False),
-    sa.Column('size', sa.String(length=255), nullable=False),
-    sa.Column('recommended', sa.String(length=255), nullable=False),
-    sa.Column('restart', sa.String(length=255), nullable=False),
-    sa.Column('patch_id', sa.String(length=255), nullable=False),
-    sa.Column('version', sa.String(length=255), nullable=True),
-    sa.Column('bundleID', sa.String(length=255), nullable=True),
+    sa.Column('group_id', sa.String(length=50), nullable=False),
+    sa.Column('cuuid', sa.String(length=255), nullable=False),
     sa.PrimaryKeyConstraint('rid')
     )
+    op.create_index(op.f('ix_mp_client_group_members_cuuid'), 'mp_client_group_members', ['cuuid'], unique=True)
+    op.create_index(op.f('ix_mp_client_group_members_group_id'), 'mp_client_group_members', ['group_id'], unique=True)
+    op.create_table('mp_client_groups',
+    sa.Column('rid', sa.BigInteger(), nullable=False, autoincrement=True),
+    sa.Column('group_id', sa.String(length=50), nullable=False),
+    sa.Column('group_name', sa.String(length=255), nullable=False),
+    sa.Column('group_owner', sa.String(length=255), server_default='NA', nullable=True),
+    sa.PrimaryKeyConstraint('rid')
+    )
+    op.create_index(op.f('ix_mp_client_groups_group_id'), 'mp_client_groups', ['group_id'], unique=True)
+    op.create_index(op.f('ix_mp_client_groups_group_name'), 'mp_client_groups', ['group_name'], unique=True)
+    op.create_index(op.f('ix_mp_client_groups_group_owner'), 'mp_client_groups', ['group_owner'], unique=False)
     op.create_table('mp_client_reg_keys',
     sa.Column('rid', sa.BigInteger(), nullable=False, autoincrement=True),
     sa.Column('cuuid', sa.String(length=50), nullable=False),
@@ -253,6 +252,35 @@ def upgrade():
     sa.PrimaryKeyConstraint('rid'),
     sa.UniqueConstraint('cuuid')
     )
+    op.create_table('mp_client_settings',
+    sa.Column('rid', sa.BigInteger(), nullable=False, autoincrement=True),
+    sa.Column('group_id', sa.String(length=50), nullable=False),
+    sa.Column('key', sa.String(length=255), nullable=False),
+    sa.Column('value', sa.String(length=255), nullable=False),
+    sa.PrimaryKeyConstraint('rid')
+    )
+    op.create_index(op.f('ix_mp_client_settings_group_id'), 'mp_client_settings', ['group_id'], unique=False)
+    op.create_index(op.f('ix_mp_client_settings_key'), 'mp_client_settings', ['key'], unique=False)
+    op.create_table('mp_client_tasks',
+    sa.Column('rid', sa.BigInteger(), nullable=False, autoincrement=True),
+    sa.Column('group_id', sa.String(length=50), nullable=False),
+    sa.Column('id', mysql.INTEGER(display_width=4, unsigned=True), nullable=True),
+    sa.Column('name', sa.String(length=255), nullable=False),
+    sa.Column('cmd', sa.String(length=255), nullable=False),
+    sa.Column('description', sa.String(length=255), nullable=False),
+    sa.Column('active', sa.String(length=255), server_default='1', nullable=False),
+    sa.Column('startdate', sa.String(length=255), server_default='2016-01-01', nullable=False),
+    sa.Column('enddate', sa.String(length=255), server_default='2050-01-01', nullable=False),
+    sa.Column('interval', sa.String(length=255), nullable=False),
+    sa.Column('idrev', sa.String(length=255), server_default='1', nullable=False),
+    sa.Column('parent', sa.String(length=255), server_default='0', nullable=False),
+    sa.Column('scope', sa.String(length=255), server_default='Global', nullable=False),
+    sa.Column('cmdalt', sa.String(length=255), server_default='0', nullable=False),
+    sa.Column('mode', sa.String(length=255), server_default='0', nullable=False),
+    sa.Column('idsig', sa.String(length=255), server_default='0', nullable=False),
+    sa.PrimaryKeyConstraint('rid')
+    )
+    op.create_index(op.f('ix_mp_client_tasks_group_id'), 'mp_client_tasks', ['group_id'], unique=True)
     op.create_table('mp_clients',
     sa.Column('rid', sa.BigInteger(), nullable=False, autoincrement=True),
     sa.Column('cuuid', sa.String(length=50), nullable=False),
@@ -268,20 +296,16 @@ def upgrade():
     sa.Column('agent_version', sa.String(length=20), server_default='NA', nullable=True),
     sa.Column('agent_build', sa.String(length=10), server_default='0', nullable=True),
     sa.Column('client_version', sa.String(length=20), server_default='NA', nullable=True),
-    sa.Column('rhash', sa.String(length=50), server_default='NA', nullable=True),
     sa.Column('mdate', sa.DateTime(), server_default='1970-01-01 00:00:00', nullable=True),
-    sa.Column('cdate', sa.DateTime(), server_default='1970-01-01 00:00:00', nullable=True),
     sa.PrimaryKeyConstraint('rid')
     )
     op.create_index(op.f('ix_mp_clients_computername'), 'mp_clients', ['computername'], unique=False)
     op.create_index(op.f('ix_mp_clients_cuuid'), 'mp_clients', ['cuuid'], unique=True)
     op.create_index(op.f('ix_mp_clients_hostname'), 'mp_clients', ['hostname'], unique=False)
     op.create_index(op.f('ix_mp_clients_ipaddr'), 'mp_clients', ['ipaddr'], unique=False)
-    
     op.create_table('mp_clients_plist',
     sa.Column('rid', sa.BigInteger(), nullable=False, autoincrement=True),
     sa.Column('cuuid', sa.String(length=50), server_default='', nullable=False),
-    sa.Column('rhash', sa.String(length=50), server_default='', nullable=False),
     sa.Column('mdate', sa.DateTime(), server_default='1970-01-01 00:00:00', nullable=True),
     sa.Column('EnableASUS', sa.String(length=255), server_default='NA', nullable=True),
     sa.Column('MPDLTimeout', sa.String(length=255), server_default='NA', nullable=True),
@@ -303,7 +327,6 @@ def upgrade():
     sa.Column('MPServerTimeout', sa.String(length=255), server_default='NA', nullable=True),
     sa.Column('Reboot', sa.String(length=255), server_default='NA', nullable=True),
     sa.Column('DialogText', sa.String(length=255), server_default='NA', nullable=True),
-    sa.Column('cdate', sa.DateTime(), server_default='1970-01-01 00:00:00', nullable=False),
     sa.Column('PatchState', sa.String(length=255), server_default='NA', nullable=True),
     sa.Column('ClientScanInterval', sa.String(length=255), server_default='NA', nullable=True),
     sa.Column('MPAgentExecDebug', sa.String(length=255), server_default='NA', nullable=True),
@@ -311,6 +334,7 @@ def upgrade():
     sa.Column('SWDistGroup', sa.String(length=255), server_default='NA', nullable=True),
     sa.Column('CheckSignature', sa.String(length=255), server_default='NA', nullable=True),
     sa.Column('SWDistGroupState', sa.String(length=255), server_default='NA', nullable=True),
+    sa.ForeignKeyConstraint(['cuuid'], ['mp_clients.cuuid'], onupdate='NO ACTION', ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('rid')
     )
     op.create_index(op.f('ix_mp_clients_plist_Domain'), 'mp_clients_plist', ['Domain'], unique=False)
@@ -331,6 +355,46 @@ def upgrade():
     sa.PrimaryKeyConstraint('rid'),
     sa.UniqueConstraint('cuuid')
     )
+    op.create_table('mp_client_patches_apple',
+    sa.Column('rid', sa.BigInteger(), nullable=False, autoincrement=True),
+    sa.Column('cuuid', sa.String(length=50), nullable=False),
+    sa.Column('mdate', sa.DateTime(), server_default='1970-01-01 00:00:00', nullable=True),
+    sa.Column('patch', sa.String(length=255), nullable=False),
+    sa.Column('type', sa.String(length=255), nullable=False),
+    sa.Column('description', sa.String(length=255), nullable=False),
+    sa.Column('size', sa.String(length=255), nullable=False),
+    sa.Column('recommended', sa.String(length=255), nullable=False),
+    sa.Column('restart', sa.String(length=255), nullable=False),
+    sa.Column('version', sa.String(length=255), nullable=True),
+    sa.ForeignKeyConstraint(['cuuid'], ['mp_clients.cuuid'], onupdate='NO ACTION', ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('rid')
+    )
+    op.create_index(op.f('ix_mp_client_patches_apple_cuuid'), 'mp_client_patches_apple', ['cuuid'], unique=True)
+    op.create_table('mp_client_patches_third',
+    sa.Column('rid', sa.BigInteger(), nullable=False, autoincrement=True),
+    sa.Column('cuuid', sa.String(length=50), nullable=False),
+    sa.Column('mdate', sa.DateTime(), server_default='1970-01-01 00:00:00', nullable=True),
+    sa.Column('patch', sa.String(length=255), nullable=False),
+    sa.Column('type', sa.String(length=255), nullable=False),
+    sa.Column('description', sa.String(length=255), nullable=False),
+    sa.Column('size', sa.String(length=255), nullable=False),
+    sa.Column('recommended', sa.String(length=255), nullable=False),
+    sa.Column('restart', sa.String(length=255), nullable=False),
+    sa.Column('patch_id', sa.String(length=255), nullable=False),
+    sa.Column('version', sa.String(length=255), nullable=True),
+    sa.Column('bundleID', sa.String(length=255), nullable=True),
+    sa.ForeignKeyConstraint(['cuuid'], ['mp_clients.cuuid'], onupdate='NO ACTION', ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('rid')
+    )
+    op.create_index(op.f('ix_mp_client_patches_third_cuuid'), 'mp_client_patches_third', ['cuuid'], unique=True)
+    op.create_table('mp_group_config',
+    sa.Column('rid', sa.BigInteger(), nullable=False, autoincrement=True),
+    sa.Column('group_id', sa.String(length=50), nullable=False),
+    sa.Column('rev_settings', sa.BigInteger(), server_default='1', nullable=True),
+    sa.Column('rev_tasks', sa.BigInteger(), server_default='1', nullable=True),
+    sa.PrimaryKeyConstraint('rid')
+    )
+    op.create_index(op.f('ix_mp_group_config_group_id'), 'mp_group_config', ['group_id'], unique=False)
     op.create_table('mp_installed_patches',
     sa.Column('rid', sa.BigInteger(), nullable=False, autoincrement=True),
     sa.Column('cuuid', sa.String(length=50), nullable=False),
@@ -346,8 +410,10 @@ def upgrade():
     sa.Column('rid', sa.BigInteger(), nullable=False, autoincrement=True),
     sa.Column('cuuid', sa.String(length=50), nullable=False),
     sa.Column('mdate', sa.DateTime(), server_default='1970-01-01 00:00:00', nullable=True),
+    sa.ForeignKeyConstraint(['cuuid'], ['mp_clients.cuuid'], onupdate='NO ACTION', ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('rid')
     )
+    op.create_index(op.f('ix_mp_inv_state_cuuid'), 'mp_inv_state', ['cuuid'], unique=True)
     op.create_table('mp_os_config_profiles',
     sa.Column('rid', sa.BigInteger(), nullable=False, autoincrement=True),
     sa.Column('profileID', sa.String(length=50), nullable=False),
@@ -397,7 +463,7 @@ def upgrade():
     sa.PrimaryKeyConstraint('rid')
     )
     op.create_table('mp_patch_group_patches',
-    sa.Column('rid', sa.BigInteger(), nullable=False),
+    sa.Column('rid', sa.BigInteger(), nullable=False, autoincrement=True),
     sa.Column('patch_id', sa.String(length=50), nullable=False),
     sa.Column('patch_group_id', sa.String(length=50), nullable=False),
     sa.PrimaryKeyConstraint('rid')
@@ -560,17 +626,6 @@ def upgrade():
     sa.Column('isowner', sa.Integer(), server_default='0', nullable=False),
     sa.PrimaryKeyConstraint('rid')
     )
-    op.create_table('mp_software_installs',
-    sa.Column('rid', sa.BigInteger(), nullable=False, autoincrement=True),
-    sa.Column('cuuid', sa.String(length=50), server_default='', nullable=False),
-    sa.Column('tuuid', sa.String(length=50), nullable=True),
-    sa.Column('suuid', sa.String(length=50), nullable=True),
-    sa.Column('action', sa.String(length=1), server_default='i', nullable=True),
-    sa.Column('result', sa.Integer(), nullable=True),
-    sa.Column('resultString', sa.Text(), nullable=True),
-    sa.Column('cdate', sa.DateTime(), server_default='1970-01-01 00:00:00', nullable=True),
-    sa.PrimaryKeyConstraint('rid', 'cuuid')
-    )
     op.create_table('mp_software_requisits',
     sa.Column('rid', sa.BigInteger(), nullable=False, autoincrement=True),
     sa.Column('suuid', sa.String(length=50), nullable=True),
@@ -619,6 +674,19 @@ def upgrade():
     sa.UniqueConstraint('email'),
     sa.UniqueConstraint('username')
     )
+    op.create_table('mp_software_installs',
+    sa.Column('rid', sa.BigInteger(), nullable=False, autoincrement=True),
+    sa.Column('cuuid', sa.String(length=50), server_default='', nullable=False),
+    sa.Column('tuuid', sa.String(length=50), nullable=True),
+    sa.Column('suuid', sa.String(length=50), nullable=True),
+    sa.Column('action', sa.String(length=1), server_default='i', nullable=True),
+    sa.Column('result', sa.Integer(), nullable=True),
+    sa.Column('resultString', sa.Text(), nullable=True),
+    sa.Column('cdate', sa.DateTime(), server_default='1970-01-01 00:00:00', nullable=True),
+    sa.ForeignKeyConstraint(['cuuid'], ['mp_clients.cuuid'], onupdate='NO ACTION', ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('rid')
+    )
+    op.create_index(op.f('ix_mp_software_installs_cuuid'), 'mp_software_installs', ['cuuid'], unique=True)
     op.create_table('mpi_DirectoryServices',
     sa.Column('rid', sa.BigInteger(), nullable=False, autoincrement=True),
     sa.Column('cuuid', sa.String(length=50), nullable=False),
@@ -631,6 +699,7 @@ def upgrade():
     sa.Column('mpa_DNSName', sa.String(length=255), nullable=True),
     sa.Column('mpa_Bound_To_Domain', sa.String(length=255), nullable=True),
     sa.Column('mpa_ADDomain', sa.String(length=255), nullable=True),
+    sa.ForeignKeyConstraint(['cuuid'], ['mp_clients.cuuid'], onupdate='NO ACTION', ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('rid')
     )
     op.create_index(op.f('ix_mpi_DirectoryServices_cuuid'), 'mpi_DirectoryServices', ['cuuid'], unique=True)
@@ -668,8 +737,10 @@ def upgrade():
     sa.Column('mpa_l3_cache_per_processor', sa.String(length=255), nullable=True),
     sa.Column('mpa_smc_version_processor_tray', sa.String(length=255), nullable=True),
     sa.Column('mpa_illumination_version', sa.String(length=255), nullable=True),
+    sa.ForeignKeyConstraint(['cuuid'], ['mp_clients.cuuid'], onupdate='NO ACTION', ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('rid')
     )
+    op.create_index(op.f('ix_mpi_SPHardwareOverview_cuuid'), 'mpi_SPHardwareOverview', ['cuuid'], unique=True)
     ### end Alembic commands ###
 
     ### Add MacPatch VIEWS ###
@@ -773,27 +844,40 @@ def upgrade():
     '''
     op.execute(qstr6)
 
-
 def downgrade():
     ### commands auto generated by Alembic - please adjust! ###
+    op.drop_index(op.f('ix_mpi_SPHardwareOverview_cuuid'), table_name='mpi_SPHardwareOverview')
     op.drop_table('mpi_SPHardwareOverview')
     op.drop_index(op.f('ix_mpi_DirectoryServices_mpa_distinguishedName'), table_name='mpi_DirectoryServices')
     op.drop_index(op.f('ix_mpi_DirectoryServices_cuuid'), table_name='mpi_DirectoryServices')
     op.drop_table('mpi_DirectoryServices')
+    op.drop_index(op.f('ix_mp_software_installs_cuuid'), table_name='mp_software_installs')
+    op.drop_table('mp_software_installs')
+    op.drop_index(op.f('ix_mp_inv_state_cuuid'), table_name='mp_inv_state')
+    op.drop_table('mp_inv_state')
+    op.drop_index(op.f('ix_mp_clients_plist_cuuid'), table_name='mp_clients_plist')
+    op.drop_index(op.f('ix_mp_clients_plist_PatchGroup'), table_name='mp_clients_plist')
+    op.drop_index(op.f('ix_mp_clients_plist_Domain'), table_name='mp_clients_plist')
+    op.drop_table('mp_clients_plist')
+    op.drop_index(op.f('ix_mp_client_patches_third_cuuid'), table_name='mp_client_patches_third')
+    op.drop_table('mp_client_patches_third')
+    op.drop_index(op.f('ix_mp_client_patches_apple_cuuid'), table_name='mp_client_patches_apple')
+    op.drop_table('mp_client_patches_apple')
+    op.drop_index(op.f('ix_av_info_cuuid'), table_name='av_info')
+    op.drop_table('av_info')
     op.drop_table('mp_user')
     op.drop_table('mp_upload_request')
     op.drop_table('mp_software_tasks_data')
     op.drop_table('mp_software_task')
     op.drop_table('mp_software_requisits')
-    op.drop_table('mp_software_installs')
     op.drop_table('mp_software_groups_privs')
     op.drop_table('mp_software_groups_filters')
     op.drop_table('mp_software_groups')
     op.drop_table('mp_software_group_tasks')
     op.drop_table('mp_software_criteria')
     op.drop_table('mp_software')
-    op.drop_table('mp_servers')
     op.drop_table('mp_site_keys')
+    op.drop_table('mp_servers')
     op.drop_table('mp_server_list')
     op.drop_table('mp_reg_keys')
     op.drop_table('mp_patches_requisits')
@@ -808,22 +892,32 @@ def downgrade():
     op.drop_table('mp_patch_group')
     op.drop_table('mp_os_config_profiles_assigned')
     op.drop_table('mp_os_config_profiles')
-    op.drop_table('mp_inv_state')
     op.drop_table('mp_installed_patches')
+    op.drop_index(op.f('ix_mp_group_config_group_id'), table_name='mp_group_config')
+    op.drop_table('mp_group_config')
     op.drop_table('mp_clients_wait_reg')
     op.drop_table('mp_clients_reg_conf')
-    op.drop_index(op.f('ix_mp_clients_plist_cuuid'), table_name='mp_clients_plist')
-    op.drop_index(op.f('ix_mp_clients_plist_PatchGroup'), table_name='mp_clients_plist')
-    op.drop_index(op.f('ix_mp_clients_plist_Domain'), table_name='mp_clients_plist')
-    op.drop_table('mp_clients_plist')
     op.drop_index(op.f('ix_mp_clients_ipaddr'), table_name='mp_clients')
     op.drop_index(op.f('ix_mp_clients_hostname'), table_name='mp_clients')
     op.drop_index(op.f('ix_mp_clients_cuuid'), table_name='mp_clients')
     op.drop_index(op.f('ix_mp_clients_computername'), table_name='mp_clients')
     op.drop_table('mp_clients')
+    op.drop_index(op.f('ix_mp_client_tasks_group_id'), table_name='mp_client_tasks')
+    op.drop_table('mp_client_tasks')
+    op.drop_index(op.f('ix_mp_client_settings_key'), table_name='mp_client_settings')
+    op.drop_index(op.f('ix_mp_client_settings_group_id'), table_name='mp_client_settings')
+    op.drop_table('mp_client_settings')
     op.drop_table('mp_client_reg_keys')
-    op.drop_table('mp_client_patches_third')
-    op.drop_table('mp_client_patches_apple')
+    op.drop_index(op.f('ix_mp_client_groups_group_owner'), table_name='mp_client_groups')
+    op.drop_index(op.f('ix_mp_client_groups_group_name'), table_name='mp_client_groups')
+    op.drop_index(op.f('ix_mp_client_groups_group_id'), table_name='mp_client_groups')
+    op.drop_table('mp_client_groups')
+    op.drop_index(op.f('ix_mp_client_group_members_group_id'), table_name='mp_client_group_members')
+    op.drop_index(op.f('ix_mp_client_group_members_cuuid'), table_name='mp_client_group_members')
+    op.drop_table('mp_client_group_members')
+    op.drop_index(op.f('ix_mp_client_group_admin_group_id'), table_name='mp_client_group_admin')
+    op.drop_index(op.f('ix_mp_client_group_admin_group_admin'), table_name='mp_client_group_admin')
+    op.drop_table('mp_client_group_admin')
     op.drop_table('mp_client_agents_filters')
     op.drop_table('mp_client_agents')
     op.drop_table('mp_asus_catalogs')
@@ -833,12 +927,11 @@ def downgrade():
     op.drop_table('mp_agent_plugins')
     op.drop_table('mp_agent_config_data')
     op.drop_table('mp_agent_config')
-    op.drop_table('mp_adm_users')
     op.drop_table('mp_adm_users_info')
+    op.drop_table('mp_adm_users')
     op.drop_table('mp_adm_groups')
     op.drop_table('mp_adm_group_users')
     op.drop_table('mp_adhoc_reports')
-    op.drop_table('av_info')
     op.drop_table('av_defs')
     op.drop_table('apple_patches_mp_additions')
     op.drop_table('apple_patches')
