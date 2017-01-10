@@ -369,7 +369,7 @@ def upgrade():
     sa.ForeignKeyConstraint(['cuuid'], ['mp_clients.cuuid'], onupdate='NO ACTION', ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('rid')
     )
-    op.create_index(op.f('ix_mp_client_patches_apple_cuuid'), 'mp_client_patches_apple', ['cuuid'], unique=True)
+    op.create_index(op.f('ix_mp_client_patches_apple_cuuid'), 'mp_client_patches_apple', ['cuuid'], unique=False)
     op.create_table('mp_client_patches_third',
     sa.Column('rid', sa.BigInteger(), nullable=False, autoincrement=True),
     sa.Column('cuuid', sa.String(length=50), nullable=False),
@@ -386,7 +386,7 @@ def upgrade():
     sa.ForeignKeyConstraint(['cuuid'], ['mp_clients.cuuid'], onupdate='NO ACTION', ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('rid')
     )
-    op.create_index(op.f('ix_mp_client_patches_third_cuuid'), 'mp_client_patches_third', ['cuuid'], unique=True)
+    op.create_index(op.f('ix_mp_client_patches_third_cuuid'), 'mp_client_patches_third', ['cuuid'], unique=False)
     op.create_table('mp_group_config',
     sa.Column('rid', sa.BigInteger(), nullable=False, autoincrement=True),
     sa.Column('group_id', sa.String(length=50), nullable=False),
@@ -686,7 +686,7 @@ def upgrade():
     sa.ForeignKeyConstraint(['cuuid'], ['mp_clients.cuuid'], onupdate='NO ACTION', ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('rid')
     )
-    op.create_index(op.f('ix_mp_software_installs_cuuid'), 'mp_software_installs', ['cuuid'], unique=True)
+    op.create_index(op.f('ix_mp_software_installs_cuuid'), 'mp_software_installs', ['cuuid'], unique=False)
     op.create_table('mpi_DirectoryServices',
     sa.Column('rid', sa.BigInteger(), nullable=False, autoincrement=True),
     sa.Column('cuuid', sa.String(length=50), nullable=False),
