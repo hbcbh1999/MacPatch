@@ -263,5 +263,6 @@ if [ "$COPYINSTALLPKG" == "y" ] || [ "$COPYINSTALLPKG" == "Y" ]; then
 	cp "$BUILD_FILE" "${SRCROOT}/Agent/InstallerBuildInfo.txt"
 fi
 
-
+echo 
+echo "New Client is located in $BUILDROOT"
 open ${BUILDROOT}
