@@ -36,6 +36,7 @@ class AlamofireSynchronous
         
         let semaphore = DispatchSemaphore(value: 0)
         var result: UploadRequest? = nil
+        var intResult = 2
         
         MPAlamofire.upload(multipartFormData: multipartFormData, to: to, method: method, headers: headers) { (res: Alamofire.SessionManager.MultipartFormDataEncodingResult) in
             
@@ -47,6 +48,7 @@ class AlamofireSynchronous
                             upload.responseJSON {res2 in
                                 if(res2.result.isSuccess) {
                                     result = upload
+                                    intResult = 0
                                     //let response = res.result.value as! NSDictionary
                                     //success
                                     //var jsonData = JSON(response)
@@ -54,15 +56,18 @@ class AlamofireSynchronous
                                 }
                             }
                         }
-            
-                    //result = upload
-                case .failure( _):
+                case .failure(let e):
+                    print("Error while creating upload request : \(e)")
+                    intResult = 1
                     break
             }
             semaphore.signal()
         }
         
-        _ = semaphore.wait(timeout: DispatchTime.distantFuture)
+        _ = semaphore.wait(timeout: .distantFuture)
+        while intResult > 1 {
+            sleep(1)
+        }
         return result
     }
 }

@@ -790,7 +790,7 @@ class ViewController: NSViewController, AuthViewControllerDelegate
         base_dict["major"] = vers[0] as String
         base_dict["minor"] = vers[1] as String
         base_dict["bug"] = vers[2] as String
-        base_dict["version"] = ver_dict.object(forKey: "agent_version")
+        base_dict["version"] = ver_dict.object(forKey: "version")
         
         // Write Version Plist to Package
         let plistFile = package.stringByAppendingPathComponent(path: "Scripts/.mpVersion.plist")
@@ -1048,6 +1048,7 @@ class ViewController: NSViewController, AuthViewControllerDelegate
 
         }
         
+        log.error("Should not get here")
         return false
     }
     
