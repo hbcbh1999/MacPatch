@@ -4,10 +4,11 @@ import os
 import md5
 from flask_script import Manager, Command, Option, Server
 from flask_migrate import Migrate, MigrateCommand
-from mpdb import addDefaultData
+from mpdb import addDefaultData, addDefaultClientGroup, addUnassignedClientsToGroup
 from mpapi.extensions import db
 import hashlib
 import multiprocessing
+from werkzeug.security import generate_password_hash
 
 import warnings
 from flask.exthook import ExtDeprecationWarning
@@ -72,7 +73,8 @@ class GunicornServer(Command):
 
 @manager.command
 def insert_data():
-	_pass = hashlib.md5("*mpadmin*").hexdigest()
+	# hashlib.md5("*mpadmin*").hexdigest()
+	_pass = generate_password_hash('*mpadmin*')
 	db.session.add(AdmUsers(user_id="mpadmin", user_RealName="MPAdmin", user_pass=_pass, enabled='1'))
 	db.session.commit()
 
@@ -80,6 +82,13 @@ def insert_data():
 def populateDB():
 	print 'Add Default Data To Database'
 	addDefaultData()
+	print 'Default Data Added Database'
+
+@manager.command
+def addClientsToGroups():
+	print 'Add Default Data To Database'
+	addDefaultClientGroup()
+	addUnassignedClientsToGroup()
 	print 'Default Data Added Database'
 
 # Override default runserver with options from config.py
