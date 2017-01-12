@@ -23,7 +23,7 @@ class BaseConfig:
     DB_PASS                         = 'password'
     DB_HOST                         = 'localhost'
     DB_PORT                         = '3306'
-    DB_NAME                         = 'MacPatchDB'
+    DB_NAME                         = 'MacPatchDB3'
     SQLALCHEMY_DATABASE_URI         = 'mysql+mysqlconnector://'
     SQLALCHEMY_TRACK_MODIFICATIONS  = False
     SQLALCHEMY_POOL_SIZE            = 50
