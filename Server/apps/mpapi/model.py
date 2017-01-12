@@ -258,15 +258,15 @@ class MpClientGroupAdmins(CommonBase):
 
     rid             = Column(BigInteger, primary_key=True, autoincrement=True)
     group_id        = Column(String(50), nullable=False, index=True, unique=True)
-    group_admin     = Column(String(255), nullable=False, index=True, unique=True)
+    group_admin     = Column(String(255), nullable=False, index=True, unique=False)
 
 # mp_client_group_members
 class MpClientGroupMembers(CommonBase):
     __tablename__ = 'mp_client_group_members'
 
     rid         = Column(BigInteger, primary_key=True, autoincrement=True)
-    group_id    = Column(String(50), nullable=False, index=True, unique=True)
-    cuuid       = Column(String(255), nullable=False, index=True, unique=True)
+    group_id    = Column(String(50), nullable=False, index=True, unique=False)
+    cuuid       = Column(String(255), nullable=False, index=True, unique=False)
 
 # mp_client_tasks
 class MpClientTasks(CommonBase):
