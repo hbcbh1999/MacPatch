@@ -244,6 +244,21 @@ class MigrateDB:
 
         dbNameNew = myConfig_new['database']
         dbNameOld = myConfig_old['database']
+
+        '''
+        mp_clients_table = None
+        mp_clients_index = 99999
+        for index, table in enumerate(old_tables):
+            if table['name'] == 'mp_clients':
+                mp_clients_index = index
+                mp_clients_table = table
+                break
+
+        if mp_clients_index < 99999:
+            old_tables.pop(mp_clients_index)
+            old_tables.insert(0,mp_clients_table)
+        '''
+
         for oTable in old_tables:
             newColsList = self.colsFromTableList(new_tables,oTable['name'])
             oldColsList = oTable['columns']
@@ -251,15 +266,19 @@ class MigrateDB:
             colsStrOld = ', '.join(colsList[0])
             colsStrNew = ', '.join(colsList[1])
             _query = """INSERT INTO %s.%s (%s) 
-                        SELECT %s FROM %s.%s;""" % (dbNameNew, oTable['name'], colsStrNew, colsStrOld, dbNameOld, oTable['name'])
+                        SELECT DISTINCT %s FROM %s.%s;""" % (dbNameNew, oTable['name'], colsStrNew, colsStrOld, dbNameOld, oTable['name'])
 
             try:
 
                 _db = mydb.connect(**self.dbNewConf)
                 _dbCur = _db.cursor()
 
+                _dbCur.execute("SET FOREIGN_KEY_CHECKS=0;")
+
                 print "Migrating %s table" % (oTable['name'])
                 _dbCur.execute(_query.encode('ascii',errors='ignore'))
+
+                _dbCur.execute("SET FOREIGN_KEY_CHECKS=1;")
                 _dbCur.close()
                 _db.close()
 
