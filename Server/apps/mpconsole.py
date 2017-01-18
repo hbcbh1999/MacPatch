@@ -73,7 +73,6 @@ class GunicornServer(Command):
 
 @manager.command
 def insert_data():
-	# hashlib.md5("*mpadmin*").hexdigest()
 	_pass = generate_password_hash('*mpadmin*')
 	db.session.add(AdmUsers(user_id="mpadmin", user_RealName="MPAdmin", user_pass=_pass, enabled='1'))
 	db.session.commit()
@@ -85,11 +84,10 @@ def populateDB():
 	print 'Default Data Added Database'
 
 @manager.command
-def addClientsToGroups():
-	print 'Add Default Data To Database'
-	addDefaultClientGroup()
+def migrateClientsToGroup():
+	print 'Migrate Clients to Default Group'
 	addUnassignedClientsToGroup()
-	print 'Default Data Added Database'
+	print 'Clients have been migrated to Default Group'
 
 # Override default runserver with options from config.py
 manager.add_command('runserver', Server(host=app.config['SRV_HOST'], port=app.config['SRV_PORT']) )

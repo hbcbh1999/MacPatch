@@ -10,6 +10,7 @@ from mpapi.model import MpPatchGroup, PatchGroupMembers
 from mpapi.model import MpAsusCatalogList
 from mpapi.model import MpServer, MpServerList
 from mpapi.model import MpSoftwareGroup, MpSoftwareGroupPrivs
+from mpapi.model import MpClientGroups, MpClient, MpClientGroupMembers
 
 from sqlalchemy import *
 
@@ -22,6 +23,7 @@ def addDefaultData():
 	addDefaultSUSGroup()
 	addDefaultServerConfig()
 	addDefaultServerList()
+	addDefaultClientGroup()
 
 # Agent Registration Settings ------------------------------------------------
 def hasRegConfig():
@@ -273,4 +275,46 @@ def addDefaultServerList():
 	db.session.add(MpServerList(listid='1', name="Default", version="0"))
 	db.session.commit()
 
-# Testing ---------------------------------------------------------------------
+# Client Groups ---------------------------------------------------------------
+def hasDefaultClientGroup():
+	res = MpClientGroups.query.filter(MpClientGroups.group_name=='Default').first()
+	if res is not None:
+		return True
+	else:
+		return False
+
+def addDefaultClientGroup():
+	# Check for config
+	if hasDefaultClientGroup():
+		return False
+
+	# Add Agent Config
+	_uuid = str(uuid.uuid4())
+	db.session.add(MpClientGroups(group_id=_uuid, group_name="Default", group_owner="mpadmin"))
+	db.session.commit()
+
+# Upgrade Tasks ---------------------------------------------------------------
+def addUnassignedClientsToGroup():
+	# Check for config
+	res0 = MpClientGroups.query.filter(MpClientGroups.group_name == 'Default').first()
+	res1 = MpClient.query.all()
+	res2 = MpClientGroupMembers.query.all()
+
+	default_gid = 0
+	if res0:
+		default_gid = res0.group_id
+	else:
+		return
+
+	clients_in_group = []
+	for x in res2:
+		clients_in_group.append(str(x.cuuid))
+
+	clients = []
+	for x in res1:
+		if x.cuuid in clients_in_group:
+			continue
+		else:
+			db.session.add(MpClientGroupMembers(group_id=default_gid, cuuid=x.cuuid))
+
+	db.session.commit()
