@@ -343,12 +343,12 @@ class AgentUpdates():
         # Check OS is supported
         if updateDict['osver'] != '*':
             updateOSVer = updateDict['osver'].replace('+', '')
-            if not (LooseVersion(updateOSVer) >= StrictVersion(clientData['osver'])):
+            if not (LooseVersion(updateOSVer) <= StrictVersion(clientData['osver'])):
                 log_Error("[AgentUpdates][agentUpdates]: Client OS Ver is not greater or equal to the min os supported.")
                 return None
 
         # Check Agent Updater version
-        if updateDict['agent_ver'] == updateVersion:
+        if updateDict['agent_ver'] == updaterVersion:
             # Version is the same check build Rev
             if agentBuild != 0:
                 if int(updateDict['build']) <= int(agentBuild):
@@ -396,7 +396,7 @@ class AgentUpdates():
         # Check OS is supported
         if updateDict['osver'] != '*':
             updateOSVer = updateDict['osver'].replace('+', '')
-            if not (LooseVersion(updateOSVer) >= StrictVersion(clientData['osver'])):
+            if not (LooseVersion(updateOSVer) <= StrictVersion(clientData['osver'])):
                 log_Error("[AgentUpdates][agentUpdates]: Client OS Ver is not greater or equal to the min os supported.")
                 return None
 
