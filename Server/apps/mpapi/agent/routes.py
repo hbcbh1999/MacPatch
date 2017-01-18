@@ -370,7 +370,7 @@ class AgentUpdates():
 
             update = {'puuid': updateDict['puuid'], 'type': updateDict['type'],
                     'pkg_hash': updateDict['pkg_hash'], 'pkg_name': updateDict['pkg_name'],
-                    'pkg_url': updateDict['pkg_url']}
+                    'pkg_url': updateDict['pkg_url'], 'updateAvailable': True}
             log_Debug("[AgentUpdates][agentUpdaterUpdates]: Client (%s) Update Data: %s" % (cuuid,update))
             return update
         else:
@@ -421,7 +421,7 @@ class AgentUpdates():
         if agent_needs_update == True:
             update = {'puuid': updateDict['puuid'], 'type': updateDict['type'],
                     'pkg_hash': updateDict['pkg_hash'], 'pkg_name': updateDict['pkg_name'],
-                    'pkg_url': updateDict['pkg_url']}
+                    'pkg_url': updateDict['pkg_url'], 'updateAvailable': True}
             log_Debug("[AgentUpdates][agentUpdates]: Client (%s) Update Data: %s" % (cuuid, update))
             return update
         else:
