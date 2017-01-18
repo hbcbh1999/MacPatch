@@ -143,19 +143,25 @@ static NSString *kMPProfilesData = @"Data/gov.llnl.mp.custom.profiles.plist";
                 continue;
             }
             
+            BOOL needsUpdate = NO;
+            
             if ([self profileIsInstalledOnDisk:[p objectForKey:@"profileIdentifier"] installedProfiles:localProfiles])
             {
                 BOOL needsInstall = NO;
                 BOOL foundInMPInstalledArray = NO;
                 // Check the rev if it needs updating
                 if (installedProfilesRaw) {
-                    for (NSDictionary *installedProfile in installedProfilesRaw) {
-                        if ([[installedProfile objectForKey:@"profileIdentifier"] isEqualToString:[p objectForKey:@"profileIdentifier"]]) {
+                    for (NSDictionary *installedProfile in installedProfilesRaw)
+                    {
+                        // Looking to see if it's installed
+                        if ([[installedProfile objectForKey:@"profileIdentifier"] isEqualToString:[p objectForKey:@"profileIdentifier"]])
+                        {
                             int currentProfileRev = [[installedProfile objectForKey:@"rev"] intValue];
                             int wsProfileRev = [[p objectForKey:@"rev"] intValue];
                             qldebug(@"%d -- %d",currentProfileRev,wsProfileRev);
-                            if (currentProfileRev != wsProfileRev) {
+                            if (currentProfileRev < wsProfileRev) {
                                 needsInstall = YES;
+                                needsUpdate = YES;
                             }
                             foundInMPInstalledArray = YES;
                             break;
@@ -172,7 +178,13 @@ static NSString *kMPProfilesData = @"Data/gov.llnl.mp.custom.profiles.plist";
                     continue;
                 }
             }
-            if ([p objectForKey:@"data"]) {
+            if ([p objectForKey:@"data"])
+            {
+                if (needsUpdate == YES) {
+                    // In order to update, remove first
+                    [self removeProfile:[p objectForKey:@"profileIdentifier"]];
+                }
+
                 NSString *profileOnDisk = [self writeProfileToDisk:[p objectForKey:@"data"]];
                 if (!profileOnDisk) {
                     qlerror(@"Error, unable to install profile %@",[p objectForKey:@"profileIdentifier"]);
