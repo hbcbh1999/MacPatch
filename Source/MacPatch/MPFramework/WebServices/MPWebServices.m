@@ -1263,7 +1263,7 @@
     NSError *error = nil;
     NSString *uri = [NSString stringWithFormat:@"/api/v1/client/inventory/state/%@",[MPSystemInfo clientUUID]];
     id res = [self restPostRequestforURI:uri body:nil resultType:@"string" error:&error];
-    qldebug(@"[postClientHasInvData]; %@",res);
+    qldebug(@"[postClientHasInvData] %@",res);
     if (error) {
         if (err != NULL) {
             *err = error;
@@ -1282,6 +1282,7 @@
     id result = nil;
     NSString *aURI = [NSString stringWithFormat:@"/api/v1/client/patch/install/%@/%@/%@",aPatch,aPatchType,[MPSystemInfo clientUUID]];
     result = [self restPostRequestforURI:aURI body:nil resultType:@"string" error:&error];
+    qldebug(@"[postPatchInstallResultsToWebService][result]: %@",result);
     if (err != NULL) *err = error;
     if ([result isEqualToString:@""] && !error) {
         return YES;
