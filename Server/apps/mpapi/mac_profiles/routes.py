@@ -83,8 +83,13 @@ class ClientProfile():
         _profiles = []
 
         q_result = MpOsConfigProfilesAssigned.query.filter(MpOsConfigProfilesAssigned.groupID == clientGroup).all()
+        q_Global = MpOsConfigProfilesAssigned.query.filter(MpOsConfigProfilesAssigned.groupID == 'Global').all()
         if q_result is not None:
             for row in q_result:
+                _profiles.append(row.profileID)
+
+        if q_Global is not None:
+            for row in q_Global:
                 _profiles.append(row.profileID)
 
         return _profiles
