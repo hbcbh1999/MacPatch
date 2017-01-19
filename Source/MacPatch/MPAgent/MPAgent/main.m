@@ -34,7 +34,7 @@
 #include <getopt.h>
 #include <unistd.h>
 
-#define APPVERSION	@"3.0.0.1"
+#define APPVERSION	@"3.0.0.2"
 #define APPNAME		@"MPAgent"
 
 void usage(void);
@@ -374,6 +374,8 @@ void usage(void)
     printf(" -n \t --Servers \t\tRun server list verify/update.\n");
     printf(" -z \t --SUServers \t\tRun SUS server list verify/update.\n");
     printf(" -w \t --WebServicePost \tRe-post failed post attempts.\n\n");
+    printf("Agent Updater \n\n");
+    printf(" -G \t --AgentUpdater \tUpdate the MacPatch agent updater agent.\n\n");
     printf("Agent Registration \n\n");
     printf(" -r \t --register \tRegister Agent [ RegKey (Optional) ] based on configuration.\n");
     printf(" -R \t --regInfo \tDisplays if client is registered.\n\n");

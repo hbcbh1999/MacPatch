@@ -132,7 +132,7 @@ NSInteger const TaskErrorTimedOut = 900001;
 	
 	
 	// Build the download String
-	NSString *_dlURL = [[_updateData objectForKey:@"SelfUpdate"] objectForKey:@"pkg_Url"];
+	NSString *_dlURL = [_updateData objectForKey:@"pkg_url"];
 	logit(lcl_vInfo,@"Download update package from: %@",_dlURL);
 	
 	// Download the File

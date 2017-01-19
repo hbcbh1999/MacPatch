@@ -82,11 +82,11 @@
         result = YES;
     }
     
-    if (![updateDataRaw objectForKey:@"SelfUpdate"]) {
+    if (!updateDataRaw) {
         logit(lcl_vError,@"No update data found.");
         result = NO;
     } else {
-        [self setAgentUpdateData:[updateDataRaw objectForKey:@"SelfUpdate"]];
+        [self setAgentUpdateData:updateDataRaw];
     }
     
     return result;
