@@ -71,7 +71,7 @@ class MP_AgentUpdaterUpdate(MPResource):
         self.reqparse = reqparse.RequestParser()
         super(MP_AgentUpdaterUpdate, self).__init__()
 
-    def get(self, cuuid, agentver):
+    def get(self, cuuid, agentver='0', agentbuild='0'):
         try:
             args = self.reqparse.parse_args()
 
@@ -88,7 +88,7 @@ class MP_AgentUpdaterUpdate(MPResource):
 
             _at = AgentUpdates()
             log_Info('[AgentUpdaterUpdate][GET]: Checking if update to Updater is needed for CUUID: %s AGENTVER: %s' % (cuuid, agentver))
-            _update = _at.agentUpdates(cuuid, agentver)
+            _update = _at.agentUpdates(cuuid, agentver, agentbuild)
 
             if _update is not None:
                 log_Info('[AgentUpdaterUpdate][GET]: Update is needed for CUUID: %s' % (cuuid))
@@ -279,7 +279,7 @@ class MP_UploadAgentPackage(MPResource):
             setattr(agentObjApp, 'version', fData['app']['version'])
             setattr(agentObjApp, 'build', fData['app']['build'])
             setattr(agentObjApp, 'pkg_name', fData['app']['pkg_name'])
-            setattr(agentObjApp, 'pkg_url', os.path.join('/mp-content/clients/updates', agent_id,fBase.filename))
+            setattr(agentObjApp, 'pkg_url', os.path.join('/mp-content/clients', agent_id,fBase.filename))
             setattr(agentObjApp, 'pkg_hash', fBaseHash)
             setattr(agentObjApp, 'cdate', datetime.now())
             setattr(agentObjApp, 'mdate', datetime.now())
@@ -295,7 +295,7 @@ class MP_UploadAgentPackage(MPResource):
             setattr(agentObjUpdt, 'version', fData['update']['version'])
             setattr(agentObjUpdt, 'build', fData['update']['build'])
             setattr(agentObjUpdt, 'pkg_name', fData['update']['pkg_name'])
-            setattr(agentObjUpdt, 'pkg_url', os.path.join('/mp-content/clients/updates', agent_id,fUpdate.filename))
+            setattr(agentObjUpdt, 'pkg_url', os.path.join('/mp-content/clients', agent_id,fUpdate.filename))
             setattr(agentObjUpdt, 'pkg_hash', fUpdateHash)
             setattr(agentObjUpdt, 'cdate', datetime.now())
             setattr(agentObjUpdt, 'mdate', datetime.now())
@@ -716,7 +716,9 @@ def fileHashSHA1(file):
 
 # Add Routes Resources
 agent_api.add_resource(MP_AgentUpdate,         '/agent/update/<string:cuuid>/<string:agentver>/<string:agentbuild>')
-agent_api.add_resource(MP_AgentUpdaterUpdate,  '/agent/updater/<string:cuuid>/<string:agentver>')
+agent_api.add_resource(MP_AgentUpdaterUpdate,  '/agent/updater/<string:cuuid>/<string:agentver>',endpoint='withOutBuild')
+agent_api.add_resource(MP_AgentUpdaterUpdate,  '/agent/updater/<string:cuuid>/<string:agentver>/<string:agentbuild>',endpoint='withBuild')
+
 
 agent_api.add_resource(MP_PluginHash,          '/agent/plugin/hash/<string:cuuid>/<string:plugin_name>/<string:plugin_bundle>/<string:plugin_version>')
 
