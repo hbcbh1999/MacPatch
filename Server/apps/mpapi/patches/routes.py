@@ -200,15 +200,15 @@ class PatchScanData(MPResource):
 
             if not isValidClientID(cuuid):
                 log_Error('[PatchScanData][Post]: Failed to verify ClientID (%s)' % (cuuid))
-                return {"result": '', "errorno": 424, "errormsg": 'Failed to verify ClientID'}, 424
+                return {"result": {}, "errorno": 424, "errormsg": 'Failed to verify ClientID'}, 424
 
             if not isValidSignature(self.req_signature, cuuid, request.data, self.req_ts):
                 log_Error('[PatchScanData][Post]: Failed to verify Signature for client (%s)' % (cuuid))
-                return {"result": '', "errorno": 424, "errormsg": 'Failed to verify Signature'}, 424
+                return {"result": {}, "errorno": 424, "errormsg": 'Failed to verify Signature'}, 424
 
             if patch_type == "0":
                 log_Error('[PatchScanData][Post][%s]: Type (%s) not accepted ' % (cuuid, patch_type))
-                return {"result": '', "errorno": 404, "errormsg": "Type not accepted"}, 404
+                return {"result": {}, "errorno": 404, "errormsg": "Type not accepted"}, 404
 
             elif patch_type == "1":
                 # Apple Patches
@@ -235,10 +235,10 @@ class PatchScanData(MPResource):
                         except IntegrityError, exc:
                             db.session.rollback()
                             log_Error('[PatchScanData][Post][%s]: Error adding apple record. %s' % (cuuid, exc.message))
-                            return {"result": '', "errorno": 0, "errormsg": exc.message}, 406
+                            return {"result": {}, "errorno": 0, "errormsg": exc.message}, 406
 
-                    # Rows have been added
-                    return {"result": '', "errorno": 0, "errormsg": 'none'}, 201
+                # Rows have been added
+                return {"result": {}, "errorno": 0, "errormsg": 'none'}, 201
             elif patch_type == "2":
                 # Custom Patches
                 log_Debug('[PatchScanData][Post][%s]: Type (%s) selected' % (cuuid, patch_type))
@@ -264,18 +264,18 @@ class PatchScanData(MPResource):
                         except IntegrityError, exc:
                             db.session.rollback()
                             log_Error('[PatchScanData][Post][%s]: Error adding custom record. %s' % (cuuid, exc.message))
-                            return {"result": '', "errorno": 0, "errormsg": exc.message}, 406
+                            return {"result": {}, "errorno": 0, "errormsg": exc.message}, 406
 
                     # Rows have been added
-                    return {"result": '', "errorno": 0, "errormsg": 'none'}, 201
+                    return {"result": {}, "errorno": 0, "errormsg": 'none'}, 201
             else:
                 log_Error('[PatchScanData][Post][%s]: Type (%s) not found' % (cuuid, patch_type))
-                return {"result": '', "errorno": 404, "errormsg": "Type not found"}, 404
+                return {"result": {}, "errorno": 404, "errormsg": "Type not found"}, 404
 
 
         except IntegrityError, exc:
             log_Error('[PatchScanData][Post][IntegrityError] CUUID: %s Message: %s' % (cuuid, exc.message))
-            return {"result": '', "errorno": 500, "errormsg": exc.message}, 500
+            return {"result": {}, "errorno": 500, "errormsg": exc.message}, 500
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             log_Error('[PatchScanData][Post][Exception][Line: %d] CUUID: %s Message: %s' % (
