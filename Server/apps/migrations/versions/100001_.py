@@ -638,7 +638,7 @@ def upgrade():
     sa.Column('selected', sa.Integer(), server_default='0', nullable=True),
     sa.PrimaryKeyConstraint('rid')
     )
-    op.create_index(op.f('ix_mp_software_group_tasks_sw_group_id'), 'mp_software_criteria', ['sw_group_id'], unique=False)
+    op.create_index(op.f('ix_mp_software_group_tasks_sw_group_id'), 'mp_software_group_tasks', ['sw_group_id'], unique=False)
     op.create_table('mp_software_groups',
     sa.Column('rid', sa.BigInteger(), nullable=False, autoincrement=True),
     sa.Column('gid', sa.String(length=50), nullable=False),
