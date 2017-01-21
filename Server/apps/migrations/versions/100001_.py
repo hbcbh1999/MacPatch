@@ -489,7 +489,7 @@ def upgrade():
     sa.Column('is_owner', mysql.INTEGER(display_width=1, unsigned=True), server_default='0', nullable=True),
     sa.PrimaryKeyConstraint('rid')
     )
-    op.create_index(op.f('ix_mp_patch_group_members_patch_group_id'), 'mp_patch_group_members', ['pid'], unique=False)
+    op.create_index(op.f('ix_mp_patch_group_members_patch_group_id'), 'mp_patch_group_members', ['patch_group_id'], unique=False)
     op.create_table('mp_patch_group_patches',
     sa.Column('rid', sa.BigInteger(), nullable=False, autoincrement=True),
     sa.Column('patch_id', sa.String(length=50), nullable=False),
