@@ -163,6 +163,7 @@ A default agent configuration is added during the install. Please verify the cli
 * Verify the “PatchGroup” setting. If you have changed it set it before you upload the client agent.
 * Click the save button
 * Click the icon in the “Default” column for the default configuration. (Important Step)
+* Set MPServerAllowSelfSigned to 1 if your in a test environment and not using a valid SSL vertificate. 
 
 Only the default agent configuration will get added to the client agent upon upload.
 
@@ -183,9 +184,9 @@ Run the following command via the Terminal.app on the Master MacPatch server.
 
 **Custom Updates** <a name='a5b'></a>
 
-To create your own custom patch content please read the "Custom Patch Content" [docs](https://macpatch.github.io/doc/custom-patch-content.html).
+To create your own custom patch content please read the "Custom Patch Content" [docs](http://macpatch.llnl.gov/docs/4_custom-patch-content/).
 
-To use "AutoPkg" to add patch content please read the "AutoPkg patch content" [docs](https://macpatch.github.io/doc/autopkg-patch-content.html).	
+To use "AutoPkg" to add patch content please read the "AutoPkg patch content" [docs](http://macpatch.llnl.gov/docs/7_packaging-autopkg/).	
 
 --
 
