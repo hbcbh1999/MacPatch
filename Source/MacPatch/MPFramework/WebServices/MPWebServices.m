@@ -1,7 +1,7 @@
 //
 //  MPWebServices.m
 /*
- Copyright (c) 2013, Lawrence Livermore National Security, LLC.
+ Copyright (c) 2017, Lawrence Livermore National Security, LLC.
  Produced at the Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  Written by Charles Heizer <heizer1 at llnl.gov>.
  LLNL-CODE-636469 All rights reserved.
@@ -455,149 +455,7 @@
 
 #define appleScanResults    0
 #define customScanResults   1
-/*
-- (BOOL)postPatchScanResultsForType:(NSInteger)aPatchScanType results:(NSDictionary *)resultsDictionary error:(NSError **)err
-{
-	// Create the JSON String
-    MPJsonResult *jres = [[MPJsonResult alloc] init];
-	NSError *l_err = nil;
-	NSString *jData = [jres serializeJSONDataAsString:resultsDictionary error:&l_err];
-	if (l_err) {
-		qlerror(@"%@",[l_err localizedDescription]);
-		return NO;
-	}
 
-    // Set the Scan Type
-    NSString *scanType = @"NA";
-    switch ((int)aPatchScanType) {
-        case appleScanResults:
-            scanType = @"apple";
-            break;
-        case customScanResults:
-            scanType = @"third";
-            break;
-        default:
-            scanType = @"NA";
-            break;
-    }
-
-    // Request
-    NSError *error = nil;
-    NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
-    [params setObject:self._cuuid forKey:@"ClientID"];
-    [params setObject:scanType forKey:@"type"];
-    [params setObject:jData forKey:@"jsonData"];
-    NSData *res = [self requestWithMethodAndParams:@"PostPatchesFound" params:(NSDictionary *)params error:&error];
-    if (error)
-    {
-        NSMutableDictionary *errDict = [[NSMutableDictionary alloc] init];
-        [errDict setObject:[NSNumber numberWithInteger:aPatchScanType] forKey:@"aPatchScanType"];
-        [errDict setObject:resultsDictionary forKey:@"resultsDictionary"];
-        MPFailedRequests *mpf = [[MPFailedRequests alloc] init];
-        [mpf addFailedRequest:@"postPatchScanResultsForType" params:errDict errorNo:error.code errorMsg:error.localizedDescription];
-        mpf = nil;
-
-		if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return NO;
-    }
-
-    // Parse Main JSON Result
-    // MPJsonResult does all of the error checking on the result
-    [jres setJsonData:res];
-    error = nil;
-    id result = [jres returnJsonResult:&error];
-    qldebug(@"JSON Result: %@",result);
-    if (error)
-    {
-        if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return NO;
-    }
-
-    NSDictionary *jResult;
-    error = nil;
-    jResult = [jres deserializeJSONString:[result objectForKey:@"result"] error:&error];
-    if (error) {
-        if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return NO;
-    }
-
-    if ([[jResult objectForKey:@"errorCode"] intValue] == 0) {
-        qlinfo(@"Data was successfully posted.");
-        return YES;
-    } else {
-        if (err != NULL) {
-            NSDictionary *userInfoDict = [NSDictionary dictionaryWithObject:[jResult objectForKey:@"errorMessage"] forKey:NSLocalizedDescriptionKey];
-            *err = [NSError errorWithDomain:@"gov.llnl.MPWebServices" code:[[jResult objectForKey:@"errorCode"] intValue] userInfo:userInfoDict];
-        } else {
-            qlerror(@"Error[%@]: %@",[jResult objectForKey:@"errorCode"],[jResult objectForKey:@"errorMessage"]);
-        }
-        return NO;
-    }
-
-    // Should not get here
-    return NO;
-}
-*/
-
-/* REST Below
-- (BOOL)postPatchInstallResultsToWebService:(NSString *)aPatch patchType:(NSString *)aPatchType error:(NSError **)err
-{
-    // Request
-    NSError *error = nil;
-    NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
-    [params setObject:self._cuuid forKey:@"ClientID"];
-    [params setObject:aPatch forKey:@"patch"];
-    [params setObject:aPatchType forKey:@"patchType"];
-    NSData *res = [self requestWithMethodAndParams:@"PostInstalledPatch" params:(NSDictionary *)params error:&error];
-    if (error)
-    {
-        NSMutableDictionary *errDict = [[NSMutableDictionary alloc] init];
-        [errDict setObject:aPatchType forKey:@"aPatchType"];
-        [errDict setObject:aPatch forKey:@"aPatch"];
-        MPFailedRequests *mpf = [[MPFailedRequests alloc] init];
-        [mpf addFailedRequest:@"postPatchInstallResultsToWebService" params:errDict errorNo:error.code errorMsg:error.localizedDescription];
-        mpf = nil;
-        
-        if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return NO;
-    }
-    
-    // Parse Main JSON Result
-    // MPJsonResult does all of the error checking on the result
-    MPJsonResult *jres = [[MPJsonResult alloc] init];
-    [jres setJsonData:res];
-    error = nil;
-    id result = [jres returnResult:&error];
-    qldebug(@"JSON Result: %@",result);
-    if (error)
-    {
-        if (err != NULL) {
-            *err = error;
-        } else {
-            qlerror(@"%@",error.localizedDescription);
-        }
-        return NO;
-    }
-    
-    return YES;
-}
-*/
 /*
 - (BOOL)postClientAVData:(NSDictionary *)aDict error:(NSError **)err
 {
@@ -977,7 +835,7 @@
             wsErr = nil;
             MPJsonResult *jres = [[MPJsonResult alloc] init];
             NSString *jstr = [jres serializeJSONDataAsString:(NSDictionary *)result error:NULL];
-            [self writePatchGroupCacheFileData:jstr];
+            //[self writePatchGroupCacheFileData:jstr];
             if (wsErr) {
                 if (err != NULL) {
                     *err = wsErr;
@@ -1162,10 +1020,12 @@
         //Err
         uri = [NSString stringWithFormat:@"/api/v1/client/patch/scan/3/<string:cuuid>"];
     }
-    
+    qldebug(@"[postClientScanDataWithType][uri] %@",uri);
     error = nil;
+    
+    qldebug(@"[postClientScanDataWithType][body] %@",jData);
     id res = [self restPostRequestforURI:uri body:jData resultType:@"string" error:&error];
-    qldebug(@"[postClientScanDataWithType]; %@",res);
+    qldebug(@"[postClientScanDataWithType] %@",res);
     if (error) {
         if (err != NULL) {
             *err = error;
