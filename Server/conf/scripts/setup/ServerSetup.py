@@ -671,7 +671,7 @@ class MPDatabase:
 		conf["settings"]["database"]["prod"]["dbPort"] = mp_db_port
 		conf["settings"]["database"]["ro"]["dbPort"] = mp_db_port
 		
-		mp_db_name = raw_input("MacPatch Database Name [MacPatchDB]: ") or "MacPatchDB"
+		mp_db_name = raw_input("MacPatch Database Name [MacPatchDB3]: ") or "MacPatchDB3"
 		conf["settings"]["database"]["prod"]["dbName"] = mp_db_name
 		conf["settings"]["database"]["ro"]["dbName"] = mp_db_name
 		
