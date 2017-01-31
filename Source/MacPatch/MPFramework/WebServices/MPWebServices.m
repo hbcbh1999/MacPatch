@@ -822,7 +822,7 @@
             }
             
             // Error Code is 0 and result is empty then we are done.
-            if ([result isNSStringType]) {
+            if ([self isOfNSStringType:result]) {
                 if ([result isEqualToString:@""]) {
                     return nil;
                 }
@@ -854,6 +854,21 @@
     }
     // Should not get here
     return nil;
+}
+
+- (BOOL)isOfNSStringType:(id)obj
+{
+    if ([[obj className] isMemberOfClass: [NSString class]]) {
+        return YES;
+    }
+    if ([[obj class] isKindOfClass: [NSString class]]) {
+        return YES;
+    }
+    if ([[obj classForCoder] isSubclassOfClass: [NSString class]]) {
+        return YES;
+    }
+    
+    return NO;
 }
 
 

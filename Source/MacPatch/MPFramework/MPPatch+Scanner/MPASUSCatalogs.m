@@ -135,7 +135,7 @@
             for (NSDictionary *server in [susDict objectForKey:@"servers"])
             {
                 id _os_minor = [server objectForKey:@"os"];
-                if (![_os_minor isNSStringType]) {
+                if (![self isOfNSStringType:_os_minor]) {
                     _os_minor = [[server objectForKey:@"os"] stringValue];
                 }
 
@@ -345,6 +345,21 @@
     }
     
     return (NSArray *)_newArray;
+}
+
+- (BOOL)isOfNSStringType:(id)obj
+{
+    if ([[obj className] isMemberOfClass: [NSString class]]) {
+        return YES;
+    }
+    if ([[obj class] isKindOfClass: [NSString class]]) {
+        return YES;
+    }
+    if ([[obj classForCoder] isSubclassOfClass: [NSString class]]) {
+        return YES;
+    }
+    
+    return NO;
 }
 
 
