@@ -1,6 +1,6 @@
 #!/bin/sh
 
-Version="2.0.1"
+Version="2.0.2"
 mpBaseDir="/Library/MacPatch"
 mpClientDir="${mpBaseDir}/Client"
 mpUpdateDir="${mpBaseDir}/Updater"
@@ -190,9 +190,6 @@ if [ -d $mpBaseDir ]; then
 	# Delete Client Data
 	existsAndDelete "/Library/Application Support/MPClientStatus"
 	existsAndDelete "/Library/Application Support/MacPatch/SW_Data"
-	
-	# Older Framework
-	existsAndDelete "/Library/Frameworks/MPFramework.framework"
 
 	# Priv Helper Tool
 	existsAndDelete "/Library/PrivilegedHelperTools/MPLoginAgent.app"	

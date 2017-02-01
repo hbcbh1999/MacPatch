@@ -2,7 +2,7 @@
 
 # ***************************************************************************************
 # PreFlight Script for MacPatch Client Installer
-# ver 1.8
+# ver 1.9
 # Created By Charles Heizer
 # LLNL
 #
@@ -66,28 +66,13 @@ fi
 if [ -d "/private/tmp/MPMigration" ]; then
 	rm -rf "/private/tmp/MPMigration"
 fi
+
 mkdir -p "/private/tmp/MPMigration"
 
 if [ -f "/Library/MacPatch/Client/.tasks/gov.llnl.mp.tasks.plist" ]; then
 	cp "/Library/MacPatch/Client/.tasks/gov.llnl.mp.tasks.plist" "/private/tmp/MPMigration/gov.llnl.mp.tasks.plist"
 fi		
 
-# AuthPlugin
-ClearAuthDB=0
-if [ -d "/System/Library/CoreServices/SecurityAgentPlugins/MPAuthPlugin.bundle" ]; then	
-	rm -rf "/System/Library/CoreServices/SecurityAgentPlugins/MPAuthPlugin.bundle"
-	ClearAuthDB=1
-fi	
-
-if [ -f "$MPClientDir/MPAuthPluginTool" ]; then	
-	"$MPClientDir/MPAuthPluginTool" -d
-else
-	# We do this to prevent issues with the system not 
-	# booting properly
-	if [ $ClearAuthDB == 1 ]; then
-		rm /private/var/db/auth.db
-	fi
-fi	
 
 if [ -d "$MPClientDir" ]; then
 	echo "Removing $MPClientDir"

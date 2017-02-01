@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>AMApplicationBuild</key>
-	<string>247.1</string>
+	<string>428</string>
 	<key>AMApplicationVersion</key>
-	<string>2.1.1</string>
+	<string>2.7</string>
 	<key>AMDocumentVersion</key>
 	<string>2</string>
 	<key>actions</key>
@@ -13,8 +13,19 @@
 		<dict>
 			<key>action</key>
 			<dict>
+				<key>AMAccepts</key>
+				<dict>
+					<key>Container</key>
+					<string>List</string>
+					<key>Optional</key>
+					<true/>
+				</dict>
 				<key>AMActionVersion</key>
-				<string>1.0</string>
+				<string>1.1.1</string>
+				<key>AMApplication</key>
+				<array>
+					<string>System</string>
+				</array>
 				<key>AMParameterProperties</key>
 				<dict>
 					<key>categoryList</key>
@@ -28,7 +39,7 @@
 					<string>List</string>
 					<key>Types</key>
 					<array>
-						<string>com.apple.applescript.text-object</string>
+						<string>com.apple.cocoa.string</string>
 					</array>
 				</dict>
 				<key>ActionBundlePath</key>
@@ -183,14 +194,10 @@
 					<key>outputMethod</key>
 					<integer>2</integer>
 				</dict>
-				<key>Application</key>
-				<array>
-					<string>System</string>
-				</array>
 				<key>BundleIdentifier</key>
 				<string>com.apple.Automator.SystemProfile</string>
 				<key>CFBundleVersion</key>
-				<string>1.0</string>
+				<string>1.1.1</string>
 				<key>CanShowSelectedItemsWhenRun</key>
 				<false/>
 				<key>CanShowWhenRun</key>
@@ -200,7 +207,7 @@
 					<string>AMCategoryUtilities</string>
 				</array>
 				<key>Class Name</key>
-				<string>AMAppleScriptAction</string>
+				<string>AMSystemProfileAction</string>
 				<key>Keywords</key>
 				<array>
 					<string>Profile</string>
@@ -253,9 +260,9 @@
 				<key>isViewVisible</key>
 				<false/>
 				<key>location</key>
-				<string>509.000000:1044.000000</string>
+				<string>525.000000:44.000000</string>
 				<key>nibPath</key>
-				<string>/System/Library/Automator/System Profile.action/Contents/Resources/English.lproj/main.nib</string>
+				<string>/System/Library/Automator/System Profile.action/Contents/Resources/Base.lproj/main.nib</string>
 			</dict>
 			<key>isViewVisible</key>
 			<false/>
@@ -271,11 +278,17 @@
 					<true/>
 					<key>Types</key>
 					<array>
-						<string>com.apple.applescript.text-object</string>
+						<string>com.apple.cocoa.string</string>
+						<string>com.apple.cocoa.attributed-string</string>
 					</array>
 				</dict>
 				<key>AMActionVersion</key>
-				<string>v.2.0</string>
+				<string>v.2.2.1</string>
+				<key>AMApplication</key>
+				<array>
+					<string>Finder</string>
+					<string>TextEdit</string>
+				</array>
 				<key>AMParameterProperties</key>
 				<dict>
 					<key>checkedForDefaultEncoding</key>
@@ -299,6 +312,8 @@
 					<dict/>
 					<key>replaceExistingFiles</key>
 					<dict/>
+					<key>textFormat</key>
+					<dict/>
 				</dict>
 				<key>AMProvides</key>
 				<dict>
@@ -306,7 +321,7 @@
 					<string>List</string>
 					<key>Types</key>
 					<array>
-						<string>com.apple.applescript.alias-object</string>
+						<string>com.apple.cocoa.path</string>
 					</array>
 				</dict>
 				<key>ActionBundlePath</key>
@@ -325,16 +340,13 @@
 					<integer>30</integer>
 					<key>replaceExistingFiles</key>
 					<true/>
+					<key>textFormat</key>
+					<integer>0</integer>
 				</dict>
-				<key>Application</key>
-				<array>
-					<string>Finder</string>
-					<string>TextEdit</string>
-				</array>
 				<key>BundleIdentifier</key>
 				<string>com.apple.Automator.NewTextFile</string>
 				<key>CFBundleVersion</key>
-				<string>2.0</string>
+				<string>2.2.1</string>
 				<key>CanShowSelectedItemsWhenRun</key>
 				<true/>
 				<key>CanShowWhenRun</key>
@@ -344,7 +356,7 @@
 					<string>AMCategoryText</string>
 				</array>
 				<key>Class Name</key>
-				<string>NewTextFileAction</string>
+				<string>AMNewTextFileAction</string>
 				<key>InputUUID</key>
 				<string>2835F523-4D62-4184-9FA0-0E71AA796E1B</string>
 				<key>Keywords</key>
@@ -373,7 +385,7 @@
 						<key>default value</key>
 						<integer>0</integer>
 						<key>name</key>
-						<string>replaceExistingFiles</string>
+						<string>newFileTextEncoding</string>
 						<key>required</key>
 						<string>0</string>
 						<key>type</key>
@@ -384,9 +396,9 @@
 					<key>1</key>
 					<dict>
 						<key>default value</key>
-						<string>~/Desktop</string>
+						<integer>0</integer>
 						<key>name</key>
-						<string>newFileFolderPath</string>
+						<string>replaceExistingFiles</string>
 						<key>required</key>
 						<string>0</string>
 						<key>type</key>
@@ -397,9 +409,9 @@
 					<key>2</key>
 					<dict>
 						<key>default value</key>
-						<integer>0</integer>
+						<string>~/Desktop</string>
 						<key>name</key>
-						<string>checkedForDefaultEncoding</string>
+						<string>newFileFolderPath</string>
 						<key>required</key>
 						<string>0</string>
 						<key>type</key>
@@ -410,9 +422,9 @@
 					<key>3</key>
 					<dict>
 						<key>default value</key>
-						<string>Untitled.txt</string>
+						<integer>0</integer>
 						<key>name</key>
-						<string>newFileName</string>
+						<string>checkedForDefaultEncoding</string>
 						<key>required</key>
 						<string>0</string>
 						<key>type</key>
@@ -423,9 +435,9 @@
 					<key>4</key>
 					<dict>
 						<key>default value</key>
-						<integer>0</integer>
+						<string>Untitled.txt</string>
 						<key>name</key>
-						<string>newFileTextEncoding</string>
+						<string>newFileName</string>
 						<key>required</key>
 						<string>0</string>
 						<key>type</key>
@@ -433,13 +445,26 @@
 						<key>uuid</key>
 						<string>4</string>
 					</dict>
+					<key>5</key>
+					<dict>
+						<key>default value</key>
+						<integer>0</integer>
+						<key>name</key>
+						<string>textFormat</string>
+						<key>required</key>
+						<string>0</string>
+						<key>type</key>
+						<string>0</string>
+						<key>uuid</key>
+						<string>5</string>
+					</dict>
 				</dict>
 				<key>isViewVisible</key>
 				<true/>
 				<key>location</key>
-				<string>509.000000:1002.000000</string>
+				<string>525.000000:224.000000</string>
 				<key>nibPath</key>
-				<string>/System/Library/Automator/New Text File.action/Contents/Resources/English.lproj/main.nib</string>
+				<string>/System/Library/Automator/New Text File.action/Contents/Resources/Base.lproj/main.nib</string>
 			</dict>
 			<key>isViewVisible</key>
 			<true/>
@@ -459,7 +484,11 @@
 					</array>
 				</dict>
 				<key>AMActionVersion</key>
-				<string>1.1</string>
+				<string>1.1.2</string>
+				<key>AMApplication</key>
+				<array>
+					<string>Finder</string>
+				</array>
 				<key>AMParameterProperties</key>
 				<dict>
 					<key>fileNames</key>
@@ -489,19 +518,14 @@
 						<string>/Library/MacPatch/Client/Logs/MPAgent.log</string>
 						<string>/Library/MacPatch/Client/Logs/MPAgentExec.log</string>
 						<string>/Library/MacPatch/Client/Logs/MPHelperD.log</string>
-						<string>/Library/MacPatch/Client/Logs/MPRBWatcher.log</string>
 						<string>/Library/Preferences/gov.llnl.mpagent.plist</string>
 						<string>/Library/MacPatch/Client/.tasks/gov.llnl.mp.tasks.plist</string>
 					</array>
 				</dict>
-				<key>Application</key>
-				<array>
-					<string>Finder</string>
-				</array>
 				<key>BundleIdentifier</key>
 				<string>com.apple.Automator.SpecifiedFiles</string>
 				<key>CFBundleVersion</key>
-				<string>1.1</string>
+				<string>1.1.2</string>
 				<key>CanShowSelectedItemsWhenRun</key>
 				<false/>
 				<key>CanShowWhenRun</key>
@@ -550,9 +574,9 @@
 				<key>isViewVisible</key>
 				<true/>
 				<key>location</key>
-				<string>509.000000:847.000000</string>
+				<string>525.000000:462.000000</string>
 				<key>nibPath</key>
-				<string>/System/Library/Automator/Get Specified Finder Items.action/Contents/Resources/English.lproj/main.nib</string>
+				<string>/System/Library/Automator/Get Specified Finder Items.action/Contents/Resources/Base.lproj/main.nib</string>
 			</dict>
 			<key>isViewVisible</key>
 			<true/>
@@ -572,7 +596,11 @@
 					</array>
 				</dict>
 				<key>AMActionVersion</key>
-				<string>v.1.2</string>
+				<string>v.1.2.2</string>
+				<key>AMApplication</key>
+				<array>
+					<string>Finder</string>
+				</array>
 				<key>AMParameterProperties</key>
 				<dict>
 					<key>newName</key>
@@ -617,14 +645,10 @@
 					<key>targetLocation</key>
 					<string></string>
 				</dict>
-				<key>Application</key>
-				<array>
-					<string>Finder</string>
-				</array>
 				<key>BundleIdentifier</key>
 				<string>com.apple.Automator.MakeNewFolder</string>
 				<key>CFBundleVersion</key>
-				<string>1.2</string>
+				<string>1.2.2</string>
 				<key>CanShowSelectedItemsWhenRun</key>
 				<true/>
 				<key>CanShowWhenRun</key>
@@ -646,8 +670,6 @@
 				</array>
 				<key>OutputUUID</key>
 				<string>5584FBC1-7762-4918-BADC-4C1DE2278416</string>
-				<key>StartAction</key>
-				<false/>
 				<key>UUID</key>
 				<string>D76416CC-C18D-443D-981D-951DA88549F7</string>
 				<key>UnlocalizedApplications</key>
@@ -686,9 +708,9 @@
 				<key>isViewVisible</key>
 				<true/>
 				<key>location</key>
-				<string>509.000000:475.000000</string>
+				<string>525.000000:592.000000</string>
 				<key>nibPath</key>
-				<string>/System/Library/Automator/New Folder.action/Contents/Resources/English.lproj/main.nib</string>
+				<string>/System/Library/Automator/New Folder.action/Contents/Resources/Base.lproj/main.nib</string>
 			</dict>
 			<key>isViewVisible</key>
 			<true/>
@@ -708,7 +730,11 @@
 					</array>
 				</dict>
 				<key>AMActionVersion</key>
-				<string>v.1.3</string>
+				<string>v.1.3.2</string>
+				<key>AMApplication</key>
+				<array>
+					<string>Finder</string>
+				</array>
 				<key>AMParameterProperties</key>
 				<dict>
 					<key>archiveName</key>
@@ -755,14 +781,10 @@
 					<key>ignoreUnreadableItems</key>
 					<true/>
 				</dict>
-				<key>Application</key>
-				<array>
-					<string>Finder</string>
-				</array>
 				<key>BundleIdentifier</key>
 				<string>com.apple.Automator.CreateZipArchive</string>
 				<key>CFBundleVersion</key>
-				<string>1.3</string>
+				<string>1.3.2</string>
 				<key>CanShowSelectedItemsWhenRun</key>
 				<true/>
 				<key>CanShowWhenRun</key>
@@ -839,9 +861,9 @@
 				<key>isViewVisible</key>
 				<true/>
 				<key>location</key>
-				<string>509.000000:345.000000</string>
+				<string>525.000000:743.000000</string>
 				<key>nibPath</key>
-				<string>/System/Library/Automator/Create Archive.action/Contents/Resources/English.lproj/main.nib</string>
+				<string>/System/Library/Automator/Create Archive.action/Contents/Resources/Base.lproj/main.nib</string>
 			</dict>
 			<key>isViewVisible</key>
 			<true/>
@@ -861,7 +883,11 @@
 					</array>
 				</dict>
 				<key>AMActionVersion</key>
-				<string>2.0.1</string>
+				<string>2.0.3</string>
+				<key>AMApplication</key>
+				<array>
+					<string>Automator</string>
+				</array>
 				<key>AMParameterProperties</key>
 				<dict>
 					<key>COMMAND_STRING</key>
@@ -906,14 +932,10 @@ fi
 					<key>source</key>
 					<string></string>
 				</dict>
-				<key>Application</key>
-				<array>
-					<string>Automator</string>
-				</array>
 				<key>BundleIdentifier</key>
 				<string>com.apple.RunShellScript</string>
 				<key>CFBundleVersion</key>
-				<string>2.0.1</string>
+				<string>2.0.3</string>
 				<key>CanShowSelectedItemsWhenRun</key>
 				<false/>
 				<key>CanShowWhenRun</key>
@@ -1015,7 +1037,7 @@ fi
 				<key>isViewVisible</key>
 				<true/>
 				<key>location</key>
-				<string>509.000000:193.000000</string>
+				<string>525.000000:926.000000</string>
 				<key>nibPath</key>
 				<string>/System/Library/Automator/Run Shell Script.action/Contents/Resources/English.lproj/main.nib</string>
 			</dict>
@@ -1025,40 +1047,40 @@ fi
 	</array>
 	<key>connectors</key>
 	<dict>
-		<key>4AE1F5AC-1CB4-42C2-8326-6A596F12A637</key>
-		<dict>
-			<key>from</key>
-			<string>8E641B25-9BC6-4119-BEBE-130FCA14260D - 8E641B25-9BC6-4119-BEBE-130FCA14260D</string>
-			<key>to</key>
-			<string>D76416CC-C18D-443D-981D-951DA88549F7 - D76416CC-C18D-443D-981D-951DA88549F7</string>
-		</dict>
-		<key>7FB93AF4-DB03-48EC-859E-F2CEEE8FABE3</key>
-		<dict>
-			<key>from</key>
-			<string>D76416CC-C18D-443D-981D-951DA88549F7 - D76416CC-C18D-443D-981D-951DA88549F7</string>
-			<key>to</key>
-			<string>1CF12781-8C47-4A58-8C26-FBD0BF59E793 - 1CF12781-8C47-4A58-8C26-FBD0BF59E793</string>
-		</dict>
-		<key>AEAA385D-6A40-4781-BEEE-EEB0C849D35F</key>
-		<dict>
-			<key>from</key>
-			<string>1CF12781-8C47-4A58-8C26-FBD0BF59E793 - 1CF12781-8C47-4A58-8C26-FBD0BF59E793</string>
-			<key>to</key>
-			<string>D3BEA6CF-D6D4-4500-A4DC-A5C965F2979C - D3BEA6CF-D6D4-4500-A4DC-A5C965F2979C</string>
-		</dict>
-		<key>E54A8B96-F674-4C6B-9E90-79620794D382</key>
+		<key>13E5CC4D-0D3C-4434-A09C-86AE784599B0</key>
 		<dict>
 			<key>from</key>
 			<string>1FC522C0-D61D-444C-BFE7-1089A12665C3 - 1FC522C0-D61D-444C-BFE7-1089A12665C3</string>
 			<key>to</key>
 			<string>8E2468D0-C3F2-4149-8020-55F00F7585CF - 8E2468D0-C3F2-4149-8020-55F00F7585CF</string>
 		</dict>
-		<key>F1816A68-CE09-4CE6-A0B6-0C41AC86E782</key>
+		<key>3CC91985-F7CD-46E9-91F3-C1933F15689A</key>
+		<dict>
+			<key>from</key>
+			<string>D76416CC-C18D-443D-981D-951DA88549F7 - D76416CC-C18D-443D-981D-951DA88549F7</string>
+			<key>to</key>
+			<string>1CF12781-8C47-4A58-8C26-FBD0BF59E793 - 1CF12781-8C47-4A58-8C26-FBD0BF59E793</string>
+		</dict>
+		<key>A8420F82-8AA8-425F-B877-17129514219F</key>
 		<dict>
 			<key>from</key>
 			<string>8E2468D0-C3F2-4149-8020-55F00F7585CF - 8E2468D0-C3F2-4149-8020-55F00F7585CF</string>
 			<key>to</key>
 			<string>8E641B25-9BC6-4119-BEBE-130FCA14260D - 8E641B25-9BC6-4119-BEBE-130FCA14260D</string>
+		</dict>
+		<key>E4800CA9-BA28-4A55-8F4F-9AAF9530FB0B</key>
+		<dict>
+			<key>from</key>
+			<string>1CF12781-8C47-4A58-8C26-FBD0BF59E793 - 1CF12781-8C47-4A58-8C26-FBD0BF59E793</string>
+			<key>to</key>
+			<string>D3BEA6CF-D6D4-4500-A4DC-A5C965F2979C - D3BEA6CF-D6D4-4500-A4DC-A5C965F2979C</string>
+		</dict>
+		<key>E755F141-636E-4C5B-AECC-128F2FDF7B63</key>
+		<dict>
+			<key>from</key>
+			<string>8E641B25-9BC6-4119-BEBE-130FCA14260D - 8E641B25-9BC6-4119-BEBE-130FCA14260D</string>
+			<key>to</key>
+			<string>D76416CC-C18D-443D-981D-951DA88549F7 - D76416CC-C18D-443D-981D-951DA88549F7</string>
 		</dict>
 	</dict>
 	<key>state</key>
