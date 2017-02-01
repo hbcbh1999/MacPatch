@@ -1470,8 +1470,10 @@
             [statusTextStatus setStringValue:[NSString stringWithFormat:@"%@",[[err userInfo] objectForKey:@"NSLocalizedDescription"]]];
             return;
         }
-        if ([_wsResult objectForKey:@"result"]) {
-            _tasks = [_wsResult objectForKey:@"result"];
+        //if ([_wsResult objectForKey:@"result"]) {
+        if ([_wsResult objectForKey:@"Tasks"]) {
+            //_tasks = [_wsResult objectForKey:@"result"];
+            _tasks = [_wsResult copy];
         }
         
         window.title = [NSString stringWithFormat:@"MP - Software Catalog (%@)",[sw groupName]];
