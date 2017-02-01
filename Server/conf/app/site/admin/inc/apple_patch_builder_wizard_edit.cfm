@@ -148,11 +148,11 @@
               <div id="left"> Patch Severity </div>
               <div id="center" style="color:black;">
                 <cfselect name="patch_severity" size="1" required="yes">
-                <option><cfoutput>#selPatch.severity#</cfoutput></option>
-                <option>High</option>
-                <option>Medium</option>
-                <option>Low</option>
-                <option>Unknown</option>
+                <option #IIf(selPatch.severity is "High", DE("Selected"), DE(""))#>High</option>
+                <option #IIf(selPatch.severity is "Medium", DE("Selected"), DE(""))#>Medium</option>
+                <option #IIf(selPatch.severity is "Low", DE("Selected"), DE(""))#>Low</option>
+                <option #IIf(selPatch.severity is "Critical", DE("Selected"), DE(""))#>Critical</option>
+                <option #IIf(selPatch.severity is "Unknown", DE("Selected"), DE(""))#>Unknown</option>
                 </cfselect>
               </div>
             </div>

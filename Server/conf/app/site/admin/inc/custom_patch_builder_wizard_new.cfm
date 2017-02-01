@@ -205,6 +205,7 @@
                                 <option>High</option>
                                 <option>Medium</option>
                                 <option>Low</option>
+                                <option>Critical</option>
                                 <option>Unknown</option>
                             </select>
                         </div>    

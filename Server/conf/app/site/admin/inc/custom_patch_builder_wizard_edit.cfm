@@ -232,11 +232,11 @@
               <div id="left"> Patch Severity </div>
               <div id="center">
                 <select name="patch_severity" size="1" required="yes">
-                <option><cfoutput>#selPatch.patch_severity#</cfoutput></option>
-                <option>High</option>
-                <option>Medium</option>
-                <option>Low</option>
-                <option>Unknown</option>
+                <option #IIf(selPatch.patch_severity is "High", DE("Selected"), DE(""))#>High</option>
+                <option #IIf(selPatch.patch_severity is "Medium", DE("Selected"), DE(""))#>Medium</option>
+                <option #IIf(selPatch.patch_severity is "Low", DE("Selected"), DE(""))#>Low</option>
+                <option #IIf(selPatch.patch_severity is "Critical", DE("Selected"), DE(""))#>Critical</option>
+                <option #IIf(selPatch.patch_severity is "Unknown", DE("Selected"), DE(""))#>Unknown</option>
                 </select>
               </div>
               <div id="right">&nbsp;</div>
@@ -245,10 +245,9 @@
               <div id="left"> Patch State </div>
               <div id="center">
                 <select name="patch_state" size="1">
-                <option><cfoutput>#selPatch.patch_state#</cfoutput></option>
-                <option>Create</option>
-                <option>QA</option>
-                <option>Production</option>
+                <option #IIf(selPatch.patch_state is "Create", DE("Selected"), DE(""))#>Create</option>
+                <option #IIf(selPatch.patch_state is "QA", DE("Selected"), DE(""))#>QA</option>
+                <option #IIf(selPatch.patch_state is "Production", DE("Selected"), DE(""))#>Production</option>
                 </select>
               </div>
               <div id="right">&nbsp;</div>
