@@ -27,13 +27,13 @@
 	<key>LSMinimumSystemVersion</key>
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>Copyright © 2015 Charles Heizer. All rights reserved.</string>
+	<string>Copyright © 2017 Lawrence Livremore National Laboratory. All rights reserved.</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 	<key>MPInfo</key>
-	<string>MacPatch v2.7.0 Client Software</string>
+	<string>MacPatch 3.0.0 Client Software</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
