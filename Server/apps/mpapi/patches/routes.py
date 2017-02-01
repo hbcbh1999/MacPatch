@@ -102,7 +102,7 @@ class PatchScanListFilterOS(MPResource):
         self.reqparse = reqparse.RequestParser()
         super(PatchScanListFilterOS, self).__init__()
 
-    def get(self, cuuid, osver='*', state='Production'):
+    def get(self, cuuid, osver='*', state='Production', severity='All'):
         try:
             args = self.reqparse.parse_args()
             _body = request.get_json(silent=True)
@@ -118,7 +118,7 @@ class PatchScanListFilterOS(MPResource):
             log_Debug('[PatchScanListFilterOS][Get]: Args: cuuid=(%s) osver=(%s) state=(%s)' % (cuuid, osver, state))
 
             _scanList = PatchScan()
-            _list = _scanList.getScanList(osver)
+            _list = _scanList.getScanList(osver,severity)
 
             if _list is not None:
                 result = {'patches': _list}
@@ -368,16 +368,22 @@ class PatchScan():
     def __init__(self):
         pass
 
-    def bundleIDList(self):
+    def bundleIDList(self, severity=None):
         '''
             Return a tuple of bundle_id set and ordered list based on version number
             descending.
         '''
 
         #Query DataBase get all Custom Patches based on bundle and version
-        q = MpPatch.query.with_entities(MpPatch.puuid, MpPatch.patch_name, MpPatch.patch_ver, MpPatch.bundle_id,
-                                        MpPatch.patch_reboot, MpPatch.patch_state, MpPatch.active, MpPatch.rid
-        ).filter(MpPatch.active == 1, MpPatch.patch_state == "Production").order_by(MpPatch.bundle_id.desc()).all()
+        if severity == None:
+            q = MpPatch.query.with_entities(MpPatch.puuid, MpPatch.patch_name, MpPatch.patch_ver, MpPatch.bundle_id,
+                                            MpPatch.patch_reboot, MpPatch.patch_state, MpPatch.active, MpPatch.rid
+            ).filter(MpPatch.active == 1, MpPatch.patch_state == "Production").order_by(MpPatch.bundle_id.desc()).all()
+        else:
+            q = MpPatch.query.with_entities(MpPatch.puuid, MpPatch.patch_name, MpPatch.patch_ver, MpPatch.bundle_id,
+                                            MpPatch.patch_reboot, MpPatch.patch_state, MpPatch.active, MpPatch.rid
+                                            ).filter(MpPatch.active == 1, MpPatch.patch_state == "Production", MpPatch.patch_severity == severity).order_by(
+                MpPatch.bundle_id.desc()).all()
 
         bundleList = []
         results = []
@@ -440,9 +446,9 @@ class PatchScan():
         return result
 
     # Really the only public method to be used
-    def getScanList(self, os=None):
+    def getScanList(self, os=None, severity=None):
         results = []
-        b = self.bundleIDList()
+        b = self.bundleIDList(severity)
         for name in b[0]:
             for x in b[1]:
                 if name == x["bundle_id"]:
@@ -464,6 +470,7 @@ class PatchScan():
 patches_api.add_resource(ClientPatchStatus,     '/client/patch/status/<string:cuuid>')
 patches_api.add_resource(PatchScanListFilterOS, '/client/patch/scanlist/<string:cuuid>',endpoint='noOS')
 patches_api.add_resource(PatchScanListFilterOS, '/client/patch/scanlist/<string:cuuid>/<string:osver>',endpoint='withOS')
+patches_api.add_resource(PatchScanListFilterOS, '/client/patch/scanlist/<string:cuuid>/<string:osver>/<string:severity>',endpoint='withLevel')
 
 patches_api.add_resource(PatchGroupPatches,     '/client/patch/group/<string:patchGroup>/<string:cuuid>')
 # Post Client Patch Scan Data
