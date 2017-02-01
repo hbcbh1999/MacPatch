@@ -338,6 +338,236 @@ done:
     logit(lcl_vInfo,@"Patch Scan Completed.");
 }
 
+- (void)scanForPatchesWithFilterWaitAndForceWithCritical:(int)aFilter byPassRunning:(BOOL)aByPass critical:(BOOL)aCritical
+{
+    // Filter - 0 = All,  1 = Apple, 2 = Third
+    if (forceRun == NO) {
+        if (aByPass == YES) {
+            int w = 0;
+            while ([self isTaskRunning:kMPPatchSCAN] == YES) {
+                if (w == 60) {
+                    [self removeTaskRunning:kMPPatchSCAN];
+                    break;
+                }
+                w++;
+                sleep(1);
+            }
+        } else {
+            if ([self isTaskRunning:kMPPatchSCAN]) {
+                logit(lcl_vInfo,@"Scanning for patches is already running. Now exiting.");
+                return;
+            } else {
+                [self writeTaskRunning:kMPPatchSCAN];
+            }
+        }
+    }
+    
+    MPASUSCatalogs      *mpCatalog;
+    NSArray             *applePatchesArray;
+    NSArray             *approvedApplePatches = nil;
+    NSMutableArray      *customPatchesArray;
+    NSArray             *approvedCustomPatches = nil;
+    NSMutableArray      *approvedUpdatesArray = [[NSMutableArray alloc] init];
+    NSMutableDictionary *tmpDict;
+    NSDictionary        *customPatch, *approvedPatch;
+    
+    // Get Patch Group Patches
+    MPWebServices *mpws = [[MPWebServices alloc] init];
+    NSError       *rmErr = nil;
+    NSError       *wsErr = nil;
+    NSDictionary  *patchGroupPatches;
+    
+    if (aCritical == YES) {
+        patchGroupPatches = [mpws getCriticalPatchGroupContent:&wsErr];
+    } else {
+        patchGroupPatches = [mpws getPatchGroupContent:&wsErr];
+    }
+    
+    if (wsErr) {
+        logit(lcl_vError,@"%@",wsErr.localizedDescription);
+        goto done;
+    }
+    
+    if (!patchGroupPatches) {
+        logit(lcl_vError,@"There was a issue getting the approved patches for the patch group, scan will exit.");
+        goto done;
+    }
+    
+    if ((aFilter == 0) || (aFilter == 1)) {
+        approvedApplePatches  = [patchGroupPatches objectForKey:@"AppleUpdates"];
+    }
+    if ((aFilter == 0) || (aFilter == 2)) {
+        approvedCustomPatches = [patchGroupPatches objectForKey:@"CustomUpdates"];
+    }
+    
+    // Scan for Apple Patches
+    if ((aFilter == 0) || (aFilter == 1))
+    {
+        logit(lcl_vInfo,@"Setting Apple softwareupdate catalog.");
+        mpCatalog = [[MPASUSCatalogs alloc] init];
+        if (![mpCatalog checkAndSetCatalogURL]) {
+            logit(lcl_vError,@"There was a issue setting the CatalogURL, Apple updates will not occur.");
+        }
+        
+        logit(lcl_vInfo,@"Scanning for Apple software updates.");
+        
+        // New way, using the helper daemon
+        applePatchesArray = nil;
+        applePatchesArray = [mpAsus scanForAppleUpdates];
+        
+        // post patches to web service
+        wsErr = nil;
+        [mpws postClientScanDataWithType:applePatchesArray type:0 error:&wsErr];
+        if (wsErr) {
+            logit(lcl_vError,@"Scan results posted to webservice returned false.");
+            logit(lcl_vError,@"%@",wsErr.localizedDescription);
+        } else {
+            logit(lcl_vInfo,@"Scan results posted to webservice.");
+        }
+        
+        // Process patches
+        if (!applePatchesArray) {
+            logit(lcl_vInfo,@"The scan results for ASUS scan were nil.");
+        } else {
+            // If no items in array, lets bail...
+            if ([applePatchesArray count] == 0 ) {
+                logit(lcl_vInfo,@"No Apple updates found.");
+                sleep(1);
+            } else {
+                // We have Apple patches, now add them to the array of approved patches
+                
+                // If no items in array, lets bail...
+                if ([approvedApplePatches count] == 0 ) {
+                    logit(lcl_vInfo,@"No apple updates found for \"%@\" patch group.",[_defaults objectForKey:@"PatchGroup"]);
+                } else {
+                    // Build Approved Patches
+                    logit(lcl_vInfo,@"Building approved patch list...");
+                    
+                    for (int i=0; i<[applePatchesArray count]; i++) {
+                        for (int x=0;x < [approvedApplePatches count]; x++) {
+                            if ([[[approvedApplePatches objectAtIndex:x] objectForKey:@"name"] isEqualTo:[[applePatchesArray objectAtIndex:i] objectForKey:@"patch"]]) {
+                                logit(lcl_vInfo,@"Approved update %@",[[applePatchesArray objectAtIndex:i] objectForKey:@"patch"]);
+                                logit(lcl_vDebug,@"Approved: %@",[approvedApplePatches objectAtIndex:x]);
+                                tmpDict = [[NSMutableDictionary alloc] init];
+                                [tmpDict setObject:[[applePatchesArray objectAtIndex:i] objectForKey:@"patch"] forKey:@"patch"];
+                                [tmpDict setObject:[[applePatchesArray objectAtIndex:i] objectForKey:@"description"] forKey:@"description"];
+                                [tmpDict setObject:[[applePatchesArray objectAtIndex:i] objectForKey:@"restart"] forKey:@"restart"];
+                                [tmpDict setObject:[[applePatchesArray objectAtIndex:i] objectForKey:@"version"] forKey:@"version"];
+                                [tmpDict setObject:[[applePatchesArray objectAtIndex:i] objectForKey:@"severity"] forKey:@"severity"];
+                                
+                                if ([[approvedApplePatches objectAtIndex:x] objectForKey:@"hasCriteria"]) {
+                                    
+                                    [tmpDict setObject:[[approvedApplePatches objectAtIndex:x] objectForKey:@"hasCriteria"] forKey:@"hasCriteria"];
+                                    if ([[[approvedApplePatches objectAtIndex:x] objectForKey:@"hasCriteria"] boolValue] == YES) {
+                                        if ([[approvedApplePatches objectAtIndex:x] objectForKey:@"criteria_pre"] && [[[approvedApplePatches objectAtIndex:x] objectForKey:@"criteria_pre"] count] > 0) {
+                                            [tmpDict setObject:[[approvedApplePatches objectAtIndex:x] objectForKey:@"criteria_pre"] forKey:@"criteria_pre"];
+                                        }
+                                        if ([[approvedApplePatches objectAtIndex:x] objectForKey:@"criteria_post"] && [[[approvedApplePatches objectAtIndex:x] objectForKey:@"criteria_post"] count] > 0) {
+                                            [tmpDict setObject:[[approvedApplePatches objectAtIndex:x] objectForKey:@"criteria_post"] forKey:@"criteria_post"];
+                                        }
+                                    }
+                                }
+                                [tmpDict setObject:@"Apple" forKey:@"type"];
+                                [tmpDict setObject:[[approvedApplePatches objectAtIndex:i] objectForKey:@"patch_install_weight"] forKey:@"patch_install_weight"];
+                                logit(lcl_vDebug,@"Apple Patch Dictionary Added: %@",tmpDict);
+                                [approvedUpdatesArray addObject:tmpDict];
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    // Scan for Custom Patches to see what is relevant for the system
+    if ((aFilter == 0) || (aFilter == 2))
+    {
+        logit(lcl_vInfo,@"Scanning for custom patch vulnerabilities...");
+        customPatchesArray = (NSMutableArray *)[mpAsus scanForCustomUpdates];
+        
+        logit(lcl_vDebug,@"Custom Patches Needed: %@",customPatchesArray);
+        logit(lcl_vDebug,@"Approved Custom Patches: %@",approvedCustomPatches);
+        
+        // Filter List of Patches containing only the approved patches
+        logit(lcl_vInfo,@"Building approved patch list...");
+        for (int i=0; i<[customPatchesArray count]; i++) {
+            customPatch	= [customPatchesArray objectAtIndex:i];
+            for (int x=0;x < [approvedCustomPatches count]; x++) {
+                approvedPatch	= [approvedCustomPatches objectAtIndex:x];
+                if ([[customPatch objectForKey:@"patch_id"] isEqualTo:[approvedPatch objectForKey:@"patch_id"]])
+                {
+                    logit(lcl_vInfo,@"Patch %@ approved for update.",[customPatch objectForKey:@"description"]);
+                    logit(lcl_vDebug,@"Approved [customPatch]: %@",customPatch);
+                    logit(lcl_vDebug,@"Approved [approvedPatch]: %@",approvedPatch);
+                    tmpDict = [[NSMutableDictionary alloc] init];
+                    [tmpDict setObject:[customPatch objectForKey:@"patch"] forKey:@"patch"];
+                    [tmpDict setObject:[customPatch objectForKey:@"description"] forKey:@"description"];
+                    [tmpDict setObject:[customPatch objectForKey:@"restart"] forKey:@"restart"];
+                    [tmpDict setObject:[customPatch objectForKey:@"version"] forKey:@"version"];
+                    [tmpDict setObject:[customPatch objectForKey:@"severity"] forKey:@"severity"];
+                    [tmpDict setObject:approvedPatch forKey:@"patches"];
+                    [tmpDict setObject:[customPatch objectForKey:@"patch_id"] forKey:@"patch_id"];
+                    [tmpDict setObject:@"Third" forKey:@"type"];
+                    [tmpDict setObject:[customPatch objectForKey:@"bundleID"] forKey:@"bundleID"];
+                    [tmpDict setObject:[approvedPatch objectForKey:@"patch_install_weight"] forKey:@"patch_install_weight"];
+                    
+                    logit(lcl_vDebug,@"Custom Patch Dictionary Added: %@",tmpDict);
+                    [approvedUpdatesArray addObject:tmpDict];
+                    tmpDict = nil;
+                    break;
+                }
+            }
+        }
+    }
+    
+    logit(lcl_vDebug,@"Approved patches to install: %@",approvedUpdatesArray);
+    
+done:
+    
+    // Remove File If Found
+    if (aCritical == YES) {
+        if ([fm fileExistsAtPath:PATCHES_CRITICAL_PLIST]) {
+            [fm removeItemAtPath:PATCHES_CRITICAL_PLIST error:&rmErr];
+        }
+    } else {
+        if ([fm fileExistsAtPath:PATCHES_NEEDED_PLIST]) {
+            [NSKeyedArchiver archiveRootObject:[NSArray array] toFile:PATCHES_NEEDED_PLIST];
+            [fm removeItemAtPath:PATCHES_NEEDED_PLIST error:&rmErr];
+        }
+    }
+    
+    // Sleep 1 sec
+    [NSThread sleepForTimeInterval:1];
+    
+    // Re-write file with new patch info
+    if (approvedUpdatesArray && [approvedUpdatesArray count] > 0)
+    {
+        if (aCritical == YES) {
+            logit(lcl_vInfo,@"Writing approved patches to %@",PATCHES_CRITICAL_PLIST);
+            [NSKeyedArchiver archiveRootObject:approvedUpdatesArray toFile:PATCHES_CRITICAL_PLIST];
+        } else {
+            logit(lcl_vInfo,@"Writing approved patches to %@",PATCHES_NEEDED_PLIST);
+            [NSKeyedArchiver archiveRootObject:approvedUpdatesArray toFile:PATCHES_NEEDED_PLIST];
+        }
+    } else {
+        if (aCritical == YES) {
+            [NSKeyedArchiver archiveRootObject:[NSArray array] toFile:PATCHES_CRITICAL_PLIST];
+        } else {
+            [NSKeyedArchiver archiveRootObject:[NSArray array] toFile:PATCHES_NEEDED_PLIST];
+        }
+    }
+    
+    // Added a global notification to update image icon of MPClientStatus
+    if (aCritical == NO) {
+        // We only update notification if a normal scan has run
+        [[NSDistributedNotificationCenter defaultCenter] postNotificationName:@"kRefreshStatusIconNotification" object:nil];
+        [self setApprovedPatches:[NSArray arrayWithArray:approvedUpdatesArray]];
+    }
+    [self removeTaskRunning:kMPPatchSCAN];
+    logit(lcl_vInfo,@"Patch Scan Completed.");
+}
+
 - (void)scanForPatchUsingBundleID:(NSString *)aBundleID
 {
 	NSMutableArray      *approvedUpdatesArray = [[NSMutableArray alloc] init];
@@ -400,10 +630,15 @@ done:
 
 -(void)scanForPatchesAndUpdate
 {
-	[self scanForPatchesAndUpdateWithFilter:0];
+    [self scanForPatchesAndUpdateWithFilterCritical:0 critical:NO];
 }
 
--(void)scanForPatchesAndUpdateWithFilter:(int)aFilter;
+-(void)scanForPatchesAndUpdateWithFilter:(int)aFilter
+{
+    [self scanForPatchesAndUpdateWithFilterCritical:aFilter critical:NO];
+}
+
+-(void)scanForPatchesAndUpdateWithFilterCritical:(int)aFilter critical:(BOOL)aCritical;
 {
 	if ([self isTaskRunning:kMPPatchUPDATE]) {
 		logit(lcl_vInfo,@"Scan and update patches is already running. Now exiting.");
@@ -418,30 +653,37 @@ done:
 
     // Check to see if we have a patch scan file within the last 15 minutes.
     // If we do, then use the contents of that file and no need to re-scan.
-    if ([fm fileExistsAtPath:updateFilePath]) {
-        NSError *attributesRetrievalError = nil;
-        NSDictionary *attributes = [fm attributesOfItemAtPath:updateFilePath error:&attributesRetrievalError];
-
-        if (!attributes) {
-            logit(lcl_vError,@"Error for file at %@: %@", updateFilePath, attributesRetrievalError);
-        }
-        NSDate *fmDate = [attributes fileModificationDate];
-        // File was created within 15 minutes of last scan...
-        if (([[NSDate date] timeIntervalSinceDate:fmDate] / 60) < 16) {
-            logit(lcl_vDebug, @"Within 15 Minutes. Using scan file.");
-            //updatesArray = [NSArray arrayWithContentsOfFile:updateFilePath];
-            updatesArray = [NSKeyedUnarchiver unarchiveObjectWithFile:updateFilePath];
-        } else {
-            logit(lcl_vDebug, @"Older than 15 Minutes, rescanning.");
-            [self scanForPatchesWithFilterWaitAndForce:0 byPassRunning:YES];
-			updatesArray = [NSArray arrayWithArray:approvedPatches];
-        }
+    if (aCritical == YES)
+    {
+        // Critical
+        // Critical updates are allways written to a file
+        updateFilePath = [NSString stringWithString:PATCHES_CRITICAL_PLIST];
     } else {
-        // Scan for Patches
-        [self scanForPatchesWithFilterWaitAndForce:0 byPassRunning:YES];
-		updatesArray = [NSArray arrayWithArray:approvedPatches];
-    }
+        // Non Critical
+        if ([fm fileExistsAtPath:updateFilePath])
+        {
+            NSError *attributesRetrievalError = nil;
+            NSDictionary *attributes = [fm attributesOfItemAtPath:updateFilePath error:&attributesRetrievalError];
 
+            if (!attributes) {
+                logit(lcl_vError,@"Error for file at %@: %@", updateFilePath, attributesRetrievalError);
+            }
+            NSDate *fmDate = [attributes fileModificationDate];
+            // File was created within 15 minutes of last scan...
+            if (([[NSDate date] timeIntervalSinceDate:fmDate] / 60) < 16) {
+                logit(lcl_vDebug, @"Within 15 Minutes. Using scan file.");
+                updatesArray = [NSKeyedUnarchiver unarchiveObjectWithFile:updateFilePath];
+            } else {
+                logit(lcl_vDebug, @"Older than 15 Minutes, rescanning.");
+                [self scanForPatchesWithFilterWaitAndForce:0 byPassRunning:YES];
+                updatesArray = [NSArray arrayWithArray:approvedPatches];
+            }
+        } else {
+            // Scan for Patches
+            [self scanForPatchesWithFilterWaitAndForce:0 byPassRunning:YES];
+            updatesArray = [NSArray arrayWithArray:approvedPatches];
+        }
+    }
     // Sort Array
     NSSortDescriptor *desc = [NSSortDescriptor sortDescriptorWithKey:@"patch_install_weight" ascending:YES];
     updatesArray = [updatesArray sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]];

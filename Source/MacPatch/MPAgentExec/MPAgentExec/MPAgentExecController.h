@@ -74,10 +74,12 @@
 -(void)scanForPatchesWithFilter:(int)aFilter;
 -(void)scanForPatchesWithFilter:(int)aFilter byPassRunning:(BOOL)aByPass;
 -(void)scanForPatchesWithFilterWaitAndForce:(int)aFilter byPassRunning:(BOOL)aByPass;
+-(void)scanForPatchesWithFilterWaitAndForceWithCritical:(int)aFilter byPassRunning:(BOOL)aByPass critical:(BOOL)aCritical;
 -(void)scanForPatchUsingBundleID:(NSString *)aBundleID;
 
 -(void)scanForPatchesAndUpdate;
 -(void)scanForPatchesAndUpdateWithFilter:(int)aFilter;
+-(void)scanForPatchesAndUpdateWithFilterCritical:(int)aFilter critical:(BOOL)aCritical;
 -(void)scanAndUpdateCustomWithPatchBundleID:(NSString *)aPatchBundleID;
 
 -(BOOL)checkPatchPreAndPostForRebootRequired:(NSArray *)aDictArray;

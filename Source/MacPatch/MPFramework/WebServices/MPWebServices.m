@@ -924,6 +924,56 @@
     return nil;
 }
 
+- (NSDictionary *)getCriticalPatchGroupContent:(NSError **)err
+{
+    NSError *wsErr = nil;
+    NSString *uri;
+    NSData *reqData;
+    id result;
+    
+    @try
+    {
+        uri = [NSString stringWithFormat:@"/api/v1/client/patch/group/critical/%@",[MPSystemInfo clientUUID]];
+        reqData = [self getRequestWithURIforREST:uri error:&wsErr];
+        if (wsErr) {
+            if (err != NULL) *err = wsErr;
+            logit(lcl_vError,@"%@",wsErr.localizedDescription);
+            return nil;
+        } else {
+            // Parse JSON result, if error code is not 0
+            wsErr = nil;
+            result = [self returnRequestWithType:reqData resultType:@"json" error:&wsErr];
+            if (wsErr) {
+                if (err != NULL) *err = wsErr;
+                logit(lcl_vError,@"%@",wsErr.localizedDescription);
+                return nil;
+            }
+            logit(lcl_vDebug,@"%@",result);
+            
+            wsErr = nil;
+            MPJsonResult *jres = [[MPJsonResult alloc] init];
+            NSString *jstr = [jres serializeJSONDataAsString:(NSDictionary *)result error:NULL];
+            
+            if (wsErr) {
+                if (err != NULL) {
+                    *err = wsErr;
+                } else {
+                    qlerror(@"%@",wsErr.localizedDescription);
+                }
+                return nil;
+            }
+            
+            return result;
+        }
+        
+    }
+    @catch (NSException * e) {
+        logit(lcl_vError,@"[NSException]: %@",e);
+    }
+    // Should not get here
+    return nil;
+}
+
 - (NSDictionary *)getMPServerList:(NSError **)err
 {
     NSError *error = nil;
@@ -960,6 +1010,11 @@
 
 - (NSArray *)getCustomPatchScanList:(NSError **)err
 {
+    return [self getCustomPatchScanListWithSeverity:nil error:err];
+}
+
+- (NSArray *)getCustomPatchScanListWithSeverity:(NSString *)aSeverity error:(NSError **)err
+{
     NSString *patchState;
     if ([[_defaults allKeys] containsObject:@"PatchState"] == YES) {
         patchState = [NSString stringWithString:[_defaults objectForKey:@"PatchState"]];
@@ -974,7 +1029,13 @@
     [params setObject:self._cuuid forKey:@"clientID"];
     [params setObject:patchState forKey:@"state"];
     
-    NSString *uri = [NSString stringWithFormat:@"/api/v1/client/patch/scanlist/%@",[MPSystemInfo clientUUID]];
+    NSString *uri;
+    if (!aSeverity) {
+        uri = [NSString stringWithFormat:@"/api/v1/client/patch/scanlist/%@",[MPSystemInfo clientUUID]];
+    } else {
+        // Set OS Level *, any OS
+        uri = [NSString stringWithFormat:@"/api/v1/client/patch/scanlist/%@/*/%@",[MPSystemInfo clientUUID], aSeverity];
+    }
     NSDictionary *res = [self restGetRequestforURI:uri resultType:@"json" error:&error];
     if (error)
     {
@@ -1005,7 +1066,6 @@
         qlerror(@"patches key in dictionary was not found.");
         return nil;
     }
-    
 }
 
 - (BOOL)postClientScanDataWithType:(NSArray *)scanData type:(NSInteger)aType error:(NSError **)err

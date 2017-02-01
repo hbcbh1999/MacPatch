@@ -31,6 +31,7 @@
 
 - (void)runPatchScan;
 - (void)runPatchScanAndUpdate;
+- (void)runCritialPatchScanAndUpdate;
 
 @end
 
@@ -56,7 +57,7 @@
 	return self;
 }
 
-- (BOOL) isConcurrent 
+- (BOOL)isConcurrent
 {
     return YES;
 }
@@ -66,7 +67,7 @@
     [self finish];
 }
 
-- (void) finish 
+- (void)finish
 {
     [self willChangeValueForKey:@"isFinished"];
     [self willChangeValueForKey:@"isExecuting"];
@@ -78,7 +79,7 @@
     [self killTaskUsingPID];
 }
 
-- (void) start 
+- (void)start
 {
     if ([self isCancelled]) {
         [self willChangeValueForKey:@"isFinished"];
@@ -99,6 +100,8 @@
 			[self runPatchScan];
 		} else if (scanType == 1) {
 			[self runPatchScanAndUpdate];
+        } else if (scanType == 2) {
+            [self runCritialPatchScanAndUpdate];
 		}
 	}
 	@catch (NSException * e) {
@@ -150,19 +153,19 @@
 
 - (void)runPatchScanAndUpdate
 {
-	logit(lcl_vInfo,@"Running client vulnerability update.");
-	@autoreleasepool {
+    logit(lcl_vInfo,@"Running client vulnerability update.");
+    @autoreleasepool {
         @try {
             [self setTaskFile:[@"/private/tmp" stringByAppendingPathComponent:kMPPatchUPDATE]];
         }
         @catch (NSException *exception) {
             [self setTaskFile:[@"/private/tmp" stringByAppendingPathComponent:@".mpUpdateRunning"]];
         }
-
-		NSString *appPath = [MP_ROOT_CLIENT stringByAppendingPathComponent:@"MPAgentExec"];
-		if (![fm fileExistsAtPath:appPath]) {
-			logit(lcl_vError,@"Unable to find MPAgentExec app.");
-		} else {
+        
+        NSString *appPath = [MP_ROOT_CLIENT stringByAppendingPathComponent:@"MPAgentExec"];
+        if (![fm fileExistsAtPath:appPath]) {
+            logit(lcl_vError,@"Unable to find MPAgentExec app.");
+        } else {
             NSError *err = nil;
             MPCodeSign *cs = [[MPCodeSign alloc] init];
             BOOL result = [cs verifyAppleDevBinary:appPath error:&err];
@@ -172,21 +175,62 @@
             cs = nil;
             if (result == YES)
             {
-				NSError *error = nil;
-				NSString *result;
-				MPNSTask *mpr = [[MPNSTask alloc] init];
-				result = [mpr runTask:appPath binArgs:[NSArray arrayWithObjects:@"-u", nil] error:&error];
-				
-				if (error) {
-					logit(lcl_vError,@"%@",[error description]);
-				}
-				
-				logit(lcl_vDebug,@"%@",result);
-				logit(lcl_vInfo,@"Vulnerability scan & update has been completed.");
-				logit(lcl_vInfo,@"See the MPAgentExec.log file for more information.");
-			}
-		}	
-	}
+                NSError *error = nil;
+                NSString *result;
+                MPNSTask *mpr = [[MPNSTask alloc] init];
+                result = [mpr runTask:appPath binArgs:[NSArray arrayWithObjects:@"-u", nil] error:&error];
+                
+                if (error) {
+                    logit(lcl_vError,@"%@",[error description]);
+                }
+                
+                logit(lcl_vDebug,@"%@",result);
+                logit(lcl_vInfo,@"Vulnerability scan & update has been completed.");
+                logit(lcl_vInfo,@"See the MPAgentExec.log file for more information.");
+            }
+        }	
+    }
+}
+
+- (void)runCritialPatchScanAndUpdate
+{
+    logit(lcl_vInfo,@"Running Critial vulnerability scan and update.");
+    @autoreleasepool {
+        @try {
+            [self setTaskFile:[@"/private/tmp" stringByAppendingPathComponent:kMPPatchUPDATE]];
+        }
+        @catch (NSException *exception) {
+            [self setTaskFile:[@"/private/tmp" stringByAppendingPathComponent:@".mpUpdateRunning"]];
+        }
+        
+        NSString *appPath = [MP_ROOT_CLIENT stringByAppendingPathComponent:@"MPAgentExec"];
+        if (![fm fileExistsAtPath:appPath]) {
+            logit(lcl_vError,@"Unable to find MPAgentExec app.");
+        } else {
+            NSError *err = nil;
+            MPCodeSign *cs = [[MPCodeSign alloc] init];
+            BOOL result = [cs verifyAppleDevBinary:appPath error:&err];
+            if (err) {
+                logit(lcl_vError,@"%ld: %@",err.code,err.localizedDescription);
+            }
+            cs = nil;
+            if (result == YES)
+            {
+                NSError *error = nil;
+                NSString *result;
+                MPNSTask *mpr = [[MPNSTask alloc] init];
+                result = [mpr runTask:appPath binArgs:[NSArray arrayWithObjects:@"-x", nil] error:&error];
+                
+                if (error) {
+                    logit(lcl_vError,@"%@",[error description]);
+                }
+                
+                logit(lcl_vDebug,@"%@",result);
+                logit(lcl_vInfo,@"Critial Vulnerability scan & update has been completed.");
+                logit(lcl_vInfo,@"See the MPAgentExec.log file for more information.");
+            }
+        }	
+    }
 }
 
 - (void)killTaskUsingPID

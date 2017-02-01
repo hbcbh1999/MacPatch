@@ -277,6 +277,11 @@
                                             postFailedWSRequestsOp = [[PostFailedWSRequests alloc] init];
                                             [queue addOperation:postFailedWSRequestsOp];
                                             postFailedWSRequestsOp = nil;
+                                        } else if ([[taskDict objectForKey:@"cmd"] isEqualToString:@"kMPPatchCrit"]) {
+                                            patchOp = [[PatchScanAndUpdateOperation alloc] init];
+                                            [patchOp setScanType:1];
+                                            [queue addOperation:patchOp];
+                                            patchOp = nil;
                                         }
                                         
                                     } else {
@@ -346,6 +351,24 @@
 {
 	[MPTaskThread runPatchScanAndUpdate];
 	exit(0);
+}
+
+-(void)runCritialPatchScanAndUpdate
+{
+    patchOp = [[PatchScanAndUpdateOperation alloc] init];
+    [patchOp setScanType:2];
+    [queue addOperation:agentOp];
+    patchOp = nil;
+    
+    if ([NSThread isMainThread]) {
+        while ([[queue operations] count] > 0) {
+            [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
+        }
+    } else {
+        [queue waitUntilAllOperationsAreFinished];
+    }
+    
+    exit(0);
 }
 
 - (void)runAVInfoScan

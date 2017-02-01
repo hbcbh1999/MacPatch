@@ -40,6 +40,7 @@ NSString * const kMPSUSrvList       = @"EVERY@1800";
 NSString * const kMPAppStore        = @"EVERY@7200";
 NSString * const kStartDate			= @"2011-01-01";
 NSString * const kEndDate			= @"3000-01-01";
+NSString * const kMPPatchCrit		= @"EVERY@1800";
 
 #define MP_TASKS_PLIST_DEFAULT		@"/Library/MacPatch/Client/.tasks/gov.llnl.mp.tasks.plist.default"
 #define DEFAULT_TASKS_DATA @"<?xml version=\"1.0\" encoding=\"UTF-8\"?> \
@@ -582,6 +583,8 @@ NSString * const kEndDate			= @"3000-01-01";
         [_tmp setObject:kMPSUSrvList forKey:@"interval"];
     } else if ([aCMDName isEqualToString:@"kMPAppStore"]) {
         [_tmp setObject:kMPAppStore forKey:@"interval"];
+    } else if ([aCMDName isEqualToString:@"kMPPatchCrit"]) {
+        [_tmp setObject:kMPPatchCrit forKey:@"interval"];
     }
 	
 	[_tmp setObject:kStartDate forKey:@"startdate"];	

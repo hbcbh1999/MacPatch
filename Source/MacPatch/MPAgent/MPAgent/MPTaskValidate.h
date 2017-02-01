@@ -33,6 +33,7 @@ extern NSString * const kMPAVCheck;
 extern NSString * const kMPInvScan;
 extern NSString * const kStartDate;
 extern NSString * const kEndDate;
+extern NSString * const kMPPatchCrit;
 
 @interface MPTaskValidate : NSObject {
 	

@@ -78,6 +78,10 @@ NSLock *lock;
                 logit(lcl_vInfo,@"Running SU Server List scan and update.");
                 //[self ];
 
+            } else if ([l_cmd isEqualToString:@"kMPPatchCrit"]) {
+                logit(lcl_vInfo,@"Running Critical Patch Scan and Update");
+                //[self ];
+                
 			} else {
 				// Do nothing, log invalid command
 				logit(lcl_vWarning,@"Invalid command (%@) attempted.",l_cmd);

@@ -31,7 +31,7 @@
 #include <getopt.h>
 #include <unistd.h>
 
-#define APPVERSION	@"3.0.0.1"
+#define APPVERSION	@"3.0.0.2"
 #define APPNAME		@"MPAgentExec"
 
 void usage(void);
@@ -63,6 +63,7 @@ int main (int argc, char * argv[])
                 {"Update"				,no_argument	    ,0, 'u'},
                 {"UpdateFilter"			,required_argument	,0, 'f'},
                 {"UpdateBundle"			,required_argument	,0, 'B'},
+                {"Critial"				,no_argument	    ,0, 'x'},
                 {"AVInfo"				,no_argument	    ,0, 'a'},
                 {"AVUpdate"				,no_argument	    ,0, 'U'},
                 {"AgentUpdate"			,no_argument		,0, 'G'},
@@ -97,6 +98,9 @@ int main (int argc, char * argv[])
                         break;
                     case 'u':
                         a_Type = 2;
+                        break;
+                    case 'x':
+                        a_Type = 10;
                         break;
                     case 'f':
                         if ([[NSString stringWithUTF8String:optarg] isEqualTo:@"Apple"]) {
@@ -256,6 +260,10 @@ int main (int argc, char * argv[])
                 // Install Using PLIST of SW Task ID's
                 result = [controller installSoftwareTasksUsingPLIST:argType];
                 break;
+            case 10:
+                // Scan for and install critical updates
+                [controller scanForPatchesAndUpdateWithFilterCritical:_UpdateType critical:YES];
+                break;
             default:
                 logit(lcl_vError, @"should never have gotten here!");
                 break;
@@ -274,6 +282,7 @@ void usage(void) {
     // Scan & Update
 	printf(" -s \tScan for patches.\n");
 	printf(" -u \tScan & Update approved patches.\n");
+    printf(" -x \tScan & Update critical patches only.\n");
     printf("\n    \tOverrides configuration which prevents client from being updated.\n");
     printf(" -C \tAllowClient override.\n");
     printf(" -S \tAllowServer override.\n\n");

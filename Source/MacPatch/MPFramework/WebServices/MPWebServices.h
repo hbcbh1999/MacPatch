@@ -51,10 +51,12 @@
 
 #pragma mark Convience methods
 - (NSDictionary *)getPatchGroupContent:(NSError **)err;
+- (NSDictionary *)getCriticalPatchGroupContent:(NSError **)err;
 - (NSDictionary *)getMPServerList:(NSError **)err;
 - (NSDictionary *)getMPServerListVersion:(NSString *)aVersion listid:(NSString *)aListID error:(NSError **)err;
 - (BOOL)postDataMgrData:(NSString *)aDataMgrJSON error:(NSError **)err;
 - (NSArray *)getCustomPatchScanList:(NSError **)err;
+- (NSArray *)getCustomPatchScanListWithSeverity:(NSString *)aSeverity error:(NSError **)err;
 - (BOOL)postClientScanDataWithType:(NSArray *)scanData type:(NSInteger)aType error:(NSError **)err;
 - (NSDictionary *)getAgentUpdates:(NSString *)curAppVersion build:(NSString *)curBuildVersion error:(NSError **)err;
 - (NSDictionary *)getAgentUpdaterUpdates:(NSString *)curAppVersion error:(NSError **)err;

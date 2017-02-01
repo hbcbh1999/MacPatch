@@ -316,6 +316,14 @@
             } else if ([intervalArray count] == 3) {
                 [tmpDict setObject:@"EVERY@900" forKey:@"interval"];
             }
+        } else if ([[tmpDict objectForKey:@"cmd"] isEqualToString:@"kMPPatchCrit"]) {
+            if ([intervalArray count] == 2) {
+                if ([intervalArray objectAtIndex:0] == NULL || [intervalArray objectAtIndex:1] == NULL) {
+                    [tmpDict setObject:@"EVERY@1800" forKey:@"interval"];
+                }
+            } else if ([intervalArray count] == 3) {
+                [tmpDict setObject:@"EVERY@1800" forKey:@"interval"];
+            }
         }
         
 	} else {
