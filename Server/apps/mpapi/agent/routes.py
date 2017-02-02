@@ -211,11 +211,11 @@ class MP_UploadAgentPackage(MPResource):
             if token != '0': # DEBUG, remove in prod
                 _user = verify_auth_token(token)
                 if not _user or (_user == "BadSignature" or _user == "SignatureExpired"):
-                    log_Error('[MP_UploadAgentPackage][GET]: Failed to verify token')
+                    log_Error('[MP_UploadAgentPackage][Post]: Failed to verify token')
                     return {"result": '', "errorno": 424, "errormsg": 'Failed to verify token'}, 424
 
                 if not isValidAdminUser(_user):
-                    log_Error('[MP_UploadAgentPackage][GET]: Failed to verify user (%s) rights' % (_user))
+                    log_Error('[MP_UploadAgentPackage][Post]: Failed to verify user (%s) rights' % (_user))
                     return {"result": '', "errorno": 424, "errormsg": 'Failed to verify user rights'}, 424
 
             r = request
@@ -223,13 +223,14 @@ class MP_UploadAgentPackage(MPResource):
             _filesName = ['fBase', 'fUpdate', 'fComplete']
 
             fData = literal_eval(r.form['data'])
+            log_Debug('Removing existing agent file (%s)' % (_pkg_file_path))
             fBase = r.files['fBase']
             fBaseHash = ""
             fUpdate = r.files['fUpdate']
             fUpdateHash = ""
             fAgent = r.files['fComplete']
             if not fBase or not fUpdate or not fAgent:
-                log_Error('[MP_UploadAgentPackage][GET]: Failed to verify uploaded files. User: %s' % (_user))
+                log_Error('[MP_UploadAgentPackage][Post]: Failed to verify uploaded files. User: %s' % (_user))
                 return {"result": '', "errorno": 425, "errormsg": 'Failed to verify uploaded files.'}, 425
 
             # Verify if Agent already exists
@@ -241,7 +242,7 @@ class MP_UploadAgentPackage(MPResource):
                                                    MpClientAgent.build == app_build,
                                                    MpClientAgent.type == "app").first()
             if haveAgent:
-                log_Error('[MP_UploadAgentPackage][GET]: Agent(AGENT VER: %s, APP VER: %s) Already Exists User: %s' % (agent_ver, app_ver, _user))
+                log_Error('[MP_UploadAgentPackage][Post]: Agent(AGENT VER: %s, APP VER: %s) Already Exists User: %s' % (agent_ver, app_ver, _user))
                 return {"result": '', "errorno": 426, "errormsg": 'Agent Already Exists'}, 426
 
             # Save uploaded files
@@ -270,7 +271,7 @@ class MP_UploadAgentPackage(MPResource):
             #log_Debug('fUpdateHash: %s' % (fUpdateHash))
 
             # Save Agent Data to database
-            log_Debug('[MP_UploadAgentPackage][GET]: Create Base Agent Data Record')
+            log_Debug('[MP_UploadAgentPackage][Post]: Create Base Agent Data Record')
             agentObjApp = MpClientAgent()
             setattr(agentObjApp, 'puuid', agent_id)
             setattr(agentObjApp, 'type', 'app')
@@ -283,10 +284,10 @@ class MP_UploadAgentPackage(MPResource):
             setattr(agentObjApp, 'pkg_hash', fBaseHash)
             setattr(agentObjApp, 'cdate', datetime.now())
             setattr(agentObjApp, 'mdate', datetime.now())
-            log_Debug('[MP_UploadAgentPackage][GET]: Add Base Agent Data Record')
+            log_Debug('[MP_UploadAgentPackage][Post]: Add Base Agent Data Record')
             db.session.add(agentObjApp)
 
-            log_Debug('[MP_UploadAgentPackage][GET]: Create Updater Agent Data Record')
+            log_Debug('[MP_UploadAgentPackage][Post]: Create Updater Agent Data Record')
             agentObjUpdt = MpClientAgent()
             setattr(agentObjUpdt, 'puuid', agent_id)
             setattr(agentObjUpdt, 'type', 'update')
@@ -299,7 +300,7 @@ class MP_UploadAgentPackage(MPResource):
             setattr(agentObjUpdt, 'pkg_hash', fUpdateHash)
             setattr(agentObjUpdt, 'cdate', datetime.now())
             setattr(agentObjUpdt, 'mdate', datetime.now())
-            log_Debug('[MP_UploadAgentPackage][GET]: Add Updater Agent Data Record')
+            log_Debug('[MP_UploadAgentPackage][Post]: Add Updater Agent Data Record')
             db.session.add(agentObjUpdt)
             db.session.commit()
 
