@@ -444,7 +444,7 @@ p.solid {border-style: solid;}
 					<cfchart format="png" title="MacPatch Agent Version Count" showlegend="yes" showborder="no" chartheight="300" chartwidth="480" pieslicestyle="sliced">
                        <cfchartseries type="pie" serieslabel="Agent Version Count">
                        <cfoutput query="qGetAgentVersionCount">
-                           <cfchartdata item="#client_version#" value="#total#">
+                           <cfchartdata item="#client_ver#" value="#total#">
                        </cfoutput>liced
                        </cfchartseries>
                    </cfchart>
