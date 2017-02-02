@@ -219,9 +219,9 @@ p.solid {border-style: solid;}
 </cfoutput>
 
 <cfquery datasource="#session.dbsource#" name="qGetAgentVersionCount" cachedwithin="#CreateTimeSpan(0, 0, 0, 15)#">
-    select client_version, Count(*) as Total from mp_clients
-	GROUP BY client_version
-	Order By total Desc
+    SELECT CONCAT(`client_version`, '.', `agent_build`) as client_ver, COUNT(*) as Total FROM `mp_clients`
+    Group By client_ver
+	Order By Total Desc
 </cfquery>
 
 <cfset tempColorList = "0099CC,00CCCC,CC9933,9999FF,FFCCFF,339933,66CCCC,FF6633,99CCFF,BDB76B,FFE4B5,FFE4E1">
