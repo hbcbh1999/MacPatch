@@ -131,7 +131,8 @@
 			[agentDict setObject:[si g_osType] forKey:@"ostype"];
 			[agentDict setObject:[si g_agentVer] forKey:@"agent_version"];
 			[agentDict setObject:[clientVer objectForKey:@"build"] forKey:@"agent_build"];
-			[agentDict setObject:[clientVer objectForKey:@"version"] forKey:@"client_version"];
+            NSString *cVer = [NSString stringWithFormat:@"%@.%@.%@",[clientVer objectForKey:@"major"],[clientVer objectForKey:@"minor"],[clientVer objectForKey:@"bug"]];
+			[agentDict setObject:cVer forKey:@"client_version"];
 			[agentDict setObject:@"false" forKey:@"needsreboot"];
 			
 			if ([[NSFileManager defaultManager] fileExistsAtPath:@"/private/tmp/.MPAuthRun"]) {
