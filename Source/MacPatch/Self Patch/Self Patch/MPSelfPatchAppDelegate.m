@@ -824,16 +824,10 @@ done:
         if (wsErr) {
             logit(lcl_vError,@"%@",wsErr.localizedDescription);
         }
-        if (!patchGroupPatches) {
-            NSAlert *alert = [NSAlert alertWithMessageText:@"Communications Error"
-                                             defaultButton:@"OK"
-                                           alternateButton:nil
-                                               otherButton:nil
-                                 informativeTextWithFormat:@"There was a issue getting the approved patches for the patch group, scan will exit."];
-            
-            [[NSRunningApplication currentApplication] activateWithOptions:NSApplicationActivateIgnoringOtherApps];
-            [alert runModal];
-
+        if (!patchGroupPatches)
+        {
+            NSDictionary *userInfo = @{@"title":@"Communications Error", @"defaultButton":@"OK", @"message":@"There was a issue getting the approved patches for the patch group, scan will exit."};
+            [self performSelectorOnMainThread:@selector(runNSAlert:) withObject:userInfo waitUntilDone:YES];
             logit(lcl_vError,@"There was a issue getting the approved patches for the patch group, scan will exit.");
             goto done;
         }
@@ -1095,14 +1089,11 @@ done:
         [spStatusText display];
 
         [spStatusProgress stopAnimation:nil];
-        if  ([approvedUpdatesArray count] <= 0) {
-            NSAlert *alert = [NSAlert alertWithMessageText:@"Patch Scan Complete"
-                                             defaultButton:@"OK" alternateButton:nil
-                                               otherButton:nil
-                                 informativeTextWithFormat:@"There are no patches needed at this time."];
-            
-            [[NSRunningApplication currentApplication] activateWithOptions:NSApplicationActivateIgnoringOtherApps];
-            [alert runModal];
+        if  ([approvedUpdatesArray count] <= 0)
+        {
+            NSDictionary *userInfo = @{@"title":@"Patch Scan Complete", @"defaultButton":@"OK", @"message":@"There are no patches needed at this time."};
+            [self performSelectorOnMainThread:@selector(runNSAlert:) withObject:userInfo waitUntilDone:YES];
+
         } else {
             logit(lcl_vInfo,@"Patches found %d",(int)[[arrayController arrangedObjects] count]);
             [spStatusText setStringValue:[NSString stringWithFormat:@"%d patches needed.",(int)[[arrayController arrangedObjects] count]]];
@@ -1117,6 +1108,21 @@ done:
         [asus release];
     }
 }
+
+- (void)runNSAlert:(NSDictionary *)userInfo
+{
+    dispatch_async(dispatch_get_main_queue(), ^(){
+        NSAlert *alert = [NSAlert alertWithMessageText:[userInfo objectForKey:@"title"]
+                                         defaultButton:[userInfo objectForKey:@"defaultButton"]
+                                       alternateButton:nil
+                                           otherButton:nil
+                             informativeTextWithFormat:@"%@",[userInfo objectForKey:@"message"]];
+        
+        [[NSRunningApplication currentApplication] activateWithOptions:NSApplicationActivateIgnoringOtherApps];
+        [alert runModal];
+    });
+}
+
 
 - (void)runPatchUpdates
 {

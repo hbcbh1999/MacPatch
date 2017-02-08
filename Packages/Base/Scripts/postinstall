@@ -2,7 +2,7 @@
 
 # ***************************************************************************************
 # PostFlight Script for MacPatch Client Installer
-# ver 2.0.3
+# ver 2.1.0
 # Created By Charles Heizer
 # LLNL
 #
@@ -28,18 +28,21 @@ if [ -e "${SRC}/ccusr" ]; then
 fi
 
 # Script Functions
-isIload () {
+isIload () 
+{
 	pid=`ps -e | grep iLoadAssistant | grep -v grep | awk '{print $1}'`
 	echo $pid
 }
 
-function setOwner {
+function setOwner 
+{
 	if [ -f "$1" ]; then
 		/usr/sbin/chown -R root:wheel $1
 	fi
 }
 
-function setOwnerAndPerms {
+function setOwnerAndPerms 
+{
 	if [ -f "$1" ]; then
 		/usr/sbin/chown root:wheel $1
 		/bin/chmod 0644 $1
@@ -104,6 +107,74 @@ function removeOldRegFiles {
 	existsAndDelete "/Library/Application Support/MacPatch/MacPatch.keychain"
 	existsAndDelete "/Library/Application Support/MacPatch/.keys"
 	existsAndDelete "/Library/Application Support/MacPatch/.keyHash"
+}
+# ******************************************************************
+# Set Up Python Virtualenv
+
+function setupPyVirtEnv
+{ 
+	LIBDIR="/Library/MacPatch/Client/lib"
+	PNGHOST="pypi.python.org"
+
+	ping -c 1 "$PNGHOST" > /dev/null
+	if [ $? -eq 0 ]; then
+		echo "ping $PNGHOST is up" 
+	else
+		echo "ping $PNGHOST is down"
+	fi
+
+	# See if pip is installed
+	which pip > /dev/null
+	if [ $? == 1 ]; then
+		# Needs to install pip
+		easy_install --quiet pip
+	else
+		# Update pip
+		pip install --quiet --upgrade pip
+	fi
+
+	# See if virtualenv is installed
+	which virtualenv > /dev/null
+	if [ $? == 1 ]; then
+		# Needs to install virtualenv
+		pip install --quiet virtualenv
+	else
+		pip install --quiet --upgrade virtualenv
+	fi
+
+	# Install Xcode Command Line Tools
+	# Code taken from tim sutton
+	# https://github.com/timsutton/osx-vm-templates/blob/master/scripts/xcode-cli-tools.sh
+	xcode-select -p > /dev/null 2>&1
+	if [ $? != 0 ]; then
+		echo "Install Xcode Command Line Tools"
+		# create the placeholder file that's checked by CLI updates' .dist code
+	    # in Apple's SUS catalog
+	    touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
+	    # find the CLI Tools update
+	    PROD=$(softwareupdate -l | grep "\*.*Command Line" | head -n 1 | awk -F"*" '{print $2}' | sed -e 's/^ *//' | tr -d '\n')
+	    if [ $? != 0 ]; then
+	    	PROD=$(softwareupdate -l | grep "\*.*Command Line" | head -n 1 | awk -F"*" '{print $2}' | sed -e 's/^ *//' | tr -d '\n')
+	    fi
+	    # install it
+	    softwareupdate -i "$PROD"
+	    rm /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
+	fi
+
+	# Create Virtualenv "python" and install extera modules
+	cd $LIBDIR
+	virtualenv --no-site-packages python
+	source python/bin/activate
+
+	MODS="biplist requests xattr"
+	for mod in $MODS; do
+		pip install --quiet $mod
+		if [ $? -ne 0 ] ; then
+			echo " Error installing $mod"
+		fi
+	done  
+
+	deactivate
 }
 
 # ******************************************************************
