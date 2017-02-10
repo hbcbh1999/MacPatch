@@ -184,7 +184,7 @@ class PatchGroupPatches(MPResource):
                 exc_tb.tb_lineno, cuuid, e.message))
             return {'errorno': 500, 'errormsg': e.message, 'result': ''}, 500
 
-# Get Patch Group Patches
+# Get Patch Group Patches Rev
 class PatchGroupPatchesRev(MPResource):
 
     def __init__(self):
