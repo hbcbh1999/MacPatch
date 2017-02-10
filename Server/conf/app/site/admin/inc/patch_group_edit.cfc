@@ -147,8 +147,12 @@
 
         <cfset _d = RemovePatchGroupData(Arguments.id)>
 		<!--- JSON 2.2.x --->
+		<cfset _dts = "#DateFormat(now(),"YYYYMMDD")##TimeFormat(now(),"HHMMSS")#" />
         <cfset _x = xObj.GetPatchGroupPatches(Arguments.id)>
-        <cfset _a = AddPatchGroupData(Arguments.id,_x,'JSON')>
+        <cfset _d = deserializeJSON(_x) />
+        <cfset _d[ "rev" ] = '#_dts#' />
+        <cfset _x = SerializeJSON(_d) />
+        <cfset _a = AddPatchGroupData(Arguments.id,_x,'JSON',_dts)>
 		<cfset userdata  = {type='#strMsgType#',msg='#strMsg#'}>
 		<cfset strReturn = {userdata=#userdata#}>
 		<cfreturn strReturn>
@@ -158,21 +162,6 @@
         <cfargument name="PatchGroupID">
 
         <cftry>
-        	<cfset var _rev = "-1">
-        	<!---
-        	<cfquery datasource="#session.dbsource#" name="qRev">
-	            Select rev From mp_patch_group_data
-	            Where pid = '#arguments.PatchGroupID#'
-	        </cfquery>	
-	        <cfif qRev.RecordCount EQ 1>
-	        	<cfset _curRev = qRev.rev >
-	        	<cfif _curRev LTE 0>
-	        		<cfset _rev = 1 />
-	        	<cfelse>
-	        		<cfset _rev = _curRev + 1 />
-	        	</cfif>
-	        </cfif>
-			--->
 	        <cfquery datasource="#session.dbsource#" name="qDelete">
 	            Delete
 	            From mp_patch_group_data
@@ -180,7 +169,7 @@
 	                pid = '#arguments.PatchGroupID#'
 	        </cfquery>
 
-	        <cfreturn _rev>
+	        <cfreturn 1>
         <cfcatch>
         	<cfset logError("patch_group_edit","RemovePatchGroupData",#cfcatch.message#,#cfcatch.Detail#,#cfcatch.type#)>
         	<cfreturn 1>
@@ -194,13 +183,14 @@
         <cfargument name="PatchGroupID">
         <cfargument name="PatchGroupData">
         <cfargument name="PatchGroupDataType">
+        <cfargument name="PatchGroupDataRev">
 
         <cftry>
             <cfset _hash = hash(#arguments.PatchGroupData#, "MD5")>
-            <cfset _dts = "#DateFormat(now(),"YYYYMMDD")##TimeFormat(now(),"HHMMSS")#" />
+            
             <cfquery datasource="#session.dbsource#" name="qPut">
                 Insert Into mp_patch_group_data (pid, hash, data, data_type, mdate, rev)
-                Values ('#arguments.PatchGroupID#', '#_hash#', '#arguments.PatchGroupData#', '#arguments.PatchGroupDataType#', #CreateODBCDateTime(now())#, '#_dts#')
+                Values ('#arguments.PatchGroupID#', '#_hash#', '#arguments.PatchGroupData#', '#arguments.PatchGroupDataType#', #CreateODBCDateTime(now())#, '#arguments.PatchGroupDataRev#')
             </cfquery>
         <cfcatch>
         	<cfset logError("patch_group_edit","AddPatchGroupData",#cfcatch.message#,#cfcatch.Detail#,#cfcatch.type#)>

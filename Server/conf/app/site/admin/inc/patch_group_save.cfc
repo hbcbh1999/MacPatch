@@ -270,6 +270,7 @@
         <cfset var a_criteria = QueryNew("puuid, supatchname, type, type_order, type_action, type_data")>  />
 		
 		<cfset response = {} />
+        <cfset response[ "rev" ] = '-1' />
 		<cfset response[ "AppleUpdates" ] = {} />
 		<cfset _AppleUpdates = arrayNew(1)>
 		<cfset response[ "CustomUpdates" ] = {} />
