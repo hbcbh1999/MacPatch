@@ -184,6 +184,54 @@ class PatchGroupPatches(MPResource):
                 exc_tb.tb_lineno, cuuid, e.message))
             return {'errorno': 500, 'errormsg': e.message, 'result': ''}, 500
 
+# Get Patch Group Patches
+class PatchGroupPatchesRev(MPResource):
+
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        super(PatchGroupPatchesRev, self).__init__()
+
+    def get(self, cuuid, patchGroup ):
+
+        try:
+            args = self.reqparse.parse_args()
+            _body = request.get_json(silent=True)
+
+            if not isValidClientID(cuuid):
+                log_Error('[PatchGroupPatches][Get]: Failed to verify ClientID (%s)' % (cuuid))
+                return {"result": '', "errorno": 424, "errormsg": 'Failed to verify ClientID'}, 424
+
+            if not isValidSignature(self.req_signature, cuuid, self.req_uri, self.req_ts):
+                log_Error('[PatchGroupPatches][Get]: Failed to verify Signature for client (%s)' % (cuuid))
+                return {"result": '', "errorno": 424, "errormsg": 'Failed to verify Signature'}, 424
+
+
+            # Get Patch Group ID from Name
+            group_id = 'NA'
+            q_group = MpPatchGroup.query.filter(MpPatchGroup.name == patchGroup).first()
+            if q_group is not None:
+                if q_group.id:
+                    group_id = q_group.id
+
+                    # Get Patch Group Patches
+                    q_data = MpPatchGroupData.query.filter(MpPatchGroupData.pid == group_id, MpPatchGroupData.data_type == 'JSON').first()
+                    if q_data is not None:
+                        if q_data.rev:
+                            return {"result": str(q_data.rev), "errorno": 0, "errormsg": ''}, 200
+            else:
+                log_Error('[PatchGroupPatches][Get][%s]: No patch group (%s) found.' % (cuuid, patchGroup))
+                return {"result": '', "errorno": 404, "errormsg": 'Not Found'}, 404
+
+
+        except IntegrityError, exc:
+            log_Error('[PatchGroupPatches][Get][IntegrityError] CUUID: %s Message: %s' % (cuuid, exc.message))
+            return {"result": '', "errorno": 500, "errormsg": exc.message}, 500
+        except Exception as e:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            log_Error('[PatchGroupPatches][Get][Exception][Line: %d] CUUID: %s Message: %s' % (
+                exc_tb.tb_lineno, cuuid, e.message))
+            return {'errorno': 500, 'errormsg': e.message, 'result': ''}, 500
+
 # Post Client Patch Scan Data
 class PatchScanData(MPResource):
 
@@ -473,6 +521,8 @@ patches_api.add_resource(PatchScanListFilterOS, '/client/patch/scanlist/<string:
 patches_api.add_resource(PatchScanListFilterOS, '/client/patch/scanlist/<string:cuuid>/<string:osver>/<string:severity>',endpoint='withLevel')
 
 patches_api.add_resource(PatchGroupPatches,     '/client/patch/group/<string:patchGroup>/<string:cuuid>')
+patches_api.add_resource(PatchGroupPatchesRev,  '/client/patch/group/rev/<string:patchGroup>/<string:cuuid>')
+
 # Post Client Patch Scan Data
 patches_api.add_resource(PatchScanData,         '/client/patch/scan/<string:patch_type>/<string:cuuid>')
 # Post Client Patch Install Data
