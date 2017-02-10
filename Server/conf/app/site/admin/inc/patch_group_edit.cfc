@@ -159,6 +159,7 @@
 
         <cftry>
         	<cfset var _rev = "-1">
+        	<!---
         	<cfquery datasource="#session.dbsource#" name="qRev">
 	            Select rev From mp_patch_group_data
 	            Where pid = '#arguments.PatchGroupID#'
@@ -171,7 +172,7 @@
 	        		<cfset _rev = _curRev + 1 />
 	        	</cfif>
 	        </cfif>
-
+			--->
 	        <cfquery datasource="#session.dbsource#" name="qDelete">
 	            Delete
 	            From mp_patch_group_data
@@ -196,9 +197,10 @@
 
         <cftry>
             <cfset _hash = hash(#arguments.PatchGroupData#, "MD5")>
+            <cfset _dts = "#DateFormat(now(),"YYYYMMDD")##TimeFormat(now(),"HHMMSS")#" />
             <cfquery datasource="#session.dbsource#" name="qPut">
-                Insert Into mp_patch_group_data (pid, hash, data, data_type, mdate)
-                Values ('#arguments.PatchGroupID#', '#_hash#', '#arguments.PatchGroupData#', '#arguments.PatchGroupDataType#', #CreateODBCDateTime(now())#)
+                Insert Into mp_patch_group_data (pid, hash, data, data_type, mdate, rev)
+                Values ('#arguments.PatchGroupID#', '#_hash#', '#arguments.PatchGroupData#', '#arguments.PatchGroupDataType#', #CreateODBCDateTime(now())#, '#_dts#')
             </cfquery>
         <cfcatch>
         	<cfset logError("patch_group_edit","AddPatchGroupData",#cfcatch.message#,#cfcatch.Detail#,#cfcatch.type#)>

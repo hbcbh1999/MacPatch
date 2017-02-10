@@ -326,7 +326,7 @@
 			<cfset _cUpdate[ "patch_id" ] = "#item#" />
             <cfset _cUpdate[ "patch_install_weight" ] = "#patchRes.patch_install_weight#" />
 			<cfset _cUpdate[ "patches" ] = "" />
-            <cfset _cUpdate[ "severity" ] = "#severity#" />
+            <cfset _cUpdate[ "severity" ] = "#patchRes.patch_severity#" />
 			<cfset _cUpdate_Patches = arrayNew(1)>
 			<!--- Patches for the patch id --->
 			<cfif preRes.recordcount GTE 1>
