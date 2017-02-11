@@ -423,13 +423,13 @@ class PatchScan():
         '''
 
         #Query DataBase get all Custom Patches based on bundle and version
-        if severity == None:
+        if severity == None or severity == 'All':
             q = MpPatch.query.with_entities(MpPatch.puuid, MpPatch.patch_name, MpPatch.patch_ver, MpPatch.bundle_id,
-                                            MpPatch.patch_reboot, MpPatch.patch_state, MpPatch.active, MpPatch.rid
+                                            MpPatch.patch_reboot, MpPatch.patch_state, MpPatch.active, MpPatch.rid, MpPatch.patch_severity
             ).filter(MpPatch.active == 1, MpPatch.patch_state == "Production").order_by(MpPatch.bundle_id.desc()).all()
         else:
             q = MpPatch.query.with_entities(MpPatch.puuid, MpPatch.patch_name, MpPatch.patch_ver, MpPatch.bundle_id,
-                                            MpPatch.patch_reboot, MpPatch.patch_state, MpPatch.active, MpPatch.rid
+                                            MpPatch.patch_reboot, MpPatch.patch_state, MpPatch.active, MpPatch.rid, MpPatch.patch_severity
                                             ).filter(MpPatch.active == 1, MpPatch.patch_state == "Production", MpPatch.patch_severity == severity).order_by(
                 MpPatch.bundle_id.desc()).all()
 
@@ -439,7 +439,8 @@ class PatchScan():
             for row in q:
                 bundleList.append(row[3])
                 results.append({"puuid":row[0],"patch_name":row[1],"patch_ver":row[2],"bundle_id":row[3],
-                                "patch_reboot":row[4],"patch_state":row[5],"active":row[6],"rid":row[7]})
+                                "patch_reboot":row[4],"patch_state":row[5],"active":row[6],"rid":row[7],
+                                "severity":row[8]})
 
             # Create Unique List of Bundle ID's
             bundleList = set(bundleList)
