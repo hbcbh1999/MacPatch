@@ -136,6 +136,12 @@
 
 - (void)scanForPatchesWithFilterWaitAndForce:(int)aFilter byPassRunning:(BOOL)aByPass
 {
+    [self scanForPatchesWithFilterWaitAndForceWithCritical:aFilter byPassRunning:aByPass critical:NO];
+}
+
+/*
+- (void)scanForPatchesWithFilterWaitAndForce:(int)aFilter byPassRunning:(BOOL)aByPass
+{
     // Filter - 0 = All,  1 = Apple, 2 = Third
     if (forceRun == NO) {
         if (aByPass == YES) {
@@ -166,15 +172,37 @@
 	NSMutableArray      *approvedUpdatesArray = [[NSMutableArray alloc] init];
 	NSMutableDictionary *tmpDict;
 	NSDictionary        *customPatch, *approvedPatch;
+    NSDictionary        *patchGroupPatches;
 
 	// Get Patch Group Patches
     MPWebServices *mpws = [[MPWebServices alloc] init];
     NSError *rmErr = nil;
     NSError *wsErr = nil;
-    NSDictionary *patchGroupPatches = [mpws getPatchGroupContent:&wsErr];
-    if (wsErr) {
-        logit(lcl_vError,@"%@",wsErr.localizedDescription);
-        goto done;
+    
+    BOOL useLocalPatchesFile = NO;
+    NSString *patchGroupRevLocal = [MPClientInfo patchGroupRev];
+    if (![patchGroupRevLocal isEqualToString:@"-1"]) {
+        NSString *patchGroupRevRemote = [mpws getPatchGroupContentRev:&wsErr];
+        if (!wsErr) {
+            if ([patchGroupRevLocal isEqualToString:patchGroupRevRemote]) {
+                useLocalPatchesFile = YES;
+                NSString *pGroup = [_defaults objectForKey:@"PatchGroup"];
+                patchGroupPatches = [[[NSDictionary dictionaryWithContentsOfFile:PATCH_GROUP_PATCHES_PLIST] objectForKey:pGroup] objectForKey:@"data"];
+                if (!patchGroupPatches) {
+                    logit(lcl_vError,@"Unable to get data from cached patch group data file. Will download new one.");
+                    useLocalPatchesFile = NO;
+                }
+            }
+        }
+    }
+    
+    if (!useLocalPatchesFile) {
+        wsErr = nil;
+        patchGroupPatches = [mpws getPatchGroupContent:&wsErr];
+        if (wsErr) {
+            logit(lcl_vError,@"%@",wsErr.localizedDescription);
+            goto done;
+        }
     }
 
 	if (!patchGroupPatches) {
@@ -337,6 +365,7 @@ done:
 	[self removeTaskRunning:kMPPatchSCAN];
     logit(lcl_vInfo,@"Patch Scan Completed.");
 }
+*/
 
 - (void)scanForPatchesWithFilterWaitAndForceWithCritical:(int)aFilter byPassRunning:(BOOL)aByPass critical:(BOOL)aCritical
 {
@@ -380,14 +409,33 @@ done:
     if (aCritical == YES) {
         patchGroupPatches = [mpws getCriticalPatchGroupContent:&wsErr];
     } else {
-        patchGroupPatches = [mpws getPatchGroupContent:&wsErr];
+        
+        BOOL useLocalPatchesFile = NO;
+        NSString *patchGroupRevLocal = [MPClientInfo patchGroupRev];
+        if (![patchGroupRevLocal isEqualToString:@"-1"]) {
+            NSString *patchGroupRevRemote = [mpws getPatchGroupContentRev:&wsErr];
+            if (!wsErr) {
+                if ([patchGroupRevLocal isEqualToString:patchGroupRevRemote]) {
+                    useLocalPatchesFile = YES;
+                    NSString *pGroup = [_defaults objectForKey:@"PatchGroup"];
+                    patchGroupPatches = [[[NSDictionary dictionaryWithContentsOfFile:PATCH_GROUP_PATCHES_PLIST] objectForKey:pGroup] objectForKey:@"data"];
+                    if (!patchGroupPatches) {
+                        logit(lcl_vError,@"Unable to get data from cached patch group data file. Will download new one.");
+                        useLocalPatchesFile = NO;
+                    }
+                }
+            }
+        }
+        if (!useLocalPatchesFile) {
+            wsErr = nil;
+            patchGroupPatches = [mpws getPatchGroupContent:&wsErr];
+            if (wsErr) {
+                logit(lcl_vError,@"%@",wsErr.localizedDescription);
+                goto done;
+            }
+        }
     }
-    
-    if (wsErr) {
-        logit(lcl_vError,@"%@",wsErr.localizedDescription);
-        goto done;
-    }
-    
+
     if (!patchGroupPatches) {
         logit(lcl_vError,@"There was a issue getting the approved patches for the patch group, scan will exit.");
         goto done;
@@ -505,7 +553,7 @@ done:
                     [tmpDict setObject:[customPatch objectForKey:@"description"] forKey:@"description"];
                     [tmpDict setObject:[customPatch objectForKey:@"restart"] forKey:@"restart"];
                     [tmpDict setObject:[customPatch objectForKey:@"version"] forKey:@"version"];
-                    [tmpDict setObject:[customPatch objectForKey:@"severity"] forKey:@"severity"];
+                    [tmpDict setObject:[approvedPatch objectForKey:@"severity"] forKey:@"severity"];
                     [tmpDict setObject:approvedPatch forKey:@"patches"];
                     [tmpDict setObject:[customPatch objectForKey:@"patch_id"] forKey:@"patch_id"];
                     [tmpDict setObject:@"Third" forKey:@"type"];
@@ -1547,7 +1595,7 @@ done:
 	if ([_patchesArray count] <= 0) {
 		// No Items in the Array, delete the file
 		[fm removeItemAtPath:_approvedPatchesFile error:NULL];
-        [NSKeyedArchiver archiveRootObject:NULL toFile:PATCHES_NEEDED_PLIST];
+        [NSKeyedArchiver archiveRootObject:[NSArray array] toFile:PATCHES_NEEDED_PLIST];
 		return;
 	}
 
@@ -1564,7 +1612,7 @@ done:
 	if ([_patchesArray count] <= 0) {
 		// No Items in the Array, delete the file
 		[fm removeItemAtPath:_approvedPatchesFile error:NULL];
-        [NSKeyedArchiver archiveRootObject:NULL toFile:PATCHES_NEEDED_PLIST];
+        [NSKeyedArchiver archiveRootObject:[NSArray array] toFile:PATCHES_NEEDED_PLIST];
 		return;
 	} else {
         [NSKeyedArchiver archiveRootObject:_patchesArray toFile:_approvedPatchesFile];

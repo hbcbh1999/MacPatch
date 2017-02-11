@@ -1492,7 +1492,7 @@ done:
 // Proxy Method
 - (void)removeStatusFilesViaHelper
 {
-    [NSKeyedArchiver archiveRootObject:NULL toFile:PATCHES_NEEDED_PLIST];
+    [NSKeyedArchiver archiveRootObject:[NSArray array] toFile:PATCHES_NEEDED_PLIST];
     [fm removeFileIfExistsAtPath:PATCHES_APPROVED_PLIST];
     return;
 }

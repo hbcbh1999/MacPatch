@@ -423,29 +423,36 @@
      PatchGroup Cache File Layout
      NSDictionary:
      PatchGroupName: Default
-     hash: xxxx
-     data: ....
+     rev: xxxx
+     data: { }
      PatchGroupName: QA
-     hash: xxxx
-     data: ....
+     rev: xxxx
+     data: { }
      */
-    MPCrypto *mpc = [[MPCrypto alloc] init];
-    NSMutableDictionary *PatchGroupInfo = [NSMutableDictionary dictionary];
-    NSMutableDictionary *PatchGroupCacheFileData = [NSMutableDictionary dictionary];
-    NSString *PatchGroupCacheFile = @"/Library/MacPatch/Client/Data/.gov.llnl.mp.patchgroup.data.plist";
-
-    if ([[NSFileManager defaultManager] fileExistsAtPath:PatchGroupCacheFile])
-    {
-        PatchGroupCacheFileData = [NSMutableDictionary dictionaryWithContentsOfFile:PatchGroupCacheFile];
+    
+    NSMutableDictionary *patchGroupInfo = [NSMutableDictionary dictionary];
+    NSMutableDictionary *patchGroupCacheFileData = [NSMutableDictionary dictionary];
+    NSString *patchGroupCacheFile = @"/Library/MacPatch/Client/Data/.gov.llnl.mp.patchgroup.data.plist";
+    
+    [[NSFileManager defaultManager] removeFileIfExistsAtPath:PATCH_GROUP_PATCHES_PLIST];
+    
+    NSData *jsonData = [jData dataUsingEncoding:NSUTF8StringEncoding];
+    NSError *jError = nil;
+    NSString *_rev = @"-1";
+    NSMutableDictionary *jDict = (NSMutableDictionary *)[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&jError];
+    if (jError) {
+        qlerror(@"%@",jError.localizedDescription);
+    } else {
+        _rev = [jDict objectForKey:@"rev"];
+        [patchGroupInfo setObject:_rev forKey:@"rev"];
+        [jDict removeObjectForKey:@"rev"];
+        [patchGroupInfo setObject:jDict forKey:@"data"];
     }
-    [jData writeToFile:@"/tmp/fooMD" atomically:NO];
-    [PatchGroupInfo setObject:[mpc getHashFromStringForType:jData type:@"MD5"] forKey:@"hash"];
-    [PatchGroupInfo setObject:jData forKey:@"data"];
-    [PatchGroupInfo setObject:jData forKey:@"version"];
+    
     qlinfo(@"Write patch group hash and data to filesystem.");
     
-    [PatchGroupCacheFileData setObject:PatchGroupInfo forKey:[_defaults objectForKey:@"PatchGroup"]];
-    [PatchGroupCacheFileData writeToFile:PatchGroupCacheFile atomically:YES];
+    [patchGroupCacheFileData setObject:patchGroupInfo forKey:[_defaults objectForKey:@"PatchGroup"]];
+    [patchGroupCacheFileData writeToFile:patchGroupCacheFile atomically:YES];
 
 #if !__has_feature(objc_arc)
     [mpc release];
@@ -832,6 +839,7 @@
             
             
             logit(lcl_vDebug,@"%@",result);
+            /*
             wsErr = nil;
             MPJsonResult *jres = [[MPJsonResult alloc] init];
             NSString *jstr = [jres serializeJSONDataAsString:(NSDictionary *)result error:NULL];
@@ -844,7 +852,7 @@
                 }
                 return nil;
             }
-            
+            */
             return result;
         }
         
@@ -924,6 +932,43 @@
     return nil;
 }
 
+- (NSString *)getPatchGroupContentRev:(NSError **)err
+{
+    NSError *wsErr = nil;
+    NSString *uri;
+    NSData *reqData;
+    id result;
+    
+    @try
+    {
+        uri = [NSString stringWithFormat:@"/api/v1/client/patch/group/rev/%@/%@",[_defaults objectForKey:@"PatchGroup"],[MPSystemInfo clientUUID]];
+        reqData = [self getRequestWithURIforREST:uri error:&wsErr];
+        if (wsErr) {
+            if (err != NULL) *err = wsErr;
+            logit(lcl_vError,@"%@",wsErr.localizedDescription);
+            return nil;
+        } else {
+            // Parse JSON result, if error code is not 0
+            wsErr = nil;
+            result = [self returnRequestWithType:reqData resultType:@"string" error:&wsErr];
+            if (wsErr) {
+                if (err != NULL) *err = wsErr;
+                logit(lcl_vError,@"%@",wsErr.localizedDescription);
+                return nil;
+            }
+            
+            qldebug(@"result: %@",result);
+            return result;
+        }
+        
+    }
+    @catch (NSException * e) {
+        logit(lcl_vError,@"[NSException]: %@",e);
+    }
+    // Should not get here
+    return nil;
+}
+
 - (NSDictionary *)getCriticalPatchGroupContent:(NSError **)err
 {
     NSError *wsErr = nil;
@@ -948,21 +993,8 @@
                 logit(lcl_vError,@"%@",wsErr.localizedDescription);
                 return nil;
             }
+            
             logit(lcl_vDebug,@"%@",result);
-            
-            wsErr = nil;
-            MPJsonResult *jres = [[MPJsonResult alloc] init];
-            NSString *jstr = [jres serializeJSONDataAsString:(NSDictionary *)result error:NULL];
-            
-            if (wsErr) {
-                if (err != NULL) {
-                    *err = wsErr;
-                } else {
-                    qlerror(@"%@",wsErr.localizedDescription);
-                }
-                return nil;
-            }
-            
             return result;
         }
         

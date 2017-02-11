@@ -42,6 +42,7 @@ NSString * const APP_PREFS_PLIST			= @"/Library/Preferences/gov.llnl.MPClientSta
 NSString * const PATCHES_NEEDED_PLIST       = @"/Library/MacPatch/Client/Data/.neededPatches.plist";
 NSString * const PATCHES_APPROVED_PLIST     = @"/Library/MacPatch/Client/Data/.approvedPatches.plist";
 NSString * const PATCHES_CRITICAL_PLIST     = @"/Library/MacPatch/Client/Data/.criticalPatches.plist";
+NSString * const PATCH_GROUP_PATCHES_PLIST  = @"/Library/MacPatch/Client/Data/.gov.llnl.mp.patchgroup.data.plist";
 
 NSString * const WS_CLIENT_REG              = @"/MPRegister.cfc";
 NSString * const WS_CLIENT_FILE             = @"/Service/MPClientService.cfc";

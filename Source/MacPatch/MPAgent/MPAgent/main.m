@@ -34,7 +34,7 @@
 #include <getopt.h>
 #include <unistd.h>
 
-#define APPVERSION	@"3.0.0.3"
+#define APPVERSION	@"3.0.0.4"
 #define APPNAME		@"MPAgent"
 
 void usage(void);
@@ -354,7 +354,8 @@ int main (int argc, char * argv[])
             exit(0);
             
         } else {
-            MPAppController *mpac = [[MPAppController alloc] initWithArg:a_Type];
+            MPAppController *mpac = [[MPAppController alloc] init];
+            [mpac runWithType:a_Type];
             [[NSRunLoop currentRunLoop] run];
         }
 		

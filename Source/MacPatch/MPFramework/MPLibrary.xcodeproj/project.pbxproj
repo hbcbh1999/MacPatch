@@ -114,6 +114,8 @@
 		8F7B8B511CB03B3200FB940F /* AFURLSessionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 8F7B8B3E1CB03B3200FB940F /* AFURLSessionManager.m */; };
 		8FC1410F1CEFA35700153D5D /* MPResult.h in Headers */ = {isa = PBXBuildFile; fileRef = 8FC1410D1CEFA35700153D5D /* MPResult.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		8FC141101CEFA35700153D5D /* MPResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 8FC1410E1CEFA35700153D5D /* MPResult.m */; };
+		8FC1B5551E4E7894008844DF /* MPClientInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 8FC1B5531E4E7894008844DF /* MPClientInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		8FC1B5561E4E7894008844DF /* MPClientInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 8FC1B5541E4E7894008844DF /* MPClientInfo.m */; };
 		8FC444171D00921900EF328C /* NSString+Base64.h in Headers */ = {isa = PBXBuildFile; fileRef = 8FC444151D00921900EF328C /* NSString+Base64.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		8FC444181D00921900EF328C /* NSString+Base64.m in Sources */ = {isa = PBXBuildFile; fileRef = 8FC444161D00921900EF328C /* NSString+Base64.m */; };
 		8FC5C8B11BBEF11B00F18BD8 /* MPSUServerList.h in Headers */ = {isa = PBXBuildFile; fileRef = 8FC5C8AF1BBEF11B00F18BD8 /* MPSUServerList.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -239,6 +241,8 @@
 		8FBB10BE152F712400A45934 /* NSDictionary+Helper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSDictionary+Helper.m"; sourceTree = "<group>"; };
 		8FC1410D1CEFA35700153D5D /* MPResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPResult.h; sourceTree = "<group>"; };
 		8FC1410E1CEFA35700153D5D /* MPResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPResult.m; sourceTree = "<group>"; };
+		8FC1B5531E4E7894008844DF /* MPClientInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPClientInfo.h; sourceTree = "<group>"; };
+		8FC1B5541E4E7894008844DF /* MPClientInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPClientInfo.m; sourceTree = "<group>"; };
 		8FC444151D00921900EF328C /* NSString+Base64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+Base64.h"; sourceTree = "<group>"; };
 		8FC444161D00921900EF328C /* NSString+Base64.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+Base64.m"; sourceTree = "<group>"; };
 		8FC5C8AF1BBEF11B00F18BD8 /* MPSUServerList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPSUServerList.h; sourceTree = "<group>"; };
@@ -333,6 +337,8 @@
 				8FCB778D140C30AE00D86586 /* MPDefaults.m */,
 				8FCB7ABD140D588F00D86586 /* MPLog.h */,
 				8FCB7ABE140D588F00D86586 /* MPLog.m */,
+				8FC1B5531E4E7894008844DF /* MPClientInfo.h */,
+				8FC1B5541E4E7894008844DF /* MPClientInfo.m */,
 				8FA7EA1C161DEF81001748EA /* MPNetworkUtils.h */,
 				8FA7EA1D161DEF81001748EA /* MPNetworkUtils.m */,
 				8F6BA41115C0E59A00F44501 /* MPDiskUtil.h */,
@@ -687,6 +693,7 @@
 				8F50CB7E199D5DD0006AC537 /* MPKeychain.h in Headers */,
 				8FF831601DEF7ACF005DC5AD /* MPKeyItem.h in Headers */,
 				8FF831621DEF7ACF005DC5AD /* MPSimpleKeychain.h in Headers */,
+				8FC1B5551E4E7894008844DF /* MPClientInfo.h in Headers */,
 				8FE560D016DE899B00BB7600 /* MPSWInstaller.h in Headers */,
 				8FE560D616DE932900BB7600 /* MPAgentController.h in Headers */,
 				8FE6EEB81B9A035800E8F8E1 /* InventoryPlugin.h in Headers */,
@@ -817,6 +824,7 @@
 				8F4B1F3916DE64DA00E15A9E /* MPSWTasks.m in Sources */,
 				8FC444181D00921900EF328C /* NSString+Base64.m in Sources */,
 				8F7B8B4D1CB03B3200FB940F /* AFURLRequestSerialization.m in Sources */,
+				8FC1B5561E4E7894008844DF /* MPClientInfo.m in Sources */,
 				8FE560D216DE899B00BB7600 /* MPSWInstaller.m in Sources */,
 				8F2E697C19229A85001BF9D6 /* MPFailedRequests.m in Sources */,
 				8FE560D816DE932900BB7600 /* MPAgentController.m in Sources */,

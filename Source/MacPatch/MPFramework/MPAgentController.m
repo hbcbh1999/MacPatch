@@ -145,14 +145,35 @@
     NSArray             *applePatchesArray = nil;
     NSMutableArray      *customPatchesArray;
     NSDictionary        *customPatch, *approvedPatch;
-
+    NSDictionary        *patchGroupPatches;
+    
 	// Get Patch Group Patches
     NSError *wsErr = nil;
     MPWebServices *mpws = [[MPWebServices alloc] init];
-	NSDictionary *patchGroupPatches = [mpws getPatchGroupContent:&wsErr];
-    if (wsErr) {
-        logit(lcl_vError,@"There was a issue getting the approved patches for the patch group, scan will exit. %@",wsErr.localizedDescription);
-		goto done;
+    
+    BOOL useLocalPatchesFile = NO;
+    NSString *patchGroupRevLocal = [MPClientInfo patchGroupRev];
+    if (![patchGroupRevLocal isEqualToString:@"-1"]) {
+        NSString *patchGroupRevRemote = [mpws getPatchGroupContentRev:&wsErr];
+        if (!wsErr) {
+            if ([patchGroupRevLocal isEqualToString:patchGroupRevRemote]) {
+                useLocalPatchesFile = YES;
+                NSString *pGroup = [_defaults objectForKey:@"PatchGroup"];
+                patchGroupPatches = [[[NSDictionary dictionaryWithContentsOfFile:PATCH_GROUP_PATCHES_PLIST] objectForKey:pGroup] objectForKey:@"data"];
+                if (!patchGroupPatches) {
+                    logit(lcl_vError,@"Unable to get data from cached patch group data file. Will download new one.");
+                    useLocalPatchesFile = NO;
+                }
+            }
+        }
+    }
+    if (!useLocalPatchesFile) {
+        wsErr = nil;
+        patchGroupPatches = [mpws getPatchGroupContent:&wsErr];
+        if (wsErr) {
+            logit(lcl_vError,@"There was a issue getting the approved patches for the patch group, scan will exit. %@",wsErr.localizedDescription);
+            goto done;
+        }
     }
 
 	if (!patchGroupPatches) {
@@ -295,14 +316,35 @@ done:
 {
 	NSMutableArray      *approvedUpdatesArray = [[NSMutableArray alloc] init];
 	NSMutableDictionary *tmpDict;
-
+    NSDictionary        *patchGroupPatches;
+    
     // Get Patch Group Patches
     NSError *wsErr = nil;
     MPWebServices *mpws = [[MPWebServices alloc] init];
-	NSDictionary *patchGroupPatches = [mpws getPatchGroupContent:&wsErr];
-    if (wsErr) {
-        logit(lcl_vError,@"There was a issue getting the approved patches for the patch group, scan will exit. %@",wsErr.localizedDescription);
-		return;
+    
+    BOOL useLocalPatchesFile = NO;
+    NSString *patchGroupRevLocal = [MPClientInfo patchGroupRev];
+    if (![patchGroupRevLocal isEqualToString:@"-1"]) {
+        NSString *patchGroupRevRemote = [mpws getPatchGroupContentRev:&wsErr];
+        if (!wsErr) {
+            if ([patchGroupRevLocal isEqualToString:patchGroupRevRemote]) {
+                useLocalPatchesFile = YES;
+                NSString *pGroup = [_defaults objectForKey:@"PatchGroup"];
+                patchGroupPatches = [[[NSDictionary dictionaryWithContentsOfFile:PATCH_GROUP_PATCHES_PLIST] objectForKey:pGroup] objectForKey:@"data"];
+                if (!patchGroupPatches) {
+                    logit(lcl_vError,@"Unable to get data from cached patch group data file. Will download new one.");
+                    useLocalPatchesFile = NO;
+                }
+            }
+        }
+    }
+    if (!useLocalPatchesFile) {
+        wsErr = nil;
+        patchGroupPatches = [mpws getPatchGroupContent:&wsErr];
+        if (wsErr) {
+            logit(lcl_vError,@"There was a issue getting the approved patches for the patch group, scan will exit. %@",wsErr.localizedDescription);
+            return;
+        }
     }
 
 	if (!patchGroupPatches) {
@@ -1193,7 +1235,7 @@ done:
 	if ([_patchesArray count] <= 0) {
 		// No Items in the Array, delete the file
 		[fm removeItemAtPath:_approvedPatchesFile error:NULL];
-        [NSKeyedArchiver archiveRootObject:NULL toFile:PATCHES_NEEDED_PLIST];
+        [NSKeyedArchiver archiveRootObject:[NSArray array] toFile:PATCHES_NEEDED_PLIST];
 		return;
 	} else {
         [NSKeyedArchiver archiveRootObject:_patchesArray toFile:_approvedPatchesFile];

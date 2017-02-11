@@ -36,6 +36,7 @@
 #import "MPDate.h"
 #import "MPClientCheckInData.h"
 #import "MPNSTask.h"
+#import "MPClientInfo.h"
 
 // New Networking
 #import "MPNetConfig.h"

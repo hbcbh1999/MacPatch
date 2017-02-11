@@ -717,7 +717,7 @@ OSStatus extractIdentityAndTrust(CFDataRef inPKCS12Data, SecIdentityRef *outIden
 - (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
 {
     NSInteger statusCode = [(NSHTTPURLResponse *)response statusCode];
-    qldebug(@"connection didReceiveResponse status code: %d",statusCode);
+    qldebug(@"connection didReceiveResponse status code: %d",(int)statusCode);
     if (statusCode >= 400)
     {
         [connection cancel];  // stop connecting; no more delegate messages

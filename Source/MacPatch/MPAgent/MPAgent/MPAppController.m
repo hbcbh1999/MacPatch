@@ -47,76 +47,75 @@
 
 - (id)init 
 {
-	// Init plain is as daemon
-	return [self initWithArg:99];
-}
-
-- (id)initWithArg:(int)aArg
-{
-	if (self = [super init]) {
-		//Setup Signleton Manager for global iVars
-		si = [MPAgent sharedInstance];
-		queue = [[NSOperationQueue alloc] init];
-		[queue setMaxConcurrentOperationCount:2];
-
-		logit(lcl_vInfo,@"Client ID: %@",[si g_cuuid]);
-		
-		switch (aArg)
-		{
-			case 0:
-				// Run as daemon
-				[self runAsDaemon];
-				break;
-			case 1:
-				// Run client checkin
-				[self runClientCheckIn];
-				break;
-			case 2:
-                // Run Inventory Collection
-				[self runInventoryCollection];
-				break;
-			case 3:
-                // Run PatchScan
-                [self runPatchScan];
-				break;	
-			case 4:
-				[self runPatchScanAndUpdate];
-				break;	
-			case 5:
-				[self runAVInfoScan];
-				break;
-			case 6:
-				[self runAVInfoScanAndDefsUpdate];
-				break;
-			case 7:
-				[self scanAndUpdateAgentUpdater];
-				break;
-            case 8:
-				[self runSWDistScanAndInstall];
-				break;
-            case 9:
-				[self runProfilesScanAndInstall];
-				break;
-            case 10:
-                [self runGetServerListOperation];
-                break;
-            case 11:
-                [self runPostFailedWSRequests];
-                break;
-            case 13:
-                [self runGetSUServerListOperation];
-                break;
-			case 99:
-				// Run as daemon
-				[self setUseOperationQueue:YES];
-				[self runAsDaemon];
-				break;	
-			default:
-				printf("Silly Rabbit, Trix are for Kids!\n");
-				exit(1);
-		}
+    self = [super init];
+    if (self) {
+        //Setup Signleton Manager for global iVars
+        si = [MPAgent sharedInstance];
+        queue = [[NSOperationQueue alloc] init];
+        [queue setMaxConcurrentOperationCount:2];
+        logit(lcl_vInfo,@"Client ID: %@",[si g_cuuid]);
     }
     return self;
+}
+
+- (void)runWithType:(int)aArg
+{
+    switch (aArg)
+    {
+        case 0:
+            // Run as daemon
+            [self runAsDaemon];
+            break;
+        case 1:
+            // Run client checkin
+            [self runClientCheckIn];
+            break;
+        case 2:
+            // Run Inventory Collection
+            [self runInventoryCollection];
+            break;
+        case 3:
+            // Run PatchScan
+            [self runPatchScan];
+            break;
+        case 4:
+            [self runPatchScanAndUpdate];
+            break;
+        case 5:
+            [self runAVInfoScan];
+            break;
+        case 6:
+            [self runAVInfoScanAndDefsUpdate];
+            break;
+        case 7:
+            [self scanAndUpdateAgentUpdater];
+            break;
+        case 8:
+            [self runSWDistScanAndInstall];
+            break;
+        case 9:
+            [self runProfilesScanAndInstall];
+            break;
+        case 10:
+            [self runGetServerListOperation];
+            break;
+        case 11:
+            [self runPostFailedWSRequests];
+            break;
+        case 13:
+            [self runGetSUServerListOperation];
+            break;
+        case 99:
+            // Run as daemon
+            [self setUseOperationQueue:YES];
+            [self runAsDaemon];
+            break;	
+        default:
+            // Run as daemon
+            [self setUseOperationQueue:YES];
+            [self runAsDaemon];
+            break;
+    }
 }
 
 - (void)runAsDaemon

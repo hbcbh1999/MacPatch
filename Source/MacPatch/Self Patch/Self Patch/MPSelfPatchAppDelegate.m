@@ -817,13 +817,35 @@ done:
         
         // Get Patch Group Patches
         [spStatusText setStringValue:@"Getting approved patch list for client."];
-        MPWebServices *mpws;
-        mpws = [[[MPWebServices alloc] init] autorelease];
-        NSError *wsErr = nil;
-        NSDictionary *patchGroupPatches = [mpws getPatchGroupContent:&wsErr];
-        if (wsErr) {
-            logit(lcl_vError,@"%@",wsErr.localizedDescription);
+        MPWebServices *mpws = [[[MPWebServices alloc] init] autorelease];
+        NSError       *wsErr = nil;
+        NSDictionary  *patchGroupPatches;
+        BOOL           useLocalPatchesFile = NO;
+        NSString      *patchGroupRevLocal = [MPClientInfo patchGroupRev];
+        
+        if (![patchGroupRevLocal isEqualToString:@"-1"]) {
+            NSString *patchGroupRevRemote = [mpws getPatchGroupContentRev:&wsErr];
+            if (!wsErr) {
+                if ([patchGroupRevLocal isEqualToString:patchGroupRevRemote]) {
+                    useLocalPatchesFile = YES;
+                    NSString *pGroup = [defaults objectForKey:@"PatchGroup"];
+                    patchGroupPatches = [[[NSDictionary dictionaryWithContentsOfFile:PATCH_GROUP_PATCHES_PLIST] objectForKey:pGroup] objectForKey:@"data"];
+                    if (!patchGroupPatches) {
+                        logit(lcl_vError,@"Unable to get data from cached patch group data file. Will download new one.");
+                        useLocalPatchesFile = NO;
+                    }
+                }
+            }
         }
+        if (!useLocalPatchesFile) {
+            wsErr = nil;
+            patchGroupPatches = [mpws getPatchGroupContent:&wsErr];
+            if (wsErr) {
+                logit(lcl_vError,@"%@",wsErr.localizedDescription);
+                goto done;
+            }
+        }
+
         if (!patchGroupPatches)
         {
             NSDictionary *userInfo = @{@"title":@"Communications Error", @"defaultButton":@"OK", @"message":@"There was a issue getting the approved patches for the patch group, scan will exit."};

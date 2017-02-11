@@ -31,7 +31,7 @@
 #include <getopt.h>
 #include <unistd.h>
 
-#define APPVERSION	@"3.0.0.2"
+#define APPVERSION	@"3.0.0.3"
 #define APPNAME		@"MPAgentExec"
 
 void usage(void);
@@ -192,7 +192,7 @@ int main (int argc, char * argv[])
             exit(0);
 #endif
         }
-
+        
         // Setup Logging
         NSString *_logFile = [NSString stringWithFormat:@"%@/Logs/MPAgentExec.log",MP_ROOT_CLIENT];
         [MPLog setupLogging:_logFile level:lcl_vDebug];

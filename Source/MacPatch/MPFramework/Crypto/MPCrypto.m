@@ -429,7 +429,7 @@ done:
     
     CFDictionarySetValue(parameters, kSecAttrKeyType, kSecAttrKeyTypeAES);
     
-    CFErrorRef error = NULL;
+    CFErrorRef error;
     SecTransformRef encrypt = SecEncryptTransformCreate(aKey, &error);
     
     if (error) {

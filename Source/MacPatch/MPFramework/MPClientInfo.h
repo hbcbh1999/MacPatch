@@ -1,6 +1,6 @@
 //
-//  MPScanner.h
-//  MPLoginAgent
+//  MPClientInfo.h
+//  MPLibrary
 /*
  Copyright (c) 2017, Lawrence Livermore National Security, LLC.
  Produced at the Lawrence Livermore National Laboratory (cf, DISCLAIMER).
@@ -26,23 +26,8 @@
 
 #import <Foundation/Foundation.h>
 
-// declare our class
-@class MPScanner;
+@interface MPClientInfo : NSObject
 
-// define the protocol for the delegate
-@protocol MPScannerDelegate
-
-@optional
-// define protocol functions that can be used in any class using this delegate
--(void)scanData:(MPScanner *)scanner data:(NSString *)aData;
-
-@end
-
-@interface MPScanner : NSObject <MPScannerDelegate, MPPatchScanDelegate>
-
-@property (nonatomic, assign) id  delegate;
-
-- (NSArray *)scanForAppleUpdates;
-- (NSArray *)scanForCustomUpdates;
++ (NSString *)patchGroupRev;
 
 @end

@@ -58,7 +58,7 @@
 
 @property (nonatomic, assign) BOOL useOperationQueue;
 
-- (id)initWithArg:(int)aArg;
+- (void)runWithType:(int)aArg;
 - (void)runAsDaemon;
 - (void)watchTasksPlistForChangesMethod;
 - (void)runTasksLoop;

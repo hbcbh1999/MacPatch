@@ -966,17 +966,41 @@ typedef NSUInteger MPInstallIconStatus;
 
 - (NSDictionary *)patchGroupPatches
 {
-    NSError *error = nil;
-    NSDictionary *patchGroupPatches = nil;
+    NSError       *error = nil;
+    NSDictionary  *patchGroupPatches = nil;
     MPWebServices *mpws = [[MPWebServices alloc] init];
+    BOOL           useLocalPatchesFile = NO;
+    NSString      *patchGroupRevLocal = [MPClientInfo patchGroupRev];
     
-    // Get Patch Group Patches
-    patchGroupPatches = [mpws getPatchGroupContent:&error];
-    qlinfo(@"Getting approved patch list for client.");
-    if (error) {
-        qlerror(@"There was a issue getting the approved patches for the patch group, scan will exit.");
+    if (![patchGroupRevLocal isEqualToString:@"-1"]) {
+        NSString *patchGroupRevRemote = [mpws getPatchGroupContentRev:&error];
+        if (!error) {
+            if ([patchGroupRevLocal isEqualToString:patchGroupRevRemote]) {
+                useLocalPatchesFile = YES;
+                NSString *pGroup = [[mpDefauts defaults] objectForKey:@"PatchGroup"];
+                patchGroupPatches = [[[NSDictionary dictionaryWithContentsOfFile:PATCH_GROUP_PATCHES_PLIST] objectForKey:pGroup] objectForKey:@"data"];
+                if (!patchGroupPatches) {
+                    logit(lcl_vError,@"Unable to get data from cached patch group data file. Will download new one.");
+                    useLocalPatchesFile = NO;
+                }
+            }
+        }
+    }
+    
+    if (!useLocalPatchesFile) {
+        error = nil;
+        patchGroupPatches = [mpws getPatchGroupContent:&error];
+        if (error) {
+            qlerror(@"There was a issue getting the approved patches for the patch group, scan will exit.");
+            return nil;
+        }
+    }
+    
+    if (!patchGroupPatches) {
+        logit(lcl_vError,@"There was a issue getting the approved patches for the patch group, scan will exit.");
         return nil;
     }
+    
     return patchGroupPatches;
 }
 
@@ -1244,7 +1268,7 @@ typedef NSUInteger MPInstallIconStatus;
 
 - (void)removeStatusFiles
 {
-    [NSKeyedArchiver archiveRootObject:NULL toFile:PATCHES_NEEDED_PLIST];
+    [NSKeyedArchiver archiveRootObject:[NSArray array] toFile:PATCHES_NEEDED_PLIST];
     return;
 }
 
