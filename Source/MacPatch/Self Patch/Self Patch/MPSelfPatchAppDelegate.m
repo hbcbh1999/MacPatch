@@ -226,9 +226,13 @@ static BOOL gDone = false;
 	if (![d objectForKey:@"colStateOnLaunch"]) {
 		[d setBool:NO forKey:@"colStateOnLaunch"];
 	}
-	
-	int x = [self setLoggingState:[d boolForKey:@"enableDebugLogging"]];
+    if (![d objectForKey:@"enableDebugLogging"]) {
+        [d setBool:NO forKey:@"enableDebugLogging"];
+    }
     
+    // Syncronize defaults
+    [d synchronize];
+
 	[self handleColSizeToggle:nil];
 	[self handleColStateToggle:nil];
 	[self handleColBaselineToggle:nil];
@@ -250,26 +254,28 @@ static BOOL gDone = false;
 		// enable logging for all components up to level Info
 #ifdef DEBUG
       	lcl_configure_by_name("*", lcl_vDebug);
+        [d setBool:YES forKey:@"enableDebugLogging"];
+        [d synchronize];
+        [self setLoggingState:[d boolForKey:@"enableDebugLogging"]];
 #else
-    	lcl_configure_by_name("*", lcl_vInfo);    
+    	lcl_configure_by_name("*", lcl_vInfo);
+        [d setBool:NO forKey:@"enableDebugLogging"];
+        [d synchronize];
 #endif
 	
 		logit(lcl_vInfo,@"***** MPSelfPatch started *****");
+        logit(lcl_vDebug,@"Logging is set to debug since app is in debug mode.");
 	}
+    
+    [self setLoggingState:[d boolForKey:@"enableDebugLogging"]];
 
 	// If scan on launch is true
 	if ([d boolForKey:@"enableScanOnLaunch"]) {
 		killTaskThread = NO;
-        // Dont run scan if we get a error code other than 0
-        if (x == 0) {
-            //[spStatusProgress setStyle:NSProgressIndicatorSpinningStyle];
-            [spStatusProgress setUsesThreadedAnimation:YES];
-            //[spStatusProgress startAnimation:self];
-            //[spStatusProgress displayIfNeeded];
-            [self scanForPatches:self];
-        }
+        [spStatusProgress setUsesThreadedAnimation:YES];
+        [self scanForPatches:self];
 	}
-    
+
 	// Center the Window
 	[window center];
 }
@@ -303,15 +309,16 @@ static BOOL gDone = false;
         [proxy setProtocolForProxy: @protocol(MPWorkerServer)];
         BOOL successful = [proxy registerClient:self];
         if (!successful) {
-            NSAlert *alert = [NSAlert alertWithMessageText:@"Error"
-                                             defaultButton:@"OK"
-                                           alternateButton:nil
-                                               otherButton:nil
-                                 informativeTextWithFormat:@"Unable to connect to helper application. Please try logging out and logging back in to resolve the issue."];
-            
-            [[NSRunningApplication currentApplication] activateWithOptions:NSApplicationActivateIgnoringOtherApps];
-            [alert runModal];
-
+            dispatch_async(dispatch_get_main_queue(), ^{
+                NSAlert *alert = [NSAlert alertWithMessageText:@"Error"
+                                                 defaultButton:@"OK"
+                                               alternateButton:nil
+                                                   otherButton:nil
+                                     informativeTextWithFormat:@"Unable to connect to helper application. Please try logging out and logging back in to resolve the issue."];
+                
+                [[NSRunningApplication currentApplication] activateWithOptions:NSApplicationActivateIgnoringOtherApps];
+                [alert runModal];
+            });
             [self cleanup];
         }
     }
@@ -336,15 +343,16 @@ static BOOL gDone = false;
         [proxy setProtocolForProxy: @protocol(MPWorkerServer)];
         BOOL successful = [proxy registerClient:self];
         if (!successful) {
-            NSAlert *alert = [NSAlert alertWithMessageText:@"Error"
-                                             defaultButton:@"OK"
-                                           alternateButton:nil
-                                               otherButton:nil
-                                 informativeTextWithFormat:@"Unable to connect to helper application. Please try logging out and logging back in to resolve the issue."];
-            
-            [[NSRunningApplication currentApplication] activateWithOptions:NSApplicationActivateIgnoringOtherApps];
-            [alert runModal];
-
+            dispatch_async(dispatch_get_main_queue(), ^{
+                NSAlert *alert = [NSAlert alertWithMessageText:@"Error"
+                                                 defaultButton:@"OK"
+                                               alternateButton:nil
+                                                   otherButton:nil
+                                     informativeTextWithFormat:@"Unable to connect to helper application. Please try logging out and logging back in to resolve the issue."];
+                
+                [[NSRunningApplication currentApplication] activateWithOptions:NSApplicationActivateIgnoringOtherApps];
+                [alert runModal];
+            });
             NSMutableDictionary *details = [NSMutableDictionary dictionary];
 			[details setValue:@"Unable to connect to helper application. Please try logging out and logging back in to resolve the issue." forKey:NSLocalizedDescriptionKey];
             if (err != NULL)  *err = [NSError errorWithDomain:@"world" code:1 userInfo:details];
@@ -1539,8 +1547,6 @@ done:
         {
             case NSAlertFirstButtonReturn: [self logoutUserNow]; break;
         }
-        
-        NSLog (@"NSAlert runModal: returned %d", choice);
     });
 }
 
@@ -1562,9 +1568,11 @@ done:
     
     if (error == noErr) {
         NSLog(@"Computer is going to logout!");
+        logit(lcl_vInfo,@"Computer is going to logout!");
         [NSApp terminate:self];
     } else {
         NSLog(@"Computer wouldn't logout: %d", (int)error);
+        logit(lcl_vError,@"Computer wouldn't logout: %d", (int)error);
     }
 }
 
@@ -1621,7 +1629,8 @@ done:
     if (patches) {
         for (NSDictionary *p in patches) {
             if ([[p objectForKey:@"patch_id"] isEqualTo:[aPatch objectForKey:@"patch_id"]]) {
-                qlinfo(@"Remove patch from array, %@",aPatch);
+                qlinfo(@"Remove patch from array, %@",[aPatch objectForKey:@"patch"]);
+                qldebug(@"%@",[aPatch objectForKey:@"patch"]);
             } else if ([[p objectForKey:@"patch"] isEqualTo:[aPatch objectForKey:@"patch"]] && [[p objectForKey:@"type"] isEqualTo:@"Apple"]) {
                 qlinfo(@"Remove %@ patch from array, %@",[aPatch objectForKey:@"type"], aPatch);
             } else {
@@ -1802,7 +1811,6 @@ done:
 	if(notification)
 	{
         NSDictionary *tmpDict = [notification userInfo];
-        NSLog(@"%@", tmpDict);
 		[spStatusText setStringValue:[NSString stringWithFormat:@"Scanning for %@",[tmpDict objectForKey:@"patch_name"]]];
 		[spStatusText display];
 	}	

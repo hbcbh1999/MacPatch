@@ -332,13 +332,12 @@
     
     if ([resultType isEqualToString:@"json"]) {
         result = [jres returnJsonResult:&error];
+        qldebug(@"JSON Result: %@",result);
     } else {
         result = [jres returnResult:&error];
     }
-    
-    qldebug(@"JSON Result: %@",result);
-    if (error)
-    {
+
+    if (error) {
         if (err != NULL) {
             *err = error;
         } else {
@@ -821,7 +820,6 @@
             // Parse JSON result, if error code is not 0
             wsErr = nil;
             result = [self returnRequestWithType:reqData resultType:resType error:&wsErr];
-            logit(lcl_vInfo,@"%@",result);
             if (wsErr) {
                 if (err != NULL) *err = wsErr;
                 logit(lcl_vError,@"%@",wsErr.localizedDescription);
@@ -830,29 +828,10 @@
             
             // Error Code is 0 and result is empty then we are done.
             if ([self isOfNSStringType:result]) {
-                if ([result isEqualToString:@""]) {
-                    return nil;
-                }
-            } else {
-                logit(lcl_vWarning,@"Result is not of string type: %@",result);
+                return @"";
             }
             
-            
-            logit(lcl_vDebug,@"%@",result);
-            /*
-            wsErr = nil;
-            MPJsonResult *jres = [[MPJsonResult alloc] init];
-            NSString *jstr = [jres serializeJSONDataAsString:(NSDictionary *)result error:NULL];
-            //[self writePatchGroupCacheFileData:jstr];
-            if (wsErr) {
-                if (err != NULL) {
-                    *err = wsErr;
-                } else {
-                    qlerror(@"%@",wsErr.localizedDescription);
-                }
-                return nil;
-            }
-            */
+            logit(lcl_vDebug,@"[restPostRequestforURI] result: %@",result);
             return result;
         }
         

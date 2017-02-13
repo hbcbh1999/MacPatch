@@ -487,7 +487,7 @@ OSStatus extractIdentityAndTrust(CFDataRef inPKCS12Data, SecIdentityRef *outIden
         if (aBody) {
             signedData = [self signWebServiceRequest:aBody timeStamp:ts key:[self readClientKey]];
         } else {
-            qlinfo(@"Body is NULL, using URI signature.");
+            qldebug(@"Body is NULL, using URI signature.");
             signedData = [self signWebServiceRequest:aURI timeStamp:ts key:[self readClientKey]];
         }
         qldebug(@"Signature For POST Request[%@]: %@",ts ,signedData);
